@@ -28,6 +28,7 @@ data class LanguageOption(
 val supportedLanguages = listOf(
     LanguageOption(R.string.settings_language_system_default, null),
     LanguageOption(R.string.settings_language_english, "en"),
+    LanguageOption(R.string.settings_language_russian, "ru"),
     LanguageOption(R.string.settings_language_simplified_chinese, "zh-CN"),
     LanguageOption(R.string.settings_language_hindi, "hi"),
 )
