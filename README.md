@@ -126,7 +126,7 @@ We want Dioxamine to be accessible in as many languages as possible.
 - [x] English (`en`) - default
 - [x] Simplified Chinese (`zh-CN`) - @riyousa
 - [x] Hindi (`hi`) - @rhythmcache
-
+- [x] Russian (`ru`) - @LorianL98
 
 ![Translation Coverage](badges/coverage.svg)
 
