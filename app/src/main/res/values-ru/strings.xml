@@ -1,0 +1,864 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Dioxamine</string>
+
+    <!-- Navigation Tabs -->
+    <string name="tab_adb">ADB</string>
+    <string name="tab_scrcpy">scrcpy</string>
+    <string name="tab_fastboot">Fastboot</string>
+    <string name="tab_settings">Настройки</string>
+
+    <!-- ADB Tab -->
+    <string name="adb_subtab_builtin">Встроенные</string>
+    <string name="adb_subtab_adb_shell">ADB Shell</string>
+    <string name="adb_subtab_plugins">Плагины</string>
+    
+    <string name="adb_shell_title">Поддержка ADB Shell</string>
+    <string name="feature_coming_soon">Эта функция появится в ближайшее время.</string>
+    <string name="adb_shell_info_dialog_title">Примечание к ADB Shell</string>
+    <string name="adb_shell_info_dialog_msg_before_link">"Этот встроенный shell представляет собой минималистичный терминал, предназначенный для выполнения базовых команд. Он обладает ограниченными возможностями и не имеет полноценной эмуляции терминала. Для расширенной работы или использования всех функций терминала рекомендуется использовать "</string>
+    <string name="adb_shell_info_dialog_link">Плагин Терминала</string>
+    <string name="adb_shell_info_dialog_msg_after_link">.</string>
+    <string name="adb_shell_dont_show_again">"Больше не показывать"</string>
+
+    <string name="no_devices_connected">Нет подключенных устройств</string>
+    <plurals name="connected_devices_count">
+        <item quantity="one">Подключено %1$d устройство</item>
+        <item quantity="few">Подключено %1$d устройства</item>
+        <item quantity="many">Подключено %1$d устройств</item>
+        <item quantity="other">Подключено %1$d устройства</item>
+    </plurals>
+    <string name="cd_add_device">Добавить устройство</string>
+    <string name="cd_expand_collapse">Развернуть или свернуть</string>
+    <string name="no_devices_added_hint">Устройства еще не добавлены. Нажмите \'+\', чтобы подключиться к устройству.</string>
+    
+    <string name="dialog_add_tcp_title">Добавить TCP-устройство</string>
+    <string name="label_ip_address">IP-адрес</string>
+    <string name="label_port">Порт</string>
+    <string name="btn_connect">Подключиться</string>
+    <string name="btn_cancel">Отмена</string>
+
+    <string name="status_connected">Подключено</string>
+    <string name="status_connected_version">Подключено &#8226; Android %1$s</string>
+    <string name="status_connected_api">Подключено (API %1$d)</string>
+    <string name="status_connected_version_api">Подключено &#8226; Android %1$s (API %2$d)</string>
+    <string name="status_connecting">Подключение...</string>
+    <string name="cd_remove">Удалить</string>
+
+    <string name="action_device_info_title">Информация об устройстве</string>
+    <string name="action_device_info_desc">Просмотр подробных характеристик, версии, состояния батареи, процессора, разрешения, времени работы и установленных пакетов.</string>
+    <string name="dialog_device_info_title">Информация об устройстве</string>
+    <string name="btn_close">Закрыть</string>
+    <string name="cd_open_details">Открыть подробности</string>
+    <string name="action_device_model">Модель устройства</string>
+    <string name="action_android_version">Версия Android</string>
+    <string name="action_battery_info">Информация о батарее</string>
+    <string name="action_serial_number">Серийный номер</string>
+    <string name="action_cpu_info">Информация о ЦП</string>
+    <string name="action_uptime">Время работы</string>
+    <string name="action_screen_resolution">Разрешение экрана</string>
+    <string name="action_installed_packages">Количество установленных пакетов</string>
+    <string name="connect_device_warning">Подключите устройство для использования этих действий.</string>
+
+    <string name="cd_refresh">Обновить</string>
+    <string name="cd_collapse">Свернуть</string>
+    <string name="cd_expand">Развернуть</string>
+    <string name="status_running_command">Выполнение команды...</string>
+    <string name="tap_refresh_hint">Нажмите «Обновить» для выполнения</string>
+
+    <string name="plugins_title">Пользовательские плагины</string>
+    <string name="plugins_description">"Плагины позволяют устанавливать сторонние дополнения, написанные вами или другими разработчиками."</string>
+    <string name="plugins_docs_prompt">"Документацию по плагинам см. в разделе "</string>
+    <string name="plugins_docs_link">"Документация к плагинам"</string>
+    <string name="plugins_coming_soon">Создание собственных плагинов скоро будет доступно.</string>
+    <string name="plugins_no_plugins">Плагины не установлены</string>
+    <string name="plugins_cd_install">Установить плагин</string>
+    <string name="plugins_msg_installed">Установлено %1$s</string>
+    <string name="plugins_msg_updated">Обновлено %1$s до %2$s</string>
+    <string name="plugins_msg_rejected">Установленная версия совпадает или новее</string>
+    <string name="plugins_msg_error">Ошибка установки: %1$s</string>
+
+    <!-- Plugin Permission Dialog Strings -->
+    <string name="btn_allow">Разрешить</string>
+    <string name="btn_deny">Отклонить</string>
+    <string name="plugin_perm_dialog_title">%1$s запрашивает разрешение</string>
+    <string name="plugin_perm_shell">Выполнение shell-команд на подключенном устройстве</string>
+    <string name="plugin_perm_push">Загрузка файлов на подключенное устройство</string>
+    <string name="plugin_perm_pull">Скачивание файлов с подключенного устройства</string>
+    <string name="plugin_perm_install">Установка пакетов на подключенное устройство</string>
+    <string name="plugin_perm_forward">Создание проброса сетевых портов на/с подключенного устройства</string>
+    <string name="plugin_perm_reverse">Создание обратного проброса портов с подключенного устройства на это устройство</string>
+    <string name="plugin_dialog_attribution">Плагин: %1$s</string>
+    <string name="plugin_runner_not_found">Плагин не найден</string>
+    <string name="plugin_menu_info">Инфо</string>
+    <string name="plugin_menu_uninstall">Удалить</string>
+    <string name="plugin_info_title">Сведения о плагине</string>
+    <string name="plugin_info_id">ID: %1$s</string>
+    <string name="plugin_info_version">Версия: %1$s</string>
+    <string name="plugin_info_author">Автор: %1$s</string>
+    <string name="plugin_info_entry">Точка входа: %1$s</string>
+    <string name="plugin_info_permissions">Разрешения: %1$s</string>
+    <string name="plugin_uninstall_title">Удаление плагина</string>
+    <string name="plugin_uninstall_confirm">Вы уверены, что хотите удалить «%1$s»?</string>
+    <string name="plugin_msg_uninstalled">Плагин «%1$s» удален</string>
+    <string name="cd_more_options">Дополнительные параметры</string>
+
+    <!-- Plugin Settings & Permission Manager Strings -->
+    <string name="settings_plugins_title">Плагины</string>
+    <string name="settings_plugins_desc">Отладка WebView &amp; разрешения</string>
+    <string name="settings_plugins_webview_debug_title">Отладка WebView</string>
+    <string name="settings_plugins_webview_debug_desc">Разрешить инспекцию через Chrome DevTools (chrome://inspect)</string>
+    <string name="settings_plugins_take_effect_hint">Изменения вступят в силу при следующем запуске плагина</string>
+    <string name="settings_plugins_permissions_title">Разрешения плагинов</string>
+    <string name="settings_plugins_permissions_desc">Управление и отзыв разрешений для установленных плагинов</string>
+    <string name="settings_plugins_btn_manage">Управление</string>
+    <string name="settings_plugins_no_permissions">Разрешения не объявлены</string>
+    <string name="plugin_policy_ask_default">Спрашивать каждый раз (по умолчанию)</string>
+    <string name="plugin_policy_ask">Спрашивать каждый раз</string>
+    <string name="plugin_policy_always_allow">Всегда разрешать</string>
+    <string name="plugin_policy_always_deny">Всегда запрещать</string>
+    <string name="btn_reset_all">Сбросить все</string>
+
+    <!-- Fastboot Tab -->
+    <string name="fastboot_title">Поддержка Fastboot</string>
+    <string name="fastboot_no_device_status">Детектор USB активен &#8226; Устройство Fastboot не подключено</string>
+
+    <!-- Scrcpy Tab -->
+    <string name="scrcpy_no_device_title">Устройство не выбрано</string>
+    <string name="scrcpy_no_device_desc">Подключите и выберите устройство на верхней панели подключений, чтобы настроить и запустить трансляцию экрана scrcpy.</string>
+    <string name="scrcpy_invalid_config_prefix">Недопустимая конфигурация:\n</string>
+    <string name="scrcpy_mirroring_idle">Трансляция неактивна</string>
+    <string name="scrcpy_title">Трансляция экрана scrcpy</string>
+    <string name="scrcpy_target">Цель: %1$s</string>
+    <string name="scrcpy_target_version">Цель: %1$s &#8226; Android %2$s</string>
+    <string name="scrcpy_start_mirroring">Начать трансляцию</string>
+    <string name="scrcpy_stop_mirroring">Остановить трансляцию</string>
+    <string name="scrcpy_tab_configurator">Конфигуратор</string>
+    <string name="scrcpy_tab_logs">Логи</string>
+    <string name="scrcpy_logs_empty">Логов scrcpy пока нет.</string>
+
+    <string name="section_video_source">Источник видео</string>
+    <string name="video_source_screen">Экран</string>
+    <string name="video_source_camera">Камера</string>
+    <string name="camera_source_subtitle_req">Требуется Android 12+ (API 31). Устройство использует API %1$d.</string>
+
+    <string name="section_camera">Камера</string>
+    <string name="camera_facing_back">Основная</string>
+    <string name="camera_facing_front">Фронтальная</string>
+    <string name="camera_facing_external">Внешняя</string>
+    <string name="camera_high_speed_title">Высокоскоростной режим</string>
+    <string name="camera_high_speed_subtitle">Захват 120+ FPS (требуется поддержка устройством)</string>
+    <string name="label_high_speed_fps">FPS в высокоскоростном режиме</string>
+    <string name="label_fps_format">%1$d FPS</string>
+    <string name="label_high_speed_res">Разрешение в высокоскоростном режиме</string>
+    <string name="res_720p">720p</string>
+    <string name="res_1080p">1080p</string>
+    <string name="res_480p">480p</string>
+    <string name="res_auto">Авто</string>
+
+    <string name="section_video">Видео</string>
+    <string name="video_enable_title">Включить видео</string>
+    <string name="video_enable_subtitle">Трансляция экрана или камеры</string>
+    <string name="scrcpy_audio_only_banner">Трансляция аудио активна</string>
+    <string name="scrcpy_audio_only_desc">Режим «Только аудио» (видеопоток отключен)</string>
+    <string name="label_resolution">Макс. размер</string>
+    <string name="label_add_chip">+ Добавить</string>
+    <string name="dialog_add_max_size_title">Добавить размер</string>
+    <string name="dialog_add_max_size_msg">Введите максимальный размер в пикселях (например, 1440 или 2160):</string>
+    <string name="dialog_add_fps_title">Добавить частоту кадров</string>
+    <string name="dialog_add_fps_msg">Введите частоту кадров в FPS (например, 90 или 144):</string>
+    <string name="dialog_add_bitrate_title">Добавить битрейт</string>
+    <string name="dialog_add_bitrate_msg">Введите битрейт в Мбит/с (например, 16 или 25):</string>
+    <string name="btn_add">Добавить</string>
+
+    <string name="settings_scrcpy_title">scrcpy</string>
+    <string name="settings_scrcpy_subtitle">Настройка параметров трансляции scrcpy</string>
+    <string name="settings_scrcpy_allow_custom_title">Свои значения в конфигурации</string>
+    <string name="settings_scrcpy_allow_custom_subtitle">Разрешить добавление пользовательских вариантов размера, FPS и битрейта</string>
+    <string name="camera_discovering">Определение возможностей камеры...</string>
+    <string name="label_frame_rate">Частота кадров</string>
+    <string name="label_bitrate">Битрейт</string>
+    <string name="label_mbps_format">%1$d Мбит/с</string>
+    <string name="label_codec">Кодек</string>
+    <string name="codec_h264">H.264</string>
+    <string name="codec_h265">H.265</string>
+    <string name="codec_av1">AV1</string>
+    <string name="codec_vp8">VP8</string>
+    <string name="codec_vp9">VP9</string>
+    <string name="label_orientation">Ориентация</string>
+    <string name="orient_normal">Обычная</string>
+    <string name="orient_90">90°</string>
+    <string name="orient_180">180°</string>
+    <string name="orient_270">270°</string>
+    <string name="orient_flip_0">Отразить по гориз.</string>
+    <string name="orient_flip_90">Отразить 90°</string>
+    <string name="orient_flip_180">Отразить 180°</string>
+    <string name="orient_flip_270">Отразить 270°</string>
+
+    <string name="section_audio">Аудио</string>
+    <string name="audio_enable_title">Включить аудио</string>
+    <string name="audio_enable_subtitle_ok">Трансляция звука устройства</string>
+    <string name="audio_enable_subtitle_req">Требуется Android 11+ (API 30). Устройство использует API %1$d.</string>
+    <string name="label_audio_source">Источник</string>
+    <string name="audio_source_device">Звук устройства</string>
+    <string name="audio_source_mic">Микрофон</string>
+    <string name="label_audio_format">Формат</string>
+    <string name="codec_opus">Opus</string>
+    <string name="codec_aac">AAC</string>
+    <string name="codec_flac">FLAC</string>
+    <string name="audio_dup_title">Не отключать звук на устройстве</string>
+    <string name="audio_dup_subtitle_ok">Оставлять динамики устройства активными</string>
+    <string name="audio_dup_subtitle_req">Требуется Android 13+ (API 33)</string>
+
+    <string name="section_display">Экран &amp; управление</string>
+    <string name="display_screen_off_title">Выключить экран</string>
+    <string name="display_screen_off_subtitle">Отключать экран устройства во время трансляции</string>
+    <string name="display_floating_nav_title">Плавающая панель навигации</string>
+    <string name="display_floating_nav_subtitle">Отображать вертикальные кнопки «Назад», «Домой» и «Недавние» поверх экрана</string>
+    <string name="display_bind_volume_title">Пробрасывать кнопки громкости</string>
+    <string name="display_bind_volume_subtitle">Привязать физические кнопки громкости к транслируемому устройству</string>
+
+    <string name="cd_toggle_torch">Переключить фонарик</string>
+    <string name="cd_toggle_fullscreen">Полноэкранный режим</string>
+    <string name="cd_stop_mirroring">Остановить трансляцию</string>
+    <string name="cd_nav_back">Назад</string>
+    <string name="cd_nav_home">Домой</string>
+    <string name="cd_nav_recents">Недавние</string>
+
+    <!-- Settings Tab -->
+    <string name="settings_title">Настройки</string>
+    <string name="settings_key_title">Ключ авторизации ADB</string>
+    <string name="settings_key_desc">Управление парой ключей RSA, используемой для авторизации приложения на устройствах.</string>
+    <string name="settings_fingerprint_label">Отпечаток:</string>
+    <string name="settings_no_key">Ключ еще не сгенерирован.</string>
+    <string name="settings_btn_regen_key">Сгенерировать ключ заново</string>
+    <string name="settings_btn_load_custom_key">Загрузить свой ключ</string>
+    <string name="dialog_regen_key_title">Пересоздать ключ?</string>
+    <string name="dialog_regen_key_msg">Это удалит текущую пару ключей ADB и создаст новую. Вам придется заново подтверждать авторизацию на всех ранее доверенных устройствах.</string>
+    <string name="btn_regenerate">Пересоздать</string>
+
+    <string name="settings_language_title">Язык</string>
+    <string name="settings_language_system_default">Системный по умолчанию</string>
+    <string name="settings_language_english" translatable="false">English</string>
+    <string name="settings_language_simplified_chinese" translatable="false">简体中文</string>
+    <string name="settings_language_hindi" translatable="false">हिन्दी</string>
+    <string name="settings_language_contribute">Помочь с переводом</string>
+
+    <string name="settings_theme_title">Тема</string>
+    <string name="theme_system">Системная</string>
+    <string name="theme_light">Светлая</string>
+    <string name="theme_dark">Тёмная</string>
+    <string name="theme_amoled">AMOLED</string>
+    <string name="settings_theme_dynamic_title">Динамические цвета (Monet)</string>
+    <string name="settings_theme_dynamic_desc">Использовать цвета обоев системы</string>
+    <string name="settings_theme_dynamic_req">Требуется Android 12+</string>
+    <string name="settings_theme_mode_header">Режим темы</string>
+
+    <string name="settings_logs_title">Логи приложения</string>
+    <string name="settings_logs_subtitle">Экспорт или очистка сохраненных логов приложения</string>
+    <string name="settings_enable_logging_title">Включить логирование</string>
+    <string name="settings_enable_logging_subtitle">Записывать внутренние события в память и на диск</string>
+    <string name="settings_btn_export_all_logs">Экспортировать логи</string>
+    <string name="settings_btn_clear_logs">Очистить логи</string>
+    <string name="dialog_clear_logs_title">Очистить все логи?</string>
+    <string name="dialog_clear_logs_msg">Это безвозвратно удалит все сохраненные файлы логов с диска и очистит текущий буфер в памяти.</string>
+    <string name="btn_clear">Очистить</string>
+    <string name="msg_logs_cleared">Все файлы логов и буфер памяти очищены.</string>
+    <string name="msg_logs_exported">Логи успешно экспортированы.</string>
+
+    <!-- ViewModel State / Error Messages -->
+    <string name="msg_new_key_generated">Новый ключ сгенерирован.</string>
+    <string name="msg_custom_key_loaded">Пользовательский ключ загружен.</string>
+    <string name="err_usb_connection_lost">USB-соединение потеряно. Пожалуйста, подключите заново.</string>
+    <string name="err_connection_lost">Соединение потеряно: %1$s</string>
+    <string name="err_connection_failed">Ошибка подключения</string>
+    <string name="err_usb_connection_failed">Ошибка USB-подключения</string>
+    <string name="err_failed_prefix">Сбой: %1$s</string>
+    <string name="err_shell_format">Ошибка (%1$d): %2$s</string>
+    <string name="err_command_timed_out">Превышено время ожидания команды — возможно, устройство отключено</string>
+
+    <!-- File Manager -->
+    <string name="file_manager_title">Файловый менеджер устройства</string>
+    <string name="file_manager_subtitle">Просмотр, открытие, загрузка, скачивание и управление файлами на подключенном устройстве</string>
+    <string name="file_manager_empty">Каталог пуст</string>
+    <string name="file_manager_parent_dir">..</string>
+    <string name="file_manager_search_hint">Поиск в текущей папке…</string>
+    <string name="file_manager_write_denied">Запись в этот каталог запрещена (отказано в доступе)</string>
+    <string name="file_manager_action_properties">Свойства</string>
+    <string name="file_manager_action_download">Скачать (Pull)</string>
+    <string name="file_manager_action_rename">Переименовать / Переместить</string>
+    <string name="file_manager_action_delete">Удалить</string>
+    <string name="file_manager_properties_title">Свойства файла</string>
+    <string name="file_manager_new_folder">Новая папка</string>
+    <string name="file_manager_create_folder_title">Создать новую папку</string>
+    <string name="file_manager_create_folder_msg">Введите имя новой папки:</string>
+    <string name="file_manager_rename_title">Переименовать объект</string>
+    <string name="file_manager_rename_msg">Введите новое имя или путь:</string>
+    <string name="file_manager_delete_title">Удалить объект?</string>
+    <string name="file_manager_delete_msg">Вы уверены, что хотите удалить «%1$s»? Это действие нельзя отменить.</string>
+    <string name="file_manager_downloading_folder">Скачивание папки…</string>
+
+    <!-- Adb / Device Connect / Modes -->
+    <string name="err_invalid_ip_format">Неверный формат IPv4-адреса</string>
+    <string name="err_invalid_port_range">Порт должен быть в диапазоне от 1 до 65535</string>
+    <string name="mode_sideload">Режим Sideload</string>
+    <string name="mode_recovery">Режим Recovery</string>
+    <string name="mode_rescue">Режим Восстановления</string>
+    <string name="status_connected_mode">Подключено [%1$s]</string>
+    <string name="status_connected_recovery_version_api">Подключено [Режим Recovery &#8226; Android %1$s (API %2$d)]</string>
+    <string name="status_connected_recovery_version">Подключено [Режим Recovery &#8226; Android %1$s]</string>
+    <string name="status_connected_recovery_api">Подключено [Режим Recovery &#8226; API %1$d]</string>
+    <string name="sideload_description">Устройство находится в режиме sideload. Выберите OTA zip-архив для прошивки.</string>
+    <string name="btn_choose_file">Выбрать файл</string>
+    <string name="btn_starting">Запуск...</string>
+    <string name="btn_sideload">Sideload</string>
+    <string name="msg_flash_complete">Прошивка завершена</string>
+    <string name="btn_done">Готово</string>
+    <string name="btn_try_again">Повторить</string>
+    <string name="btn_wipe_userdata">Очистить данные (Wipe)</string>
+    <string name="dialog_wipe_userdata_title">Очистить данные пользователя?</string>
+    <string name="dialog_wipe_userdata_msg">Это удалит все данные пользователя на устройстве. Действие необратимо.</string>
+    <string name="btn_wipe">Очистить</string>
+
+    <!-- Scrcpy Additions -->
+    <string name="dialog_add_audio_bitrate_title">Добавить битрейт аудио</string>
+    <string name="dialog_add_audio_bitrate_msg">Введите свой битрейт аудио в Кбит/с (например, 192, 256, 320):</string>
+    <string name="scrcpy_mirroring_failed">Сбой трансляции</string>
+    <string name="btn_dismiss">Закрыть</string>
+    <string name="label_audio_bitrate">Битрейт аудио</string>
+    <string name="codec_raw_pcm">RAW (PCM)</string>
+    <string name="err_invalid_positive_number">Пожалуйста, введите корректное положительное число</string>
+    <string name="scrcpy_mode_not_supported">Scrcpy не поддерживается в режиме %1$s</string>
+    <string name="scrcpy_mode_not_supported_desc">Трансляция экрана требует стандартного режима ADB и недоступна, пока устройство находится в режиме %1$s.</string>
+    <string name="scrcpy_server_start_failed">Не удалось запустить сервер scrcpy на целевом устройстве. Проверьте разрешения или совместимость.</string>
+    <string name="scrcpy_server_terminated">Процесс сервера scrcpy неожиданно завершился на целевом устройстве.</string>
+
+    <!-- Local ADB Detection -->
+    <string name="local_adb_detected_title">Обнаружен локальный ADB</string>
+    <string name="local_adb_detected_msg">Dioxamine обнаружил активный локальный беспроводной ADB на порту %1$d. Хотите подключиться к этому устройству?</string>
+
+    <!-- File Manager Additions -->
+    <string name="file_manager_push_file">Загрузить файл (Push)</string>
+    <string name="file_manager_upload_failed">Ошибка загрузки %1$s: %2$s</string>
+    <string name="file_manager_download_success">Файл %1$s успешно скачан</string>
+    <string name="file_manager_download_failed">Ошибка скачивания: %1$s</string>
+    <string name="file_manager_folder_download_unsupported">Скачивание папок через одиночное сохранение файлов не поддерживается</string>
+    <string name="file_manager_prop_name">Имя</string>
+    <string name="file_manager_prop_path">Путь</string>
+    <string name="file_manager_prop_type">Тип</string>
+    <string name="file_manager_prop_link_target">Цель ссылки</string>
+    <string name="file_manager_prop_size">Размер</string>
+    <string name="file_manager_prop_mode">Права доступа</string>
+    <string name="file_manager_prop_type_symlink">Символьная ссылка (%1$s)</string>
+    <string name="file_manager_prop_type_dir">Каталог</string>
+    <string name="file_manager_prop_type_file">Файл</string>
+    <string name="file_manager_retry">Повторить</string>
+    <string name="file_manager_create">Создать</string>
+    <string name="file_manager_rename">Переименовать</string>
+
+    <!-- Package Manager -->
+    <string name="pkg_manager_title">Менеджер приложений</string>
+    <string name="pkg_manager_subtitle">Управление приложениями, извлечение APK/APKS, включение, отключение и установка пакетов</string>
+    <string name="pkg_manager_search_hint">Поиск приложений по имени или пакету…</string>
+    <string name="pkg_manager_filter_all">Все</string>
+    <string name="pkg_manager_filter_user">Пользовательские</string>
+    <string name="pkg_manager_filter_system">Системные</string>
+    <string name="pkg_manager_filter_disabled">Отключенные</string>
+    <string name="pkg_manager_action_enable">Включить</string>
+    <string name="pkg_manager_action_disable">Отключить</string>
+    <string name="pkg_manager_action_pull">Извлечь APK (Pull)</string>
+    <string name="pkg_manager_action_uninstall">Удалить</string>
+    <string name="pkg_manager_action_force_stop">Остановить принудительно</string>
+    <string name="pkg_manager_action_permissions">Предоставить разрешения</string>
+    <string name="pkg_manager_action_info">О приложении</string>
+    <string name="pkg_manager_dialog_permissions_title">Предоставить разрешение</string>
+    <string name="pkg_manager_custom_perm_placeholder">например, android.permission.WRITE_SECURE_SETTINGS</string>
+    <string name="pkg_manager_perm_prompt">Введите название разрешения, которое хотите предоставить:</string>
+    <string name="pkg_manager_perm_label">Название разрешения</string>
+    <string name="pkg_manager_perm_manifest_note">Примечание: целевое приложение должно заявлять это разрешение в своем AndroidManifest.xml.</string>
+    <string name="pkg_manager_perm_invalid_format">Неверный формат разрешения (например, android.permission.WRITE_SECURE_SETTINGS)</string>
+    <string name="pkg_manager_btn_grant">Предоставить</string>
+    <string name="pkg_manager_perm_granted">Предоставлено: %1$s</string>
+    <string name="pkg_manager_perm_failed">Ошибка: %1$s</string>
+    <string name="pkg_manager_force_stop_success">Приложение %1$s принудительно остановлено</string>
+    <string name="pkg_manager_install_apks">Установить APKs</string>
+    <string name="pkg_manager_installing">Установка пакета на устройство…</string>
+    <string name="pkg_manager_install_success">Пакет успешно установлен</string>
+    <string name="pkg_manager_install_failed">Сбой установки: %1$s</string>
+    <string name="pkg_manager_pulling">Извлечение пакета…</string>
+    <string name="pkg_manager_pull_success">Пакет %1$s успешно извлечен</string>
+    <string name="pkg_manager_pull_failed">Сбой извлечения: %1$s</string>
+    <string name="pkg_manager_uninstall_confirm_title">Удалить приложение?</string>
+    <string name="pkg_manager_uninstall_confirm_msg">Вы уверены, что хотите удалить %1$s (%2$s) с целевого устройства?</string>
+    <string name="pkg_manager_uninstall_success">Приложение %1$s успешно удалено</string>
+    <string name="pkg_manager_uninstall_failed">Сбой удаления: %1$s</string>
+    <string name="pkg_manager_disable_success">Приложение %1$s отключено</string>
+    <string name="pkg_manager_enable_success">Приложение %1$s включено</string>
+    <string name="settings_btn_export_key">Экспортировать ключ авторизации</string>
+    <string name="msg_key_exported">Ключ авторизации ADB успешно экспортирован</string>
+    <string name="pkg_manager_empty">Пакеты не найдены</string>
+
+    <!-- ADB Reboot Options Strings -->
+    <string name="adb_reboot_tile_title">Параметры перезагрузки</string>
+    <string name="adb_reboot_tile_desc">Перезагрузка в систему, загрузчик, recovery, fastboot или выключение</string>
+    <string name="adb_reboot_system_title">Перезагрузить систему</string>
+    <string name="adb_reboot_system_desc">Обычная перезагрузка в ОС Android</string>
+    <string name="adb_reboot_bootloader_title">Перезагрузить в Bootloader</string>
+    <string name="adb_reboot_bootloader_desc">Перезагрузка в режим загрузчика / fastboot</string>
+    <string name="adb_reboot_recovery_title">Перезагрузить в Recovery</string>
+    <string name="adb_reboot_recovery_desc">Перезагрузка в режим recovery</string>
+    <string name="adb_reboot_fastboot_title">Перезагрузить в Fastboot</string>
+    <string name="adb_reboot_fastboot_desc">Перезагрузка в режим fastbootd (пользовательский fastboot)</string>
+    <string name="adb_reboot_shutdown_title">Выключить</string>
+    <string name="adb_reboot_shutdown_desc">Полное отключение питания устройства</string>
+    <string name="adb_reboot_executing">Выполнение %1$s…</string>
+
+    <!-- ADB Screenshot Strings -->
+    <string name="adb_screenshot_tile_title">Скриншот</string>
+    <string name="adb_screenshot_tile_desc">Сделать снимок экрана устройства, просмотреть или сохранить его</string>
+    <string name="adb_screenshot_take_btn">Сделать скриншот</string>
+    <string name="adb_screenshot_capturing">Захват экрана…</string>
+    <string name="adb_screenshot_save_btn">Сохранить скриншот</string>
+    <string name="adb_screenshot_saved">Скриншот успешно сохранен</string>
+    <string name="adb_screenshot_failed">Не удалось сделать скриншот: %1$s</string>
+    <string name="adb_screenshot_empty">Нажмите \'Сделать скриншот\' для захвата экрана подключенного устройства.</string>
+
+    <!-- General Buttons -->
+    <string name="btn_back">Назад</string>
+
+    <!-- ADB Miscellaneous Tools Strings -->
+    <string name="adb_misc_tile_title">Разное</string>
+    <string name="adb_misc_tile_desc">Настройки экрана, твики разработчика и быстрые действия</string>
+    <string name="adb_misc_section_app_process">Приложения &amp; процессы</string>
+    <string name="adb_misc_section_display">Экран &amp; ориентация</string>
+    <string name="adb_misc_section_system_ui">Системный UI &amp; уведомления</string>
+    <string name="adb_misc_section_dev_tweaks">Твики UI &amp; разработчика</string>
+    <string name="adb_misc_section_battery">Эмуляция батареи</string>
+    <string name="adb_misc_section_intent_url">Intent &amp; URL</string>
+
+    <string name="adb_misc_kill_app_title">Завершить активное приложение</string>
+    <string name="adb_misc_kill_app_desc">Принудительно останавливает приложение, открытое в данный момент на экране</string>
+    <string name="adb_misc_clear_app_title">Очистить данные активного приложения</string>
+    <string name="adb_misc_clear_app_desc">Сбрасывает данные и кэш текущего активного приложения</string>
+
+    <string name="adb_misc_orientation_title">Ориентация экрана</string>
+    <string name="adb_misc_orientation_desc">Принудительно 0° Портретная, 90° Альбомная, 180° Перевернутая или 270° Альбомная</string>
+    <string name="adb_misc_auto_rotate_title">Автоповорот экрана</string>
+    <string name="adb_misc_auto_rotate_desc">Включение/выключение автоповорота по акселерометру</string>
+    <string name="adb_misc_density_title">Плотность экрана (DPI)</string>
+    <string name="adb_misc_density_desc">Изменить DPI экрана или сбросить на значение по умолчанию</string>
+    <string name="adb_misc_density_current">Текущее: %1$s</string>
+    <string name="adb_misc_density_placeholder">например, 420</string>
+    <string name="adb_misc_resolution_title">Разрешение экрана</string>
+    <string name="adb_misc_resolution_desc">Изменить размеры разрешения (Ширина x Высота) или сбросить</string>
+    <string name="adb_misc_size_current">Текущее: %1$s</string>
+    <string name="adb_misc_size_placeholder">например, 1080x2400</string>
+    <string name="adb_misc_stay_awake_title">Не выключать экран (Stay Awake)</string>
+    <string name="adb_misc_stay_awake_desc">Запретить экрану уходить в сон при подключении по USB</string>
+
+    <string name="adb_misc_expand_notifs_title">Развернуть уведомления</string>
+    <string name="adb_misc_expand_notifs_desc">Опускает шторку уведомлений</string>
+    <string name="adb_misc_expand_qs_title">Развернуть быстрые настройки</string>
+    <string name="adb_misc_expand_qs_desc">Опускает панель переключателей быстрых настроек</string>
+    <string name="adb_misc_collapse_statusbar_title">Свернуть строку состояния</string>
+    <string name="adb_misc_collapse_statusbar_desc">Закрывает шторку уведомлений и панель быстрых настроек</string>
+
+    <string name="adb_misc_demo_mode_title">Демо-режим (Чистая строка состояния)</string>
+    <string name="adb_misc_demo_mode_desc">Устанавливает заряд 100%, время 12:00, полный сигнал и скрывает уведомления</string>
+    <string name="adb_misc_show_touches_title">Показывать нажатия</string>
+    <string name="adb_misc_show_touches_desc">Отображать визуальные кружки в местах касания экрана</string>
+    <string name="adb_misc_pointer_location_title">Указатель касания</string>
+    <string name="adb_misc_pointer_location_desc">Отображать координатную сетку и траекторию касаний</string>
+    <string name="adb_misc_anim_scale_title">Скорость анимаций</string>
+    <string name="adb_misc_anim_scale_desc">Настройка масштаба анимаций окон, переходов и длительности (от 0x до 2x)</string>
+
+    <string name="adb_misc_battery_sim_title">Симуляция батареи</string>
+    <string name="adb_misc_battery_sim_desc">Симуляция уровня заряда, статуса зарядки/разрядки или сброс</string>
+    <string name="adb_misc_open_url_title">Открыть URL / Deep Link</string>
+    <string name="adb_misc_open_url_desc">Открыть любую веб-страницу или диплинк в браузере устройства</string>
+    <string name="adb_misc_open_url_placeholder">https://example.com</string>
+
+    <string name="adb_misc_dialog_clear_title">Очистить данные приложения?</string>
+    <string name="adb_misc_dialog_clear_msg">Вы уверены, что хотите безвозвратно удалить все данные, сессии входа и кэш для пакета:\n\n%1$s\n\nЭто действие нельзя отменить.</string>
+    <string name="adb_misc_dialog_clear_btn">Очистить данные</string>
+    <string name="adb_misc_dialog_orientation_title">Выберите ориентацию</string>
+    <string name="adb_misc_orientation_0">0° Портретная</string>
+    <string name="adb_misc_orientation_90">90° Альбомная (вправо)</string>
+    <string name="adb_misc_orientation_180">180° Перевернутая портретная</string>
+    <string name="adb_misc_orientation_270">270° Альбомная (влево)</string>
+    <string name="adb_misc_dialog_density_title">Указать плотность экрана (DPI)</string>
+    <string name="adb_misc_density_reading">Чтение текущей плотности…</string>
+    <string name="adb_misc_density_presets">Пресеты</string>
+    <string name="adb_misc_density_custom_label">Свое значение DPI (72 - 1200)</string>
+    <string name="adb_misc_density_invalid">Пожалуйста, введите корректный DPI от 72 до 1200</string>
+    <string name="adb_misc_btn_apply">Применить</string>
+    <string name="adb_misc_btn_reset_default">Сбросить по умолчанию</string>
+    <string name="adb_misc_dialog_resolution_title">Указать разрешение экрана</string>
+    <string name="adb_misc_resolution_reading">Чтение текущего разрешения…</string>
+    <string name="adb_misc_resolution_width">Ширина</string>
+    <string name="adb_misc_resolution_height">Высота</string>
+    <string name="adb_misc_resolution_invalid">Введите корректные размеры от 240 до 10000</string>
+    <string name="adb_misc_dialog_stay_awake_title">Не выключать экран</string>
+    <string name="adb_misc_dialog_stay_awake_msg">Выберите, следует ли принудительно удерживать экран включенным при подключении по USB.</string>
+    <string name="adb_misc_btn_stay_awake_enable">Включить (Не спать)</string>
+    <string name="adb_misc_btn_stay_awake_disable">Отключить</string>
+    <string name="adb_misc_dialog_demo_mode_title">Демо-режим (Чистая строка состояния)</string>
+    <string name="adb_misc_dialog_demo_mode_msg">Установить иконки строки состояния на 100% заряда, время 12:00 и полный сигнал, либо вернуть обычный вид.</string>
+    <string name="adb_misc_btn_demo_mode_enter">Включить Демо-режим</string>
+    <string name="adb_misc_btn_demo_mode_exit">Выйти из Демо-режима</string>
+    <string name="adb_misc_dialog_anim_scale_title">Выберите скорость анимации</string>
+    <string name="adb_misc_dialog_battery_title">Симуляция батареи</string>
+    <string name="adb_misc_battery_level_label">Задать уровень (%)</string>
+    <string name="adb_misc_battery_charging_label">Задать статус зарядки</string>
+    <string name="adb_misc_battery_btn_charging">Заряжается</string>
+    <string name="adb_misc_battery_btn_discharging">Разряжается</string>
+    <string name="adb_misc_battery_btn_reset">Сбросить симуляцию</string>
+    <string name="adb_misc_dialog_open_url_title">Открыть URL на устройстве</string>
+    <string name="adb_misc_dialog_open_url_msg">Введите веб-адрес или диплинк для открытия в браузере целевого устройства:</string>
+    <string name="adb_misc_btn_open">Открыть</string>
+
+    <string name="adb_misc_status_success">Статус: Успешно</string>
+    <string name="adb_misc_status_failed">Статус: Ошибка</string>
+    <string name="adb_misc_status_dismiss">Закрыть</string>
+    <string name="adb_misc_not_connected">Устройство не подключено</string>
+    <string name="adb_misc_no_foreground_app">Не удалось определить активное приложение на экране.</string>
+    <string name="adb_misc_state_enabled">Включено (ON)</string>
+    <string name="adb_misc_state_disabled">Выключено (OFF)</string>
+    <string name="adb_misc_executed_success">Успешно выполнено.</string>
+    <string name="adb_misc_btn_reset">Сбросить</string>
+
+    <!-- Fastboot Tab Strings -->
+    <string name="fastboot_tab_actions">Действия</string>
+    <string name="fastboot_tab_shell">Shell</string>
+    <string name="fastboot_connected">Подключено</string>
+    <string name="fastboot_detected_not_connected">Обнаружено &#8212; не подключено</string>
+    <string name="fastboot_retry">Повторить</string>
+    <string name="fastboot_disconnect">Отключить</string>
+    <string name="fastboot_no_device_warning">Fastboot-устройство не подключено. Подключите устройство в режиме fastboot для выполнения этих действий.</string>
+    <string name="fastboot_tile_reboot_title">Перезагрузка</string>
+    <string name="fastboot_tile_reboot_desc">Перезагрузка в систему, bootloader, recovery или fastbootd</string>
+    <string name="fastboot_tile_flash_title">Прошить образ</string>
+    <string name="fastboot_tile_flash_desc">Выбрать файл образа и прошить его в раздел</string>
+    <string name="fastboot_tile_boot_title">Загрузить образ</string>
+    <string name="fastboot_tile_boot_desc">Загрузить образ без прошивки в раздел</string>
+    <string name="fastboot_tile_lock_title">Состояние загрузчика</string>
+    <string name="fastboot_tile_lock_desc">Заблокировать или разблокировать bootloader</string>
+    <string name="fastboot_tile_vars_title">Переменные устройства</string>
+    <string name="fastboot_tile_vars_desc">Чтение переменных загрузчика с помощью getvar</string>
+    <string name="fastboot_log_title">Лог</string>
+    <string name="fastboot_clear_log">Очистить лог</string>
+    <string name="fastboot_shell_hint">Введите команду ниже или нажмите help.</string>
+
+    <string name="fastboot_reboot_title">Перезагрузка</string>
+    <string name="fastboot_reboot_system_title">Перезагрузить систему</string>
+    <string name="fastboot_reboot_system_desc">Обычная перезагрузка в операционную систему</string>
+    <string name="fastboot_reboot_bootloader_title">Перезагрузить в Bootloader</string>
+    <string name="fastboot_reboot_bootloader_desc">Перезагрузка обратно в загрузчик</string>
+    <string name="fastboot_reboot_recovery_title">Перезагрузить в Recovery</string>
+    <string name="fastboot_reboot_recovery_desc">Перезагрузка в режим recovery</string>
+    <string name="fastboot_reboot_fastboot_title">Перезагрузить в Fastboot</string>
+    <string name="fastboot_reboot_fastboot_desc">Перезагрузка в fastbootd (пользовательский fastboot)</string>
+    <string name="fastboot_continue_boot_title">Продолжить загрузку</string>
+    <string name="fastboot_continue_boot_desc">Продолжить обычную загрузку из bootloader без перезагрузки</string>
+    <string name="fastboot_shutdown_title">Выключить</string>
+    <string name="fastboot_shutdown_desc">Выключение питания устройства</string>
+    <string name="fastboot_lock_title">Состояние блокировки Bootloader</string>
+    <string name="fastboot_lock_warning">Разблокировка или блокировка загрузчика может привести к сбросу и удалению данных пользователя.</string>
+    <string name="fastboot_unlock_bootloader_title">Разблокировать Bootloader</string>
+    <string name="fastboot_lock_bootloader_title">Заблокировать Bootloader</string>
+    <string name="fastboot_unlock_critical_title">Разблокировать критические разделы</string>
+    <string name="fastboot_lock_critical_title">Заблокировать критические разделы</string>
+    <string name="fastboot_check_unlock_title">Проверить возможность разблокировки</string>
+
+    <string name="fastboot_vars_title">Переменные устройства</string>
+    <string name="fastboot_vars_desc">Прочитать конкретную переменную загрузчика или получить сразу все.</string>
+    <string name="fastboot_var_name_label">Имя переменной (например, product, version-bootloader)</string>
+    <string name="fastboot_btn_get_all">Получить все</string>
+    <string name="fastboot_btn_get_var">Получить переменную</string>
+
+    <string name="fastboot_working_placeholder">Выполнение...</string>
+    <string name="fastboot_op_in_progress">Операция выполняется...</string>
+    <string name="fastboot_op_done">%1$s — Готово</string>
+    <string name="fastboot_op_failed">%1$s — Ошибка</string>
+    <string name="fastboot_flash_title">Прошить образ</string>
+    <string name="fastboot_flash_desc">Выберите файл образа для прошивки в раздел устройства. Имя раздела подставляется автоматически из имени файла, но его можно изменить.</string>
+    <string name="fastboot_choose_image">Выбрать образ</string>
+    <string name="fastboot_no_file_selected">Файл не выбран</string>
+    <string name="fastboot_dialog_flash_partition_title">Прошить в раздел</string>
+    <string name="fastboot_dialog_flash_partition_msg">Введите имя раздела для прошивки файла «%1$s».</string>
+    <string name="fastboot_partition_name_label">Имя раздела</string>
+    <string name="fastboot_btn_flash">Прошить</string>
+    <string name="fastboot_btn_cancel">Отмена</string>
+    <string name="fastboot_boot_title">Загрузить образ</string>
+    <string name="fastboot_boot_desc">Загружает образ во временную память устройства и запускает его один раз без прошивки в раздел.</string>
+    <string name="fastboot_choose_image_and_boot">Выбрать образ и загрузить</string>
+
+    <string name="fastboot_shell_placeholder">reboot, getvar product, flash boot, help ...</string>
+    <string name="fastboot_raw_path_warning_title">Обнаружен прямой путь</string>
+    <string name="fastboot_raw_path_warning_msg">\"%1$s\" не поддерживается &#8212; приложение не может читать произвольные пути к файлам. Используйте кнопку выбора файла.</string>
+    <string name="fastboot_proceed_anyway">Все равно продолжить</string>
+
+    <!-- Remote Control Strings -->
+    <string name="remote_control_title">Пульт ДУ</string>
+    <string name="remote_control_desc">Эмуляция физического пульта управления для Android и Android TV</string>
+    <string name="remote_mode_auto">Автоопределение</string>
+    <string name="remote_mode_tv">Android TV</string>
+    <string name="remote_mode_standard">Стандартный Android</string>
+    <string name="remote_detected_tv">Обнаружен Android TV</string>
+    <string name="remote_detected_standard">Стандартный Android</string>
+    <string name="remote_section_navigation">Навигационный джойстик</string>
+    <string name="remote_section_system">Система &amp; воспроизведение</string>
+    <string name="remote_section_tv_controls">Управление ТВ</string>
+    <string name="remote_section_text_input">Ввод текста</string>
+    <string name="remote_btn_send_text">Отправить текст</string>
+    <string name="remote_text_placeholder">Введите текст для отправки в активное поле...</string>
+    <string name="remote_tv_guide">ТВ-гид</string>
+    <string name="remote_tv_input">Источник</string>
+    <string name="remote_tv_ch_up">Канал +</string>
+    <string name="remote_tv_ch_down">Канал -</string>
+    <string name="remote_tv_search">Поиск</string>
+
+    <!-- Touchpad & Virtual Mouse/Keyboard Strings -->
+    <string name="touchpad_title">Тачпад &amp; мышь</string>
+    <string name="touchpad_desc">Управление курсором устройства с помощью виртуального тачпада и клавиатуры</string>
+    <string name="tab_touchpad">Тачпад</string>
+    <string name="tab_keyboard">Клавиатура ПК</string>
+    <string name="touchpad_connecting">Инициализация виртуальных устройств ввода...</string>
+    <string name="touchpad_connected">Виртуальные мышь &amp; клавиатура активны</string>
+    <string name="touchpad_surface_hint">Смахните для перемещения &#8226; Тап — ЛКМ &#8226; Удержание — ПКМ &#8226; Скролл двумя пальцами</string>
+    <string name="touchpad_btn_left">Левая</string>
+    <string name="touchpad_btn_right">Правая</string>
+    <string name="touchpad_btn_middle">Средняя</string>
+    <string name="touchpad_sensitivity">Чувствительность указателя</string>
+    <string name="touchpad_keyboard_section">Физическая клавиатура</string>
+    <string name="touchpad_modifiers">Модификаторы</string>
+    <string name="touchpad_functions">Функциональные клавиши</string>
+    <string name="touchpad_shortcuts">Сочетания клавиш</string>
+    <string name="touchpad_navigation">Навигация</string>
+    <string name="touchpad_numpad">Цифровой блок</string>
+    <string name="touchpad_soft_keyboard">Экранная клавиатура</string>
+    <string name="touchpad_toggle_ime">Клавиатура</string>
+    <string name="touchpad_type_here">Печатайте здесь для мгновенной передачи нажатий...</string>
+    <string name="touchpad_realtime_typing_hint">Печать в реальном времени включена. Символы и Backspace передаются мгновенно.</string>
+    <string name="touchpad_error_title">Ошибка виртуального ввода</string>
+    <string name="touchpad_error_desc">Не удалось инициализировать виртуальную мышь/клавиатуру (/dev/uhid). Убедитесь, что в «Настройках разработчика» включена «Отладка по USB (Настройки безопасности)», если это необходимо.</string>
+
+
+    <!-- Daemon Control & Connection Strings -->
+    <string name="daemon_dialog_title">Ответ демона</string>
+    <string name="btn_ok">ОК</string>
+    <string name="btn_restart">Перезапустить</string>
+    <string name="cd_daemon_options">Параметры демона</string>
+    <string name="action_switch_tcpip">Переключить на TCP/IP</string>
+    <string name="action_root_daemon">Запустить демон от Root</string>
+    <string name="action_unroot_daemon">Сбросить Root у демона</string>
+    <string name="dialog_tcpip_title">Перезапустить adbd в режиме TCP/IP</string>
+    <string name="dialog_tcpip_msg">Введите порт для беспроводного ADB:</string>
+    <string name="cd_pair_qr">Сопряжение по QR-коду</string>
+    <string name="cd_close">Закрыть</string>
+
+    <!-- Discovery Sheet Strings -->
+    <string name="discovery_title">Поиск устройств</string>
+    <string name="discovery_searching">Поиск устройств с включенной отладкой по Wi-Fi…</string>
+    <string name="discovery_no_devices_found">Устройства пока не найдены</string>
+    <string name="discovery_network_hint">Убедитесь, что отладка по Wi-Fi включена и оба устройства находятся в одной сети</string>
+    <string name="discovery_btn_manual_entry">Ввести данные подключения вручную</string>
+    <string name="discovery_conn_type">Тип подключения</string>
+    <string name="discovery_plain_tcp">Обычный TCP (старый метод, порт 5555)</string>
+    <string name="discovery_wireless_tls">Отладка по Wi-Fi (TLS)</string>
+    <string name="discovery_connect_tcp">Подключиться по TCP</string>
+    <string name="discovery_wireless_debugging">Отладка по Wi-Fi</string>
+    <string name="discovery_pair_first_hint">Если это устройство еще не связывалось с приложением, выполните сопряжение.</string>
+    <string name="discovery_pair_with_code">Сопряжение по коду</string>
+    <string name="discovery_connect_already_paired">Подключиться (уже сопряжено)</string>
+    <string name="discovery_connect_tls">Подключиться (TLS)</string>
+    <string name="discovery_paired_success_connecting">Сопряжение успешно! Подключение к найденной точке отладки по Wi-Fi…</string>
+    <string name="discovery_pair_instead">Сопрячь вместо этого</string>
+    <string name="discovery_pair_device">Сопряжение устройства</string>
+    <string name="discovery_pairing_port">Порт сопряжения</string>
+    <string name="discovery_pairing_code">Код сопряжения</string>
+    <string name="discovery_btn_pair">Сопрячь</string>
+
+    <!-- QR Code Pairing Strings -->
+    <string name="qr_starting_server">Запуск сервера сопряжения…</string>
+    <string name="cd_qr_code">QR-код сопряжения</string>
+    <string name="qr_instruction">На вашем устройстве перейдите в Настройки &gt; Для разработчиков &gt; Отладка по Wi-Fi &gt; Подключить устройство с помощью QR-кода и отсканируйте этот код.</string>
+    <string name="qr_wifi_hint">Оба устройства должны быть подключены к одной сети Wi-Fi.</string>
+    <string name="qr_paired_success">Сопряжение прошло успешно</string>
+    <string name="qr_connecting">Подключение…</string>
+    <string name="qr_waiting_discoverable">Ожидание обнаружения устройства…</string>
+    <string name="qr_pairing_failed">Ошибка сопряжения</string>
+
+    <!-- About Section Strings -->
+    <string name="settings_about_title">О приложении</string>
+    <string name="settings_about_desc">Информация о приложении, социальные сети и репозиторий</string>
+    <string name="settings_about_version">Версия %1$s</string>
+    <string name="settings_about_documentation">Документация</string>
+    <string name="settings_about_source_code">Исходный код</string>
+    <string name="cd_github">GitHub</string>
+    <string name="cd_telegram">Telegram</string>
+
+    <!-- Additional localized UI and accessibility strings -->
+    <string name="cd_run">Выполнить</string>
+    <string name="cd_send">Отправить</string>
+    <string name="cd_scroll_to_bottom">Прокрутить вниз</string>
+    <string name="cd_restart_shell">Перезапустить shell</string>
+    <string name="cd_select_mode">Выбрать режим</string>
+    <string name="cd_open_touchpad">Открыть тачпад</string>
+    <string name="cd_power">Питание</string>
+    <string name="cd_mute">Выключить звук</string>
+    <string name="cd_volume_down">Уменьшить громкость</string>
+    <string name="cd_volume_up">Увеличить громкость</string>
+    <string name="cd_nav_menu">Меню</string>
+    <string name="cd_nav_up">Вверх</string>
+    <string name="cd_nav_down">Вниз</string>
+    <string name="cd_nav_left">Влево</string>
+    <string name="cd_nav_right">Вправо</string>
+    <string name="cd_previous">Предыдущий трек</string>
+    <string name="cd_rewind">Перемотка назад</string>
+    <string name="cd_play_pause">Воспроизведение / Пауза</string>
+    <string name="cd_fast_forward">Перемотка вперед</string>
+    <string name="cd_next">Следующий трек</string>
+    <string name="cd_keyboard">Клавиатура</string>
+    <string name="cd_send_text">Отправить текст</string>
+    <string name="cd_toggle_numpad">Переключить цифровой блок</string>
+    <string name="cd_sensitivity_settings">Настройки чувствительности</string>
+    <string name="cd_hide_keyboard">Скрыть клавиатуру</string>
+    <string name="cd_symlink">Символьная ссылка</string>
+    <string name="cd_actions">Действия</string>
+    <string name="cd_copy_logs_to_clipboard">Скопировать логи в буфер обмена</string>
+    <string name="cd_clear_logs">Очистить логи</string>
+    <string name="cd_export_logs_zip">Экспортировать логи в ZIP</string>
+
+    <string name="status_disconnected">Отключено</string>
+    <string name="msg_export_failed">Ошибка экспорта: %1$s</string>
+    <string name="err_no_adb_key_file">Файл ключа ADB не найден</string>
+    <string name="err_save_file_failed">Не удалось сохранить файл</string>
+
+    <string name="camera_selector">Выбор камеры</string>
+    <string name="camera_label_format">Камера %1$s (%2$s)</string>
+    <string name="camera_resolution">Разрешение камеры</string>
+    <string name="camera_frame_rate">Частота кадров камеры</string>
+    <string name="scrcpy_logs_client">Клиент</string>
+    <string name="scrcpy_logs_server">Сервер</string>
+    <string name="scrcpy_logs_exported">Логи экспортированы</string>
+    <string name="scrcpy_logs_export_failed">Сбой экспорта</string>
+
+    <string name="pkg_manager_dump_failed">Не удалось загрузить список пакетов: %1$s</string>
+    <string name="pkg_manager_name_copied">Имя пакета скопировано</string>
+    <string name="pkg_manager_copy_package">Скопировать пакет</string>
+    <string name="pkg_manager_app_settings">Настройки приложения</string>
+    <string name="pkg_info_package_name">Имя пакета</string>
+    <string name="pkg_info_version_name">Версия (Name)</string>
+    <string name="pkg_info_version_code">Код версии (Code)</string>
+    <string name="pkg_info_target_sdk">Target SDK</string>
+    <string name="pkg_info_min_sdk">Minimum SDK</string>
+    <string name="pkg_info_uid">UID</string>
+    <string name="pkg_info_installer">Источник установки</string>
+    <string name="pkg_info_source_dir">Каталог источниκа</string>
+    <string name="pkg_info_data_dir">Каталог данных</string>
+    <string name="pkg_info_first_installed">Дата первой установки</string>
+    <string name="pkg_info_last_updated">Дата последнего обновления</string>
+    <string name="pkg_info_split_apks">Сплит-APK (%1$d):</string>
+    <string name="pkg_info_not_available">Н/Д</string>
+
+    <string name="remote_detecting_device">Определение типа устройства…</string>
+    <string name="remote_mode_tv_detected">Android TV (Обнаружен)</string>
+    <string name="remote_mode_standard_detected">Стандартный Android (Обнаружен)</string>
+    <string name="remote_media_controls">Управление медиа</string>
+    <string name="remote_numeric_keypad">Цифровая клавиатура</string>
+    <string name="touchpad_type">Тип</string>
+    <string name="adb_ip_placeholder">192.168.1.100 или 192.168.1.100:5555</string>
+    <string name="cd_choose_save_location">Выбрать место сохранения</string>
+    <string name="cd_attach_image">Прикрепить образ</string>
+    <string name="touchpad_error_details">Детали: %1$s</string>
+    <string name="shell_error_message">Ошибка shell: %1$s</string>
+    <string name="shell_live_hint">Не используйте префикс &quot;adb shell&quot; — это прямой интерактивный shell устройства.</string>
+    <string name="pkg_badge_system">Системное</string>
+    <string name="pkg_badge_disabled">Отключено</string>
+    <string name="pkg_badge_splits">Сплиты (%1$d)</string>
+
+    <string name="btn_refresh">Обновить</string>
+    <string name="btn_retry">Повторить</string>
+
+    <!-- Process Manager Strings -->
+    <string name="proc_manager_title">Диспетчер процессов</string>
+    <string name="proc_manager_subtitle">Мониторинг ЦП/ОЗУ в реальном времени, инспекция и управление процессами</string>
+    <string name="proc_manager_ram_usage">Оперативная память</string>
+    <string name="proc_manager_ram_used_format">%1$s / %2$s (%3$d%% использовано)</string>
+    <string name="proc_manager_cpu_usage">Загрузка ЦП</string>
+    <string name="proc_manager_cpu_format">%1$s · %2$d ядер</string>
+    <string name="proc_manager_processes_count">%1$d процессов (%2$d пользовательских, %3$d системных)</string>
+    <string name="proc_manager_search_placeholder">Поиск процесса, приложения или PID…</string>
+    <string name="proc_filter_all">Все (%1$d)</string>
+    <string name="proc_filter_apps">Приложения (%1$d)</string>
+    <string name="proc_filter_system">Системные (%1$d)</string>
+    <string name="proc_sort_ram">ОЗУ (по убыванию)</string>
+    <string name="proc_sort_cpu">ЦП (по убыванию)</string>
+    <string name="proc_sort_pid">PID (по возрастанию)</string>
+    <string name="proc_sort_name">Имя (А - Я)</string>
+    <string name="proc_action_force_stop">Остановить принудительно</string>
+    <string name="proc_action_kill_pid">Завершить PID</string>
+    <string name="proc_btn_force_stop">Остановить</string>
+    <string name="proc_btn_kill">Завершить</string>
+    <string name="proc_dialog_force_stop_title">Остановить %1$s?</string>
+    <string name="proc_dialog_force_stop_msg">Принудительная остановка этого приложения немедленно завершит все его активные процессы и фоновые службы.</string>
+    <string name="proc_dialog_kill_pid_title">Завершить процесс %1$s (PID %2$d)?</string>
+    <string name="proc_dialog_kill_pid_msg">Отправка сигнала SIGKILL (signal 9) немедленно завершит этот процесс. Несохраненные данные могут быть утеряны.</string>
+    <string name="proc_toast_force_stop_success">Принудительно остановлено %1$s</string>
+    <string name="proc_toast_force_stop_failed">Не удалось остановить %1$s: %2$s</string>
+    <string name="proc_toast_kill_success">Процесс PID %1$d завершен</string>
+    <string name="proc_toast_kill_failed">Не удалось завершить PID %1$d: %2$s</string>
+    <string name="proc_auto_refresh_on">Автообновление (ВКЛ)</string>
+    <string name="proc_auto_refresh_off">Автообновление (ВЫКЛ)</string>
+    <string name="proc_empty_list">Совпадающих процессов не найдено.</string>
+    <string name="proc_loading">Подключение к DioxAgent &amp; загрузка процессов…</string>
+    <string name="proc_badge_threads">потоков: %1$d</string>
+    <string name="proc_badge_pid">PID: %1$d</string>
+    <string name="proc_badge_uid">UID: %1$d</string>
+    <string name="proc_badge_cpu">ЦП: %1$s</string>
+
+    <!-- Scrcpy Recording -->
+    <string name="scrcpy_tab_recordings">Записи</string>
+    <string name="scrcpy_recording_started">Запись начата</string>
+    <string name="scrcpy_recording_stopped">Запись сохранена</string>
+    <string name="scrcpy_recording_empty">Записей пока нет</string>
+    <string name="scrcpy_recording_empty_subtitle">Записи появятся здесь после того, как вы запишете сессию трансляции</string>
+    <string name="scrcpy_recording_delete_confirm">Удалить эту запись?</string>
+    <string name="scrcpy_recording_delete_confirm_msg">Это действие нельзя отменить.</string>
+    <string name="scrcpy_recording_exported">Запись экспортирована</string>
+    <string name="scrcpy_recording_export_failed">Сбой экспорта</string>
+    <string name="scrcpy_recording_deleted">Запись удалена</string>
+    <string name="scrcpy_recording_codec_warning">Запись не поддерживается с этим кодеком</string>
+    <string name="scrcpy_recording_elapsed">ЗАПИСЬ %1$s</string>
+    <string name="btn_delete">Удалить</string>
+    <string name="btn_export">Экспорт</string>
+    <string name="settings_scrcpy_auto_record_title">Автозапись сессий</string>
+    <string name="settings_scrcpy_auto_record_subtitle">Автоматически начинать запись при старте трансляции</string>
+
+    <!-- Miscellaneous Settings -->
+    <string name="settings_misc_title">Разное</string>
+    <string name="settings_misc_desc">Фоновое поведение и общие параметры</string>
+    <string name="settings_keep_alive_title">Фоновый режим (Keep Alive)</string>
+    <string name="settings_keep_alive_desc">Удерживать службу активной в фоновом режиме для сохранения подключений при свертывании приложения</string>
+    <string name="notification_channel_keep_alive_name">Фоновая служба Keep Alive</string>
+    <string name="notification_channel_keep_alive_desc">Уведомление, отображаемое во время работы Dioxamine в фоновом режиме</string>
+    <string name="notification_keep_alive_title">Dioxamine работает в фоне</string>
+    <string name="notification_keep_alive_text">Приложение Dioxamine активно в фоновом режиме</string>
+    <string name="notification_keep_alive_no_devices">Устройства не подключены &#8226; Активно в фоне</string>
+    <plurals name="notification_adb_devices">
+        <item quantity="one">Подключено %1$d ADB-устройство</item>
+        <item quantity="few">Подключено %1$d ADB-устройства</item>
+        <item quantity="many">Подключено %1$d ADB-устройств</item>
+        <item quantity="other">Подключено %1$d ADB-устройства</item>
+    </plurals>
+    <plurals name="notification_fastboot_devices">
+        <item quantity="one">Подключено %1$d Fastboot-устройство</item>
+        <item quantity="few">Подключено %1$d Fastboot-устройства</item>
+        <item quantity="many">Подключено %1$d Fastboot-устройств</item>
+        <item quantity="other">Подключено %1$d Fastboot-устройства</item>
+    </plurals>
+    <string name="notification_keep_alive_stop_action">Остановить</string>
+    <string name="settings_battery_opt_denied_warning">Оптимизация батареи не отключена. Фоновые соединения могут прерываться в режиме Doze.</string>
+    <string name="settings_notif_perm_denied_warning">Разрешение на отправку уведомлений отклонено. Фоновый статус не будет отображаться.</string>
+</resources>
