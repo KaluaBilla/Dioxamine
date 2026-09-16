@@ -124,9 +124,9 @@ Contributions are welcome! If you would like to contribute code, report bugs, or
 We want Dioxamine to be accessible in as many languages as possible.
 
 - [x] English (`en`) - default
-- [x] Simplified Chinese (`zh-CN`) - @riyousa
-- [x] Hindi (`hi`) - @rhythmcache
-- [x] Russian (`ru`) - @LorianL98
+- [x] Simplified Chinese (`zh-CN`) - [@riyousa](https://github.com/riyousa)
+- [x] Hindi (`hi`) - [@rhythmcache](https://github.com/rhythmcache)
+- [x] Russian (`ru`) - [@LorianL98](https://github.com/LorianL98)
 
 ![Translation Coverage](badges/coverage.svg)
 
@@ -169,7 +169,7 @@ git checkout -b translate-<language>
 #### 4. Add Checkmark in README & Open PR
 1. Under the **Translations** section above in `README.md`, add your language checkmark:
    ```markdown
-   - [x] Spanish (`es`) - @your-github-username
+   - [x] Spanish (`es`) - [@your-github-username](https://github.com/your-github-username)
    ```
 2. Commit your changes, push to your fork, and submit a **Pull Request**:
    ```bash
