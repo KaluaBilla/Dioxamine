@@ -1,0 +1,75 @@
+name: LLM PR Review
+
+on:
+  pull_request:
+    branches: [ main ]
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  llm-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get PR diff
+        run: |
+          git diff origin/${{ github.base_ref }}...HEAD > pr.diff
+          head -c 60000 pr.diff > pr_trimmed.diff
+
+      - name: Review with Mistral
+        env:
+          MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
+        run: |
+          DIFF_CONTENT=$(cat pr_trimmed.diff | jq -Rs .)
+
+          PAYLOAD=$(jq -n \
+            --argjson diff "$DIFF_CONTENT" \
+            '{
+              model: "mistral-medium-latest",
+              messages: [
+                {
+                  role: "system",
+                  content: "You are a strict code reviewer for an Android app. Review the diff for bugs, security issues, and obvious mistakes. Respond with a short bullet list of findings, then end with exactly one final line: VERDICT: APPROVE or VERDICT: REQUEST_CHANGES"
+                },
+                {
+                  role: "user",
+                  content: ("Review this PR diff:\n\n" + $diff)
+                }
+              ],
+              temperature: 0.2
+            }')
+
+          RESPONSE=$(curl -s https://api.mistral.ai/v1/chat/completions \
+            -H "Authorization: Bearer $MISTRAL_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD")
+
+          echo "$RESPONSE" | jq -r '.choices[0].message.content' > review.md
+          cat review.md
+
+      - name: Post review comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('review.md', 'utf8');
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `### 🤖 LLM PR Review\n\n${body}`
+            });
+
+      - name: Enforce verdict
+        run: |
+          if grep -q "VERDICT: REQUEST_CHANGES" review.md; then
+            echo "::error::LLM review requested changes."
+            exit 1
+          fi
+          echo "LLM review approved."
