@@ -406,6 +406,27 @@
     <string name="msg_key_exported">ADB authentication key exported successfully</string>
     <string name="pkg_manager_empty">No packages found</string>
 
+    <!-- ADB Logcat Strings -->
+    <string name="adb_logcat_tile_title">Logcat</string>
+    <string name="adb_logcat_tile_desc">Stream system logs in real-time with filtering, search, and regex</string>
+    <string name="logcat_search_hint">Search logs or regex…</string>
+    <string name="logcat_filter_tag_hint">Tag</string>
+    <string name="logcat_filter_pid_hint">PID</string>
+    <string name="logcat_btn_pause">Pause stream</string>
+    <string name="logcat_btn_resume">Resume stream</string>
+    <string name="logcat_btn_clear">Clear logs</string>
+    <string name="logcat_btn_copy">Copy logs</string>
+    <string name="logcat_btn_autoscroll">Auto-scroll</string>
+    <string name="logcat_status_streaming">Streaming</string>
+    <string name="logcat_status_paused">Paused</string>
+    <string name="logcat_logs_copied">Copied %1$d logs to clipboard</string>
+    <string name="logcat_empty_waiting">Waiting for device logs…</string>
+    <string name="logcat_empty_filtered">No log lines match current filters</string>
+    <string name="logcat_device_buffer_cleared">Device logcat buffer cleared</string>
+    <string name="logcat_clear_dialog_msg">Clear local on-screen log buffer, or also flush the device\'s internal logcat buffer?</string>
+    <string name="logcat_clear_screen">Clear Screen</string>
+    <string name="logcat_clear_device_buffer">Clear Device Buffer</string>
+
     <!-- ADB Reboot Options Strings -->
     <string name="adb_reboot_tile_title">Reboot Options</string>
     <string name="adb_reboot_tile_desc">Reboot to system, bootloader, recovery, fastboot, or power off</string>

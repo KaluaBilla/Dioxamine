@@ -405,6 +405,27 @@
     <string name="msg_key_exported">ADB 身份验证密钥已成功导出</string>
     <string name="pkg_manager_empty">未找到应用</string>
 
+    <!-- ADB Logcat Strings -->
+    <string name="adb_logcat_tile_title">Logcat</string>
+    <string name="adb_logcat_tile_desc">实时流式传输系统日志，支持过滤、搜索和正则表达式</string>
+    <string name="logcat_search_hint">搜索日志或正则表达式…</string>
+    <string name="logcat_filter_tag_hint">标签</string>
+    <string name="logcat_filter_pid_hint">PID</string>
+    <string name="logcat_btn_pause">暂停流</string>
+    <string name="logcat_btn_resume">继续流</string>
+    <string name="logcat_btn_clear">清空日志</string>
+    <string name="logcat_btn_copy">复制日志</string>
+    <string name="logcat_btn_autoscroll">自动滚动</string>
+    <string name="logcat_status_streaming">流式传输中</string>
+    <string name="logcat_status_paused">已暂停</string>
+    <string name="logcat_logs_copied">已复制 %1$d 条日志至剪贴板</string>
+    <string name="logcat_empty_waiting">等待设备日志中…</string>
+    <string name="logcat_empty_filtered">没有匹配当前过滤器的日志</string>
+    <string name="logcat_device_buffer_cleared">设备日志缓冲区已清空</string>
+    <string name="logcat_clear_dialog_msg">仅清空屏幕上的本地日志，还是同时清空设备内部的 Logcat 缓冲区？</string>
+    <string name="logcat_clear_screen">清空屏幕</string>
+    <string name="logcat_clear_device_buffer">清空设备缓冲区</string>
+
     <!-- ADB 重启选项 -->
     <string name="adb_reboot_tile_title">重启选项</string>
     <string name="adb_reboot_tile_desc">重启至系统、引导加载程序、恢复模式、Fastboot，或关机</string>
