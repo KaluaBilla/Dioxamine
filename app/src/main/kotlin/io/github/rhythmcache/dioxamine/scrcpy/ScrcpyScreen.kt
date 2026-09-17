@@ -438,23 +438,37 @@ fun ScrcpyScreen(
 
                         Spacer(Modifier.height(8.dp))
 
+                        val disabledTabColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+
                         PrimaryTabRow(selectedTabIndex = selectedTab.ordinal) {
                             Tab(
                                 selected = selectedTab == ScrcpyTab.CONFIGURATOR,
                                 onClick = { if (isDeviceConnected) selectedTab = ScrcpyTab.CONFIGURATOR },
                                 enabled = isDeviceConnected,
-                                text = { Text(stringResource(R.string.scrcpy_tab_configurator)) }
+                                unselectedContentColor = if (isDeviceConnected) MaterialTheme.colorScheme.onSurfaceVariant else disabledTabColor,
+                                text = {
+                                    Text(
+                                        text = stringResource(R.string.scrcpy_tab_configurator),
+                                        color = if (isDeviceConnected) Color.Unspecified else disabledTabColor,
+                                    )
+                                },
                             )
                             Tab(
                                 selected = selectedTab == ScrcpyTab.LOGS,
                                 onClick = { if (isDeviceConnected) selectedTab = ScrcpyTab.LOGS },
                                 enabled = isDeviceConnected,
-                                text = { Text(stringResource(R.string.scrcpy_tab_logs)) }
+                                unselectedContentColor = if (isDeviceConnected) MaterialTheme.colorScheme.onSurfaceVariant else disabledTabColor,
+                                text = {
+                                    Text(
+                                        text = stringResource(R.string.scrcpy_tab_logs),
+                                        color = if (isDeviceConnected) Color.Unspecified else disabledTabColor,
+                                    )
+                                },
                             )
                             Tab(
                                 selected = selectedTab == ScrcpyTab.RECORDINGS,
                                 onClick = { selectedTab = ScrcpyTab.RECORDINGS },
-                                text = { Text(stringResource(R.string.scrcpy_tab_recordings)) }
+                                text = { Text(stringResource(R.string.scrcpy_tab_recordings)) },
                             )
                         }
 
