@@ -1,18 +1,16 @@
 package io.github.rhythmcache.dioxamine.adb.discovery
 
-import android.os.Build
 import io.github.rhythmcache.dioxamine.core.AppLogger
 import java.lang.reflect.Method
 import java.net.InetSocketAddress
 import java.net.Socket
 
 data class LocalAdbTarget(
-    val port: Int,
-    val isTls: Boolean
+    val port: Int
 )
 
 /**
- * Detects whether the local Android device has an active ADB daemon running on localhost.
+ * Detects whether the local Android device has an active ADB daemon running on localhost via TCP.
  */
 object LocalAdbDetector {
     private const val TAG = "LocalAdbDetector"
@@ -32,29 +30,20 @@ object LocalAdbDetector {
         val tcpPort = getSystemProperty("service.adb.tcp.port")?.toIntOrNull()?.takeIf { it in 1..65535 }
         if (tcpPort != null && isPortOpen("127.0.0.1", tcpPort, 120)) {
             AppLogger.i(TAG, "Detected local ADB on port $tcpPort via SystemProperties")
-            return LocalAdbTarget(tcpPort, isTls = false).also { lastKnownTarget = it }
-        }
-
-        // Try reflection on service.adb.tls.port (Android 11+ / API 30+ only)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            val tlsPort = getSystemProperty("service.adb.tls.port")?.toIntOrNull()?.takeIf { it in 1..65535 }
-            if (tlsPort != null && isPortOpen("127.0.0.1", tlsPort, 120)) {
-                AppLogger.i(TAG, "Detected local ADB on port $tlsPort via SystemProperties (TLS)")
-                return LocalAdbTarget(tlsPort, isTls = true).also { lastKnownTarget = it }
-            }
+            return LocalAdbTarget(tcpPort).also { lastKnownTarget = it }
         }
 
         // Fast socket probe on standard port 5555 (skip if checked above)
         if (tcpPort != 5555 && isPortOpen("127.0.0.1", 5555, 120)) {
             AppLogger.i(TAG, "Detected local ADB on port 5555 via socket probe")
-            return LocalAdbTarget(5555, isTls = false).also { lastKnownTarget = it }
+            return LocalAdbTarget(5555).also { lastKnownTarget = it }
         }
 
         // Probe standard AOSP odd ports 5557..5585
         for (port in 5557..5585 step 2) {
             if (isPortOpen("127.0.0.1", port, 60)) {
                 AppLogger.i(TAG, "Detected local ADB on port $port via socket probe")
-                return LocalAdbTarget(port, isTls = false).also { lastKnownTarget = it }
+                return LocalAdbTarget(port).also { lastKnownTarget = it }
             }
         }
 

@@ -97,7 +97,7 @@ fun DioxamineApp(keyDir: File) {
     val vm: AdbViewModel = viewModel(factory = object : androidx.lifecycle.ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return AdbViewModel(keyDir) as T
+            return AdbViewModel(keyDir, context.applicationContext) as T
         }
     })
     val fastbootVm: FastbootViewModel = viewModel()

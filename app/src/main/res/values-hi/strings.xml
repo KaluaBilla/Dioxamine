@@ -225,7 +225,13 @@
 
     <!-- Settings Tab -->
     <string name="settings_title">सेटिंग्स</string>
-    <string name="settings_key_title">ADB प्रमाणीकरण कुंजी</string>
+    <string name="settings_key_title">ADB</string>
+    <string name="settings_adb_subtitle">कुंजी प्रबंधन और स्थानीय कनेक्शन सेटिंग्स</string>
+    <string name="settings_adb_detect_localhost_title">लोकलहोस्ट का पता लगाएं</string>
+    <string name="settings_adb_detect_localhost_subtitle">सक्रिय स्थानीय ADB सर्वर का पता लगाएं और कनेक्ट करने के लिए पूछें</string>
+    <string name="settings_adb_autoconnect_localhost_title">लोकलहोस्ट से ऑटो-कनेक्ट करें</string>
+    <string name="settings_adb_autoconnect_localhost_subtitle">बिना पूछे स्थानीय ADB मिलने पर स्वचालित रूप से कनेक्ट करें</string>
+    <string name="settings_adb_auth_section">प्रमाणीकरण कुंजी</string>
     <string name="settings_key_desc">डिवाइसों के साथ इस ऐप को प्रमाणित करने के लिए उपयोग की जाने वाली RSA कुंजी जोड़ी प्रबंधित करें।</string>
     <string name="settings_fingerprint_label">फ़िंगरप्रिंट:</string>
     <string name="settings_no_key">अभी तक कोई कुंजी उत्पन्न नहीं हुई।</string>
