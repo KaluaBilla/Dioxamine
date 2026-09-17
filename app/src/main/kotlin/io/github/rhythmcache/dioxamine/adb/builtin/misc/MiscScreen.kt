@@ -12,7 +12,6 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -564,13 +563,17 @@ fun MiscScreen(
                             "Cleared all data for package: $targetPkg\n$it"
                         }
                     },
+                    shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                 ) {
                     Text(stringResource(R.string.adb_misc_dialog_clear_btn))
                 }
             },
             dismissButton = {
-                TextButton(onClick = { pendingClearPackage = null }) {
+                TextButton(
+                    onClick = { pendingClearPackage = null },
+                    shape = RoundedCornerShape(12.dp)
+                ) {
                     Text(stringResource(R.string.btn_cancel))
                 }
             }
@@ -601,7 +604,8 @@ fun MiscScreen(
                                         "Screen orientation set to: $label (Rotation: $value)"
                                     }
                                 },
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp)
                             ) {
                                 Text(label)
                             }
@@ -610,7 +614,10 @@ fun MiscScreen(
                 },
                 confirmButton = {},
                 dismissButton = {
-                    TextButton(onClick = { activeDialog = MiscDialogType.NONE }) {
+                    TextButton(
+                        onClick = { activeDialog = MiscDialogType.NONE },
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
                         Text(stringResource(R.string.btn_cancel))
                     }
                 }
@@ -643,7 +650,8 @@ fun MiscScreen(
                             listOf(360, 400, 420, 480, 560, 600).forEach { dpi ->
                                 SuggestionChip(
                                     onClick = { inputDensity = dpi.toString() },
-                                    label = { Text("$dpi") }
+                                    label = { Text("$dpi") },
+                                    shape = RoundedCornerShape(8.dp)
                                 )
                             }
                         }
@@ -654,6 +662,7 @@ fun MiscScreen(
                             placeholder = { Text(stringResource(R.string.adb_misc_density_placeholder)) },
                             label = { Text(stringResource(R.string.adb_misc_density_custom_label)) },
                             modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
                             singleLine = true
                         )
                     }
@@ -668,7 +677,8 @@ fun MiscScreen(
                                 activeDialog = MiscDialogType.NONE
                                 executeAction("density", "wm density $dpi && wm density")
                             }
-                        }
+                        },
+                        shape = RoundedCornerShape(12.dp)
                     ) {
                         Text(stringResource(R.string.adb_misc_btn_apply))
                     }
@@ -681,12 +691,16 @@ fun MiscScreen(
                                 executeAction("density", "wm density reset && wm density") {
                                     "Reset to physical display density.\n$it"
                                 }
-                            }
+                            },
+                            shape = RoundedCornerShape(12.dp)
                         ) {
                             Text(stringResource(R.string.adb_misc_btn_reset_default))
                         }
                         Spacer(Modifier.width(8.dp))
-                        TextButton(onClick = { activeDialog = MiscDialogType.NONE }) {
+                        TextButton(
+                            onClick = { activeDialog = MiscDialogType.NONE },
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
                             Text(stringResource(R.string.btn_cancel))
                         }
                     }
@@ -720,6 +734,7 @@ fun MiscScreen(
                                 label = { Text(stringResource(R.string.adb_misc_resolution_width)) },
                                 placeholder = { Text("1080") },
                                 modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(12.dp),
                                 singleLine = true
                             )
                             OutlinedTextField(
@@ -728,6 +743,7 @@ fun MiscScreen(
                                 label = { Text(stringResource(R.string.adb_misc_resolution_height)) },
                                 placeholder = { Text("2400") },
                                 modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(12.dp),
                                 singleLine = true
                             )
                         }
@@ -744,7 +760,8 @@ fun MiscScreen(
                                 activeDialog = MiscDialogType.NONE
                                 executeAction("resolution", "wm size ${width}x${height} && wm size")
                             }
-                        }
+                        },
+                        shape = RoundedCornerShape(12.dp)
                     ) {
                         Text(stringResource(R.string.adb_misc_btn_apply))
                     }
@@ -757,12 +774,16 @@ fun MiscScreen(
                                 executeAction("resolution", "wm size reset && wm size") {
                                     "Reset to physical display size.\n$it"
                                 }
-                            }
+                            },
+                            shape = RoundedCornerShape(12.dp)
                         ) {
                             Text(stringResource(R.string.adb_misc_btn_reset_default))
                         }
                         Spacer(Modifier.width(8.dp))
-                        TextButton(onClick = { activeDialog = MiscDialogType.NONE }) {
+                        TextButton(
+                            onClick = { activeDialog = MiscDialogType.NONE },
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
                             Text(stringResource(R.string.btn_cancel))
                         }
                     }
@@ -782,7 +803,8 @@ fun MiscScreen(
                             executeAction("stay_awake", "svc power stayon true || settings put global stay_on_while_plugged_in 7") {
                                 "Screen will stay awake while connected to USB."
                             }
-                        }
+                        },
+                        shape = RoundedCornerShape(12.dp)
                     ) {
                         Text(stringResource(R.string.adb_misc_btn_stay_awake_enable))
                     }
@@ -794,7 +816,8 @@ fun MiscScreen(
                             executeAction("stay_awake", "svc power stayon false || settings put global stay_on_while_plugged_in 0") {
                                 "Normal screen timeout restored."
                             }
-                        }
+                        },
+                        shape = RoundedCornerShape(12.dp)
                     ) {
                         Text(stringResource(R.string.adb_misc_btn_stay_awake_disable))
                     }
@@ -817,7 +840,8 @@ fun MiscScreen(
                             ) {
                                 "Demo Mode active: 100% battery, 12:00 clock, notifications hidden."
                             }
-                        }
+                        },
+                        shape = RoundedCornerShape(12.dp)
                     ) {
                         Text(stringResource(R.string.adb_misc_btn_demo_mode_enter))
                     }
@@ -829,7 +853,8 @@ fun MiscScreen(
                             executeAction("demo_mode", "am broadcast -a com.android.systemui.demo -e command exit") {
                                 "Exited Demo Mode. Normal status bar restored."
                             }
-                        }
+                        },
+                        shape = RoundedCornerShape(12.dp)
                     ) {
                         Text(stringResource(R.string.adb_misc_btn_demo_mode_exit))
                     }
@@ -860,7 +885,8 @@ fun MiscScreen(
                                         "Window, transition, and animator scales set to $label ($scale)"
                                     }
                                 },
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp)
                             ) {
                                 Text(label)
                             }
@@ -869,7 +895,10 @@ fun MiscScreen(
                 },
                 confirmButton = {},
                 dismissButton = {
-                    TextButton(onClick = { activeDialog = MiscDialogType.NONE }) {
+                    TextButton(
+                        onClick = { activeDialog = MiscDialogType.NONE },
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
                         Text(stringResource(R.string.btn_cancel))
                     }
                 }
@@ -894,6 +923,7 @@ fun MiscScreen(
                                         executeAction("battery_sim", "dumpsys battery set level $lvl && dumpsys battery")
                                     },
                                     modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(8.dp),
                                     contentPadding = PaddingValues(2.dp)
                                 ) {
                                     Text("$lvl%")
@@ -912,7 +942,8 @@ fun MiscScreen(
                                     activeDialog = MiscDialogType.NONE
                                     executeAction("battery_sim", "dumpsys battery set status 2 && dumpsys battery set ac 1 && dumpsys battery")
                                 },
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(12.dp)
                             ) {
                                 Text(stringResource(R.string.adb_misc_battery_btn_charging))
                             }
@@ -921,7 +952,8 @@ fun MiscScreen(
                                     activeDialog = MiscDialogType.NONE
                                     executeAction("battery_sim", "dumpsys battery set status 3 && dumpsys battery set ac 0 && dumpsys battery")
                                 },
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(12.dp)
                             ) {
                                 Text(stringResource(R.string.adb_misc_battery_btn_discharging))
                             }
@@ -935,13 +967,17 @@ fun MiscScreen(
                             executeAction("battery_sim", "dumpsys battery reset && dumpsys battery") {
                                 "Battery simulation reset to real hardware state."
                             }
-                        }
+                        },
+                        shape = RoundedCornerShape(12.dp)
                     ) {
                         Text(stringResource(R.string.adb_misc_battery_btn_reset))
                     }
                 },
                 dismissButton = {
-                    TextButton(onClick = { activeDialog = MiscDialogType.NONE }) {
+                    TextButton(
+                        onClick = { activeDialog = MiscDialogType.NONE },
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
                         Text(stringResource(R.string.btn_cancel))
                     }
                 }
@@ -960,6 +996,7 @@ fun MiscScreen(
                             onValueChange = { inputUrl = it },
                             placeholder = { Text(stringResource(R.string.adb_misc_open_url_placeholder)) },
                             modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
                             singleLine = true
                         )
                     }
@@ -981,13 +1018,17 @@ fun MiscScreen(
                                     "Opened URL: $formattedUrl"
                                 }
                             }
-                        }
+                        },
+                        shape = RoundedCornerShape(12.dp)
                     ) {
                         Text(stringResource(R.string.adb_misc_btn_open))
                     }
                 },
                 dismissButton = {
-                    TextButton(onClick = { activeDialog = MiscDialogType.NONE }) {
+                    TextButton(
+                        onClick = { activeDialog = MiscDialogType.NONE },
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
                         Text(stringResource(R.string.btn_cancel))
                     }
                 }
@@ -1080,7 +1121,7 @@ private fun MiscActionCard(
                         onClick = onExecute,
                         modifier = Modifier
                             .size(36.dp)
-                            .clip(CircleShape)
+                            .clip(RoundedCornerShape(10.dp))
                             .background(MaterialTheme.colorScheme.primaryContainer)
                     ) {
                         Icon(
