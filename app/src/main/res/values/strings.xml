@@ -225,7 +225,13 @@
 
     <!-- Settings Tab -->
     <string name="settings_title">Settings</string>
-    <string name="settings_key_title">ADB Authentication Key</string>
+    <string name="settings_key_title">ADB</string>
+    <string name="settings_adb_subtitle">Key management and local connection settings</string>
+    <string name="settings_adb_detect_localhost_title">Detect Localhost</string>
+    <string name="settings_adb_detect_localhost_subtitle">Check for an active local ADB server and prompt to connect</string>
+    <string name="settings_adb_autoconnect_localhost_title">Auto-connect to Localhost</string>
+    <string name="settings_adb_autoconnect_localhost_subtitle">Automatically connect when local ADB is detected without prompting</string>
+    <string name="settings_adb_auth_section">Authentication Key</string>
     <string name="settings_key_desc">Manage the RSA key pair used to authorize this app with devices.</string>
     <string name="settings_fingerprint_label">Fingerprint:</string>
     <string name="settings_no_key">No key generated yet.</string>

@@ -225,7 +225,13 @@
 
     <!-- 设置标签页 -->
     <string name="settings_title">设置</string>
-    <string name="settings_key_title">ADB 身份验证密钥</string>
+    <string name="settings_key_title">ADB</string>
+    <string name="settings_adb_subtitle">密钥管理与本地连接设置</string>
+    <string name="settings_adb_detect_localhost_title">检测本地 ADB</string>
+    <string name="settings_adb_detect_localhost_subtitle">检测是否有活跃的本地 ADB 服务并提示连接</string>
+    <string name="settings_adb_autoconnect_localhost_title">自动连接到本地设备</string>
+    <string name="settings_adb_autoconnect_localhost_subtitle">检测到本地 ADB 时自动连接，无需提示</string>
+    <string name="settings_adb_auth_section">身份验证密钥</string>
     <string name="settings_key_desc">管理此应用用于获得设备授权的 RSA 密钥对。</string>
     <string name="settings_fingerprint_label">指纹：</string>
     <string name="settings_no_key">尚未生成密钥。</string>

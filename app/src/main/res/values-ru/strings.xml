@@ -227,7 +227,13 @@
 
     <!-- Settings Tab -->
     <string name="settings_title">Настройки</string>
-    <string name="settings_key_title">Ключ авторизации ADB</string>
+    <string name="settings_key_title">ADB</string>
+    <string name="settings_adb_subtitle">Управление ключами и локальным подключением</string>
+    <string name="settings_adb_detect_localhost_title">Обнаруживать локальный ADB</string>
+    <string name="settings_adb_detect_localhost_subtitle">Проверять активный локальный ADB-сервер и предлагать подключение</string>
+    <string name="settings_adb_autoconnect_localhost_title">Автоподключение к localhost</string>
+    <string name="settings_adb_autoconnect_localhost_subtitle">Автоматически подключаться при обнаружении без запроса</string>
+    <string name="settings_adb_auth_section">Ключ авторизации</string>
     <string name="settings_key_desc">Управление парой ключей RSA, используемой для авторизации приложения на устройствах.</string>
     <string name="settings_fingerprint_label">Отпечаток:</string>
     <string name="settings_no_key">Ключ еще не сгенерирован.</string>

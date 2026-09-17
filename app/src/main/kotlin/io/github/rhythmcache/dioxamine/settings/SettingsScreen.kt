@@ -102,11 +102,21 @@ fun SettingsScreen(vm: AdbViewModel) {
     var keepAlive by remember {
         mutableStateOf(prefs.getBoolean("keep_alive_enabled", false))
     }
+    var detectLocalhost by remember {
+        mutableStateOf(prefs.getBoolean("adb_detect_localhost", true))
+    }
+    var autoConnectLocalhost by remember {
+        mutableStateOf(prefs.getBoolean("adb_autoconnect_localhost", false))
+    }
 
     DisposableEffect(Unit) {
         val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { p, key ->
             if (key == "keep_alive_enabled") {
                 keepAlive = p.getBoolean("keep_alive_enabled", false)
+            } else if (key == "adb_detect_localhost") {
+                detectLocalhost = p.getBoolean("adb_detect_localhost", true)
+            } else if (key == "adb_autoconnect_localhost") {
+                autoConnectLocalhost = p.getBoolean("adb_autoconnect_localhost", false)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -485,7 +495,7 @@ fun SettingsScreen(vm: AdbViewModel) {
                         Column {
                             Text(stringResource(R.string.settings_key_title), fontWeight = FontWeight.Bold)
                             Text(
-                                vm.keyFingerprint ?: stringResource(R.string.settings_no_key),
+                                stringResource(R.string.settings_adb_subtitle),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -501,6 +511,79 @@ fun SettingsScreen(vm: AdbViewModel) {
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
 
                     Column(modifier = Modifier.padding(16.dp)) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f).padding(end = 16.dp)) {
+                                Text(
+                                    stringResource(R.string.settings_adb_detect_localhost_title),
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Text(
+                                    stringResource(R.string.settings_adb_detect_localhost_subtitle),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Switch(
+                                checked = detectLocalhost,
+                                onCheckedChange = { checked ->
+                                    detectLocalhost = checked
+                                    prefs.edit().putBoolean("adb_detect_localhost", checked).apply()
+                                    if (checked) {
+                                        vm.triggerLocalAdbCheck()
+                                    }
+                                }
+                            )
+                        }
+
+                        Spacer(Modifier.height(4.dp))
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f).padding(end = 16.dp)) {
+                                Text(
+                                    stringResource(R.string.settings_adb_autoconnect_localhost_title),
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Text(
+                                    stringResource(R.string.settings_adb_autoconnect_localhost_subtitle),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Switch(
+                                checked = autoConnectLocalhost,
+                                enabled = detectLocalhost,
+                                onCheckedChange = { checked ->
+                                    autoConnectLocalhost = checked
+                                    prefs.edit().putBoolean("adb_autoconnect_localhost", checked).apply()
+                                    if (checked) {
+                                        vm.triggerLocalAdbCheck()
+                                    }
+                                }
+                            )
+                        }
+
+                        Spacer(Modifier.height(8.dp))
+                        HorizontalDivider()
+                        Spacer(Modifier.height(12.dp))
+
+                        Text(
+                            stringResource(R.string.settings_adb_auth_section),
+                            fontWeight = FontWeight.Medium,
+                            style = MaterialTheme.typography.titleSmall
+                        )
+                        Spacer(Modifier.height(4.dp))
                         Text(
                             stringResource(R.string.settings_key_desc),
                             style = MaterialTheme.typography.bodySmall,

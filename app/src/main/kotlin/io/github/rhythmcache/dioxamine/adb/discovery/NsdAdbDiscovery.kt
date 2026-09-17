@@ -67,7 +67,7 @@ class NsdAdbDiscovery(private val context: Context) {
                 serviceName = "This Device (localhost:${target.port})",
                 host = "127.0.0.1",
                 port = target.port,
-                type = if (target.isTls) AdbServiceType.TLS_CONNECT else AdbServiceType.TCP,
+                type = AdbServiceType.TCP,
                 deviceId = "Localhost"
             )
             withContext(Dispatchers.Main) {
