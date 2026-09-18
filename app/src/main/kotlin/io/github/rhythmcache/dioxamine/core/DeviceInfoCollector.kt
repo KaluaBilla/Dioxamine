@@ -35,6 +35,7 @@ object DeviceInfoCollector {
         if (includeTargetDevice && activeConn != null) {
             val targetInfo = JSONObject()
             targetInfo.put("id", activeConn.id)
+            targetInfo.put("uniqueId", activeConn.uniqueId ?: JSONObject.NULL)
             targetInfo.put("label", activeConn.label)
             targetInfo.put("transport", activeConn.transport.name)
             targetInfo.put("mode", activeConn.mode.name)

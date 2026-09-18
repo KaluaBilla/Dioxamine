@@ -1,6 +1,7 @@
 package io.github.rhythmcache.dioxamine.scrcpy
 
 import android.content.Context
+import android.widget.Toast
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.SurfaceHolder
@@ -10,6 +11,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.focusTarget
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
@@ -90,7 +92,22 @@ fun ScrcpyScreen(
     var dialogInputValue by remember { mutableStateOf("") }
     var dialogErrorMsg by remember { mutableStateOf<String?>(null) }
 
+    val deviceKey = activeConn?.uniqueId ?: activeConn?.id
     var config by remember { mutableStateOf(ScrcpyConfig()) }
+    var rememberSettings by remember(deviceKey) {
+        mutableStateOf(ScrcpyConfigStore.isRememberEnabled(context, deviceKey))
+    }
+
+    LaunchedEffect(deviceKey) {
+        if (deviceKey != null) {
+            val savedConfig = ScrcpyConfigStore.load(context, deviceKey)
+            if (savedConfig != null) {
+                config = savedConfig
+            }
+            rememberSettings = ScrcpyConfigStore.isRememberEnabled(context, deviceKey)
+        }
+    }
+
     var isMirroring by remember { mutableStateOf(false) }
     var isRecording by remember { mutableStateOf(false) }
     var isFullScreen by remember { mutableStateOf(false) }
@@ -211,6 +228,10 @@ fun ScrcpyScreen(
             errorMessage = context.getString(R.string.scrcpy_invalid_config_prefix) + validationErrors.joinToString("\n") { "\u2022 $it" }
             isMirroring = false
             return
+        }
+
+        if (rememberSettings && deviceKey != null) {
+            ScrcpyConfigStore.save(context, deviceKey, config)
         }
 
         val session = ScrcpySession(
@@ -535,6 +556,62 @@ fun ScrcpyScreen(
 
                                             Spacer(Modifier.height(16.dp))
 
+                                            if (isDeviceConnected && deviceKey != null) {
+                                                Row(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .padding(vertical = 4.dp),
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.SpaceBetween
+                                                ) {
+                                                    Row(
+                                                        verticalAlignment = Alignment.CenterVertically,
+                                                        modifier = Modifier
+                                                            .weight(1f)
+                                                            .clickable(enabled = !isMirroring) {
+                                                                val next = !rememberSettings
+                                                                rememberSettings = next
+                                                                ScrcpyConfigStore.setRememberEnabled(context, deviceKey, next)
+                                                                if (!next) {
+                                                                    ScrcpyConfigStore.resetToDefaults(context, deviceKey)
+                                                                }
+                                                            }
+                                                    ) {
+                                                        Checkbox(
+                                                            checked = rememberSettings,
+                                                            onCheckedChange = { checked ->
+                                                                rememberSettings = checked
+                                                                ScrcpyConfigStore.setRememberEnabled(context, deviceKey, checked)
+                                                                if (!checked) {
+                                                                    ScrcpyConfigStore.resetToDefaults(context, deviceKey)
+                                                                }
+                                                            },
+                                                            enabled = !isMirroring
+                                                        )
+                                                        Spacer(Modifier.width(4.dp))
+                                                        Text(
+                                                            text = stringResource(R.string.scrcpy_remember_settings),
+                                                            style = MaterialTheme.typography.bodyMedium
+                                                        )
+                                                    }
+
+                                                    TextButton(
+                                                        onClick = {
+                                                            config = ScrcpyConfig()
+                                                            ScrcpyConfigStore.resetToDefaults(context, deviceKey)
+                                                            Toast.makeText(context, context.getString(R.string.scrcpy_settings_reset), Toast.LENGTH_SHORT).show()
+                                                        },
+                                                        enabled = !isMirroring
+                                                    ) {
+                                                        Icon(Icons.Filled.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
+                                                        Spacer(Modifier.width(4.dp))
+                                                        Text(stringResource(R.string.scrcpy_btn_reset_defaults))
+                                                    }
+                                                }
+
+                                                Spacer(Modifier.height(8.dp))
+                                            }
+
                                             if (errorMessage != null) {
                                                 Text(errorMessage!!, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
                                                 Spacer(Modifier.height(8.dp))
@@ -546,6 +623,9 @@ fun ScrcpyScreen(
                                                     if (isMirroring) {
                                                         stopMirroring()
                                                     } else {
+                                                        if (rememberSettings && deviceKey != null) {
+                                                            ScrcpyConfigStore.save(context, deviceKey, config)
+                                                        }
                                                         if (config.videoEnabled) {
                                                             isMirroring = true
                                                         } else {

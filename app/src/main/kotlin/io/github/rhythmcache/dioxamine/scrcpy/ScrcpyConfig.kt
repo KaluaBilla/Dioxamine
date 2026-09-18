@@ -1,5 +1,7 @@
 package io.github.rhythmcache.dioxamine.scrcpy
 
+import org.json.JSONObject
+
 data class ScrcpyConfig(
     val videoEnabled: Boolean = true,  // Stream screen/camera video
     val maxSize: Int = 1080,         // 0 = Original, 1080, 720, 480
@@ -131,5 +133,66 @@ data class ScrcpyConfig(
         parts.add("control=$controlEnabled")
         if (turnScreenOff) parts.add("turn_screen_off=true")
         return parts.joinToString(" ")
+    }
+
+    fun toJson(): String {
+        val json = JSONObject()
+        json.put("videoEnabled", videoEnabled)
+        json.put("maxSize", maxSize)
+        json.put("maxFps", maxFps)
+        json.put("bitRateMbps", bitRateMbps)
+        json.put("audioEnabled", audioEnabled)
+        json.put("audioSource", audioSource)
+        json.put("audioSourceExplicit", audioSourceExplicit)
+        json.put("audioDup", audioDup)
+        json.put("turnScreenOff", turnScreenOff)
+        json.put("bindVolumeKeys", bindVolumeKeys)
+        json.put("controlEnabled", controlEnabled)
+        json.put("videoSource", videoSource)
+        cameraId?.let { json.put("cameraId", it) }
+        cameraFacing?.let { json.put("cameraFacing", it) }
+        cameraSize?.let { json.put("cameraSize", it) }
+        cameraFps?.let { json.put("cameraFps", it) }
+        json.put("cameraHighSpeed", cameraHighSpeed)
+        cameraAr?.let { json.put("cameraAr", it) }
+        json.put("cameraTorch", cameraTorch)
+        json.put("videoCodec", videoCodec)
+        json.put("audioCodec", audioCodec)
+        json.put("audioBitRateKbps", audioBitRateKbps)
+        captureOrientation?.let { json.put("captureOrientation", it) }
+        return json.toString()
+    }
+
+    companion object {
+        fun fromJson(jsonStr: String): ScrcpyConfig {
+            return runCatching {
+                val json = JSONObject(jsonStr)
+                ScrcpyConfig(
+                    videoEnabled = json.optBoolean("videoEnabled", true),
+                    maxSize = json.optInt("maxSize", 1080),
+                    maxFps = json.optInt("maxFps", 60),
+                    bitRateMbps = json.optInt("bitRateMbps", 8),
+                    audioEnabled = json.optBoolean("audioEnabled", false),
+                    audioSource = json.optString("audioSource", "output"),
+                    audioSourceExplicit = json.optBoolean("audioSourceExplicit", false),
+                    audioDup = json.optBoolean("audioDup", false),
+                    turnScreenOff = json.optBoolean("turnScreenOff", false),
+                    bindVolumeKeys = json.optBoolean("bindVolumeKeys", false),
+                    controlEnabled = json.optBoolean("controlEnabled", true),
+                    videoSource = json.optString("videoSource", "display"),
+                    cameraId = json.optString("cameraId").takeIf { it.isNotEmpty() && it != "null" },
+                    cameraFacing = json.optString("cameraFacing").takeIf { it.isNotEmpty() && it != "null" },
+                    cameraSize = json.optString("cameraSize").takeIf { it.isNotEmpty() && it != "null" },
+                    cameraFps = if (json.has("cameraFps") && !json.isNull("cameraFps")) json.optInt("cameraFps") else null,
+                    cameraHighSpeed = json.optBoolean("cameraHighSpeed", false),
+                    cameraAr = json.optString("cameraAr").takeIf { it.isNotEmpty() && it != "null" },
+                    cameraTorch = json.optBoolean("cameraTorch", false),
+                    videoCodec = json.optString("videoCodec", "h264"),
+                    audioCodec = json.optString("audioCodec", "opus"),
+                    audioBitRateKbps = json.optInt("audioBitRateKbps", 128),
+                    captureOrientation = json.optString("captureOrientation").takeIf { it.isNotEmpty() && it != "null" }
+                )
+            }.getOrElse { ScrcpyConfig() }
+        }
     }
 }
