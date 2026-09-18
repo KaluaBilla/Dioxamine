@@ -14,15 +14,22 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.window.PopupProperties
 import io.github.rhythmcache.dioxamine.R
 import io.github.rhythmcache.dioxamine.adb.AdbViewModel
+import io.github.rhythmcache.dioxamine.adb.SavedAdbAddresses
+import io.github.rhythmcache.dioxamine.adb.isValidIp
+import io.github.rhythmcache.dioxamine.adb.isValidPort
+import io.github.rhythmcache.dioxamine.adb.parseIpAndPort
 
 sealed class DiscoveryStep {
     object DeviceList : DiscoveryStep()
@@ -177,6 +184,7 @@ private fun DeviceListStep(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+
         Spacer(Modifier.height(12.dp))
 
         val devices = discoveryVm.devices.values.toList()
@@ -304,33 +312,168 @@ private fun ManualTcpStep(
     onBack: () -> Unit,
     onConnect: (String, String) -> Unit
 ) {
-    var ip by remember { mutableStateOf(initial.ip) }
-    var port by remember { mutableStateOf(initial.port) }
-    val isValid = ip.isNotBlank() && port.toIntOrNull() != null
+    val context = LocalContext.current
+    var savedAddresses by remember {
+        mutableStateOf(SavedAdbAddresses.getAll(context))
+    }
+
+    val mostRecent = remember { savedAddresses.firstOrNull() }
+    val defaultIp = remember {
+        if (initial.ip.isNotBlank()) initial.ip
+        else mostRecent?.substringBefore(":") ?: ""
+    }
+    val defaultPort = remember {
+        if (initial.port.isNotBlank() && initial.port != "5555") initial.port
+        else mostRecent?.substringAfter(":", "5555") ?: initial.port
+    }
+
+    var ip by remember { mutableStateOf(defaultIp) }
+    var port by remember { mutableStateOf(defaultPort) }
+    var suggestionsExpanded by remember { mutableStateOf(false) }
+    var showAllSuggestions by remember { mutableStateOf(false) }
+    var ipFieldWidthPx by remember { mutableStateOf(0) }
+
+    val filteredAddresses = remember(ip, savedAddresses, showAllSuggestions) {
+        if (showAllSuggestions || ip.isBlank()) {
+            savedAddresses
+        } else {
+            val query = ip.trim()
+            savedAddresses.filter { addr ->
+                addr.substringBefore(":").contains(query, ignoreCase = true)
+            }
+        }
+    }
+
+    val isIpValid = ip.isEmpty() || isValidIp(ip)
+    val isPortValid = port.isEmpty() || isValidPort(port)
+    val isFormValid = ip.isNotBlank() && isValidIp(ip) && isValidPort(port)
 
     Column(modifier = Modifier.fillMaxWidth()) {
         StepHeader(stringResource(R.string.discovery_connect_tcp), onBack)
         Spacer(Modifier.height(12.dp))
-        OutlinedTextField(
-            value = ip, onValueChange = { ip = it },
-            label = { Text(stringResource(R.string.label_ip_address)) }, singleLine = true,
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.fillMaxWidth()
-        )
+
+        Box(modifier = Modifier.fillMaxWidth()) {
+            OutlinedTextField(
+                value = ip,
+                onValueChange = { input ->
+                    val (parsedIp, parsedPort) = parseIpAndPort(input)
+                    ip = parsedIp
+                    if (parsedPort != null) {
+                        port = parsedPort
+                    }
+                    showAllSuggestions = false
+                    val query = parsedIp.trim()
+                    val matches = savedAddresses.filter {
+                        it.substringBefore(":").contains(query, ignoreCase = true)
+                    }
+                    suggestionsExpanded = query.isNotBlank() && matches.isNotEmpty() && matches.any { it.substringBefore(":") != query }
+                },
+                label = { Text(stringResource(R.string.label_ip_address)) },
+                placeholder = {
+                    Text(
+                        stringResource(R.string.adb_ip_placeholder),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+                    )
+                },
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                isError = !isIpValid,
+                supportingText = if (!isIpValid) {
+                    { Text(stringResource(R.string.err_invalid_ip_format), color = MaterialTheme.colorScheme.error) }
+                } else null,
+                trailingIcon = {
+                    if (savedAddresses.isNotEmpty()) {
+                        IconButton(onClick = {
+                            showAllSuggestions = true
+                            suggestionsExpanded = !suggestionsExpanded
+                        }) {
+                            Icon(
+                                imageVector = if (suggestionsExpanded) Icons.Filled.ArrowDropUp else Icons.Filled.ArrowDropDown,
+                                contentDescription = stringResource(R.string.cd_expand_collapse)
+                            )
+                        }
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onGloballyPositioned { coordinates ->
+                        ipFieldWidthPx = coordinates.size.width
+                    }
+            )
+
+            DropdownMenu(
+                expanded = suggestionsExpanded && filteredAddresses.isNotEmpty(),
+                onDismissRequest = { suggestionsExpanded = false },
+                properties = PopupProperties(focusable = false),
+                modifier = Modifier.width(with(LocalDensity.current) { ipFieldWidthPx.toDp() })
+            ) {
+                filteredAddresses.forEach { address ->
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                address,
+                                style = MaterialTheme.typography.bodyMedium,
+                                maxLines = 1
+                            )
+                        },
+                        onClick = {
+                            val (parsedIp, parsedPort) = parseIpAndPort(address)
+                            ip = parsedIp
+                            if (parsedPort != null) port = parsedPort
+                            suggestionsExpanded = false
+                        },
+                        trailingIcon = {
+                            IconButton(
+                                onClick = {
+                                    SavedAdbAddresses.remove(context, address)
+                                    savedAddresses = SavedAdbAddresses.getAll(context)
+                                    if (savedAddresses.isEmpty()) {
+                                        suggestionsExpanded = false
+                                    }
+                                },
+                                modifier = Modifier.size(24.dp)
+                            ) {
+                                Icon(
+                                    Icons.Filled.Close,
+                                    contentDescription = stringResource(R.string.cd_remove),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+                    )
+                }
+            }
+        }
+
         Spacer(Modifier.height(8.dp))
         OutlinedTextField(
-            value = port, onValueChange = { port = it.filter(Char::isDigit) },
-            label = { Text(stringResource(R.string.label_port)) }, singleLine = true,
+            value = port,
+            onValueChange = { input -> port = input.filter(Char::isDigit) },
+            label = { Text(stringResource(R.string.label_port)) },
+            placeholder = { Text("5555") },
+            singleLine = true,
             shape = RoundedCornerShape(12.dp),
+            isError = !isPortValid,
+            supportingText = if (!isPortValid) {
+                { Text(stringResource(R.string.err_invalid_port_range), color = MaterialTheme.colorScheme.error) }
+            } else null,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier.fillMaxWidth()
         )
+
         Spacer(Modifier.height(16.dp))
         Button(
-            onClick = { onConnect(ip.trim(), port.trim()) },
-            enabled = isValid,
+            onClick = {
+                val finalIp = ip.trim()
+                val finalPort = port.trim().ifEmpty { "5555" }
+                SavedAdbAddresses.add(context, "$finalIp:$finalPort")
+                onConnect(finalIp, finalPort)
+            },
+            enabled = isFormValid,
             modifier = Modifier.fillMaxWidth()
-        ) { Text(stringResource(R.string.btn_connect)) }
+        ) {
+            Text(stringResource(R.string.btn_connect))
+        }
     }
 }
 
@@ -381,10 +524,28 @@ private fun ManualTlsConnectStep(
     onConnect: (String, String, ((Boolean, String?) -> Unit)?) -> Unit,
     onDismissAfterConnected: () -> Unit
 ) {
-    var ip by remember { mutableStateOf(initial.ip) }
+    val context = LocalContext.current
+    var savedIps by remember { mutableStateOf(SavedAdbAddresses.getAllIps(context)) }
+    val defaultIp = remember {
+        if (initial.ip.isNotBlank()) initial.ip
+        else savedIps.firstOrNull() ?: ""
+    }
+    var ip by remember { mutableStateOf(defaultIp) }
     var port by remember { mutableStateOf(initial.port) }
     var isConnecting by remember { mutableStateOf(false) }
     var autoConnectAttempted by remember(initial.serviceName, initial.isJustPaired) { mutableStateOf(false) }
+    var suggestionsExpanded by remember { mutableStateOf(false) }
+    var showAllSuggestions by remember { mutableStateOf(false) }
+    var ipFieldWidthPx by remember { mutableStateOf(0) }
+
+    val filteredIps = remember(ip, savedIps, showAllSuggestions) {
+        if (showAllSuggestions || ip.isBlank()) {
+            savedIps
+        } else {
+            val query = ip.trim()
+            savedIps.filter { it.contains(query, ignoreCase = true) }
+        }
+    }
     val isValid = ip.isNotBlank() && port.toIntOrNull() != null
 
     val matchedDeviceId = extractDeviceIdentity(initial.serviceName)
@@ -401,6 +562,7 @@ private fun ManualTlsConnectStep(
         onConnect(ip.trim(), port.trim()) { success, _ ->
             isConnecting = false
             if (success) {
+                SavedAdbAddresses.addIp(context, ip.trim())
                 onDismissAfterConnected()
             }
         }
@@ -425,12 +587,90 @@ private fun ManualTlsConnectStep(
         }
 
         Spacer(Modifier.height(12.dp))
-        OutlinedTextField(
-            value = ip, onValueChange = { ip = it },
-            label = { Text(stringResource(R.string.label_ip_address)) }, singleLine = true,
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.fillMaxWidth()
-        )
+        Box(modifier = Modifier.fillMaxWidth()) {
+            OutlinedTextField(
+                value = ip,
+                onValueChange = { input ->
+                    val (parsedIp, parsedPort) = parseIpAndPort(input)
+                    ip = parsedIp
+                    if (parsedPort != null) {
+                        port = parsedPort
+                    }
+                    showAllSuggestions = false
+                    val query = parsedIp.trim()
+                    val matches = savedIps.filter { it.contains(query, ignoreCase = true) }
+                    suggestionsExpanded = query.isNotBlank() && matches.isNotEmpty() && matches.any { it != query }
+                },
+                label = { Text(stringResource(R.string.label_ip_address)) },
+                placeholder = {
+                    Text(
+                        stringResource(R.string.adb_ip_placeholder),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+                    )
+                },
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                trailingIcon = {
+                    if (savedIps.isNotEmpty()) {
+                        IconButton(onClick = {
+                            showAllSuggestions = true
+                            suggestionsExpanded = !suggestionsExpanded
+                        }) {
+                            Icon(
+                                imageVector = if (suggestionsExpanded) Icons.Filled.ArrowDropUp else Icons.Filled.ArrowDropDown,
+                                contentDescription = stringResource(R.string.cd_expand_collapse)
+                            )
+                        }
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onGloballyPositioned { coordinates ->
+                        ipFieldWidthPx = coordinates.size.width
+                    }
+            )
+
+            DropdownMenu(
+                expanded = suggestionsExpanded && filteredIps.isNotEmpty(),
+                onDismissRequest = { suggestionsExpanded = false },
+                properties = PopupProperties(focusable = false),
+                modifier = Modifier.width(with(LocalDensity.current) { ipFieldWidthPx.toDp() })
+            ) {
+                filteredIps.forEach { savedIp ->
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                savedIp,
+                                style = MaterialTheme.typography.bodyMedium,
+                                maxLines = 1
+                            )
+                        },
+                        onClick = {
+                            ip = savedIp
+                            suggestionsExpanded = false
+                        },
+                        trailingIcon = {
+                            IconButton(
+                                onClick = {
+                                    SavedAdbAddresses.removeIp(context, savedIp)
+                                    savedIps = SavedAdbAddresses.getAllIps(context)
+                                    if (savedIps.isEmpty()) {
+                                        suggestionsExpanded = false
+                                    }
+                                },
+                                modifier = Modifier.size(24.dp)
+                            ) {
+                                Icon(
+                                    Icons.Filled.Close,
+                                    contentDescription = stringResource(R.string.cd_remove),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+                    )
+                }
+            }
+        }
         Spacer(Modifier.height(8.dp))
         OutlinedTextField(
             value = port, onValueChange = { port = it.filter(Char::isDigit) },
@@ -461,9 +701,12 @@ private fun ManualTlsConnectStep(
         Button(
             onClick = {
                 isConnecting = true
-                onConnect(ip.trim(), port.trim()) { success, _ ->
+                val finalIp = ip.trim()
+                val finalPort = port.trim()
+                onConnect(finalIp, finalPort) { success, _ ->
                     isConnecting = false
                     if (success) {
+                        SavedAdbAddresses.addIp(context, finalIp)
                         onDismissAfterConnected()
                     }
                 }
@@ -491,17 +734,119 @@ private fun ManualTlsPairStep(
     onPair: (String, String, String, (Boolean, String) -> Unit) -> Unit,
     onPaired: (String, String) -> Unit
 ) {
-    var ip by remember { mutableStateOf(initial.ip) }
+    val context = LocalContext.current
+    var savedIps by remember { mutableStateOf(SavedAdbAddresses.getAllIps(context)) }
+    val defaultIp = remember {
+        if (initial.ip.isNotBlank()) initial.ip
+        else savedIps.firstOrNull() ?: ""
+    }
+    var ip by remember { mutableStateOf(defaultIp) }
     var port by remember { mutableStateOf(initial.port) }
     var code by remember { mutableStateOf(initial.code) }
     var isPairing by remember { mutableStateOf(false) }
     var errorMsg by remember { mutableStateOf<String?>(null) }
+    var suggestionsExpanded by remember { mutableStateOf(false) }
+    var showAllSuggestions by remember { mutableStateOf(false) }
+    var ipFieldWidthPx by remember { mutableStateOf(0) }
+
+    val filteredIps = remember(ip, savedIps, showAllSuggestions) {
+        if (showAllSuggestions || ip.isBlank()) {
+            savedIps
+        } else {
+            val query = ip.trim()
+            savedIps.filter { it.contains(query, ignoreCase = true) }
+        }
+    }
     val isValid = ip.isNotBlank() && port.toIntOrNull() != null && code.isNotBlank()
 
     Column(modifier = Modifier.fillMaxWidth()) {
         StepHeader(stringResource(R.string.discovery_pair_device), onBack)
         Spacer(Modifier.height(12.dp))
-        OutlinedTextField(value = ip, onValueChange = { ip = it }, label = { Text(stringResource(R.string.label_ip_address)) }, singleLine = true, shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth())
+
+        Box(modifier = Modifier.fillMaxWidth()) {
+            OutlinedTextField(
+                value = ip,
+                onValueChange = { input ->
+                    val (parsedIp, parsedPort) = parseIpAndPort(input)
+                    ip = parsedIp
+                    if (parsedPort != null) {
+                        port = parsedPort
+                    }
+                    showAllSuggestions = false
+                    val query = parsedIp.trim()
+                    val matches = savedIps.filter { it.contains(query, ignoreCase = true) }
+                    suggestionsExpanded = query.isNotBlank() && matches.isNotEmpty() && matches.any { it != query }
+                },
+                label = { Text(stringResource(R.string.label_ip_address)) },
+                placeholder = {
+                    Text(
+                        stringResource(R.string.adb_ip_placeholder),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+                    )
+                },
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                trailingIcon = {
+                    if (savedIps.isNotEmpty()) {
+                        IconButton(onClick = {
+                            showAllSuggestions = true
+                            suggestionsExpanded = !suggestionsExpanded
+                        }) {
+                            Icon(
+                                imageVector = if (suggestionsExpanded) Icons.Filled.ArrowDropUp else Icons.Filled.ArrowDropDown,
+                                contentDescription = stringResource(R.string.cd_expand_collapse)
+                            )
+                        }
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onGloballyPositioned { coordinates ->
+                        ipFieldWidthPx = coordinates.size.width
+                    }
+            )
+
+            DropdownMenu(
+                expanded = suggestionsExpanded && filteredIps.isNotEmpty(),
+                onDismissRequest = { suggestionsExpanded = false },
+                properties = PopupProperties(focusable = false),
+                modifier = Modifier.width(with(LocalDensity.current) { ipFieldWidthPx.toDp() })
+            ) {
+                filteredIps.forEach { savedIp ->
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                savedIp,
+                                style = MaterialTheme.typography.bodyMedium,
+                                maxLines = 1
+                            )
+                        },
+                        onClick = {
+                            ip = savedIp
+                            suggestionsExpanded = false
+                        },
+                        trailingIcon = {
+                            IconButton(
+                                onClick = {
+                                    SavedAdbAddresses.removeIp(context, savedIp)
+                                    savedIps = SavedAdbAddresses.getAllIps(context)
+                                    if (savedIps.isEmpty()) {
+                                        suggestionsExpanded = false
+                                    }
+                                },
+                                modifier = Modifier.size(24.dp)
+                            ) {
+                                Icon(
+                                    Icons.Filled.Close,
+                                    contentDescription = stringResource(R.string.cd_remove),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+                    )
+                }
+            }
+        }
         Spacer(Modifier.height(8.dp))
         OutlinedTextField(
             value = port, onValueChange = { port = it.filter(Char::isDigit) },
@@ -529,10 +874,17 @@ private fun ManualTlsPairStep(
             onClick = {
                 isPairing = true
                 errorMsg = null
-                onPair(ip.trim(), port.trim(), code.trim()) { success, msg ->
+                val finalIp = ip.trim()
+                val finalPort = port.trim()
+                val finalCode = code.trim()
+                onPair(finalIp, finalPort, finalCode) { success, msg ->
                     isPairing = false
-                    if (success) onPaired(ip.trim(), "")
-                    else errorMsg = msg
+                    if (success) {
+                        SavedAdbAddresses.addIp(context, finalIp)
+                        onPaired(finalIp, "")
+                    } else {
+                        errorMsg = msg
+                    }
                 }
             },
             enabled = isValid && !isPairing,
