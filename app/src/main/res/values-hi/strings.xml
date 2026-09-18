@@ -402,6 +402,28 @@
     <string name="msg_key_exported">ADB प्रमाणीकरण कुंजी सफलतापूर्वक निर्यात की गई</string>
     <string name="pkg_manager_empty">कोई पैकेज नहीं मिला</string>
 
+    <!-- ADB Logcat Strings -->
+    <string name="adb_logcat_tile_title">Logcat</string>
+    <string name="adb_logcat_tile_desc">फ़िल्टरिंग, खोज और रेगेक्स के साथ रीयल-टाइम में सिस्टम लॉग स्ट्रीम करें</string>
+    <string name="logcat_search_hint">लॉग या रेगेक्स खोजें…</string>
+    <string name="logcat_filter_tag_hint">टैग</string>
+    <string name="logcat_filter_pid_hint">PID</string>
+    <string name="logcat_btn_pause">स्ट्रीम रोकें</string>
+    <string name="logcat_btn_resume">स्ट्रीम जारी रखें</string>
+    <string name="logcat_btn_clear">लॉग साफ़ करें</string>
+    <string name="logcat_btn_copy">लॉग कॉपी करें</string>
+    <string name="logcat_btn_autoscroll">ऑटो-स्क्रॉल</string>
+    <string name="logcat_status_streaming">स्ट्रीमिंग सक्रिय</string>
+    <string name="logcat_status_paused">रोका गया</string>
+    <string name="logcat_logs_copied">क्लिपबोर्ड पर %1$d लॉग कॉपी किए गए</string>
+    <string name="logcat_empty_waiting">डिवाइस लॉग की प्रतीक्षा कर रहे हैं…</string>
+    <string name="logcat_empty_filtered">फ़िल्टर से मेल खाने वाला कोई लॉग नहीं</string>
+    <string name="logcat_device_buffer_cleared">डिवाइस लॉग बफ़र साफ़ किया गया</string>
+    <string name="logcat_clear_dialog_msg">स्क्रीन पर स्थानीय लॉग बफ़र साफ़ करें, या डिवाइस का आंतरिक logcat बफ़र भी साफ़ करें?</string>
+    <string name="logcat_clear_screen">स्क्रीन साफ़ करें</string>
+    <string name="logcat_clear_device_buffer">डिवाइस बफ़र साफ़ करें</string>
+    <string name="logcat_btn_toggle_filters">खोज और फ़िल्टर टॉगल करें</string>
+
     <!-- ADB Reboot Options Strings -->
     <string name="adb_reboot_tile_title">रीबूट विकल्प</string>
     <string name="adb_reboot_tile_desc">सिस्टम, बूटलोडर, रिकवरी, फास्टबूट में रीबूट करें या पावर ऑफ करें</string>

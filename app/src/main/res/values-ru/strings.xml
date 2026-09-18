@@ -407,6 +407,28 @@
     <string name="msg_key_exported">Ключ авторизации ADB успешно экспортирован</string>
     <string name="pkg_manager_empty">Пакеты не найдены</string>
 
+    <!-- ADB Logcat Strings -->
+    <string name="adb_logcat_tile_title">Logcat</string>
+    <string name="adb_logcat_tile_desc">Потоковый просмотр системных логов в реальном времени с фильтрацией и regex</string>
+    <string name="logcat_search_hint">Поиск в логах или regex…</string>
+    <string name="logcat_filter_tag_hint">Тег</string>
+    <string name="logcat_filter_pid_hint">PID</string>
+    <string name="logcat_btn_pause">Приостановить поток</string>
+    <string name="logcat_btn_resume">Возобновить поток</string>
+    <string name="logcat_btn_clear">Очистить логи</string>
+    <string name="logcat_btn_copy">Скопировать логи</string>
+    <string name="logcat_btn_autoscroll">Автопрокрутка</string>
+    <string name="logcat_status_streaming">Поток активен</string>
+    <string name="logcat_status_paused">Приостановлено</string>
+    <string name="logcat_logs_copied">Скопировано %1$d строк логов</string>
+    <string name="logcat_empty_waiting">Ожидание логов устройства…</string>
+    <string name="logcat_empty_filtered">Нет логов, соответствующих фильтрам</string>
+    <string name="logcat_device_buffer_cleared">Буфер логов устройства очищен</string>
+    <string name="logcat_clear_dialog_msg">Очистить локальный буфер на экране или также очистить внутренний буфер logcat на устройстве?</string>
+    <string name="logcat_clear_screen">Очистить экран</string>
+    <string name="logcat_clear_device_buffer">Очистить буфер устройства</string>
+    <string name="logcat_btn_toggle_filters">Показать или скрыть поиск и фильтры</string>
+
     <!-- ADB Reboot Options Strings -->
     <string name="adb_reboot_tile_title">Параметры перезагрузки</string>
     <string name="adb_reboot_tile_desc">Перезагрузка в систему, загрузчик, recovery, fastboot или выключение</string>

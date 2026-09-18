@@ -14,6 +14,8 @@ import io.github.rhythmcache.dioxamine.adb.AdbViewModel
 
 import io.github.rhythmcache.dioxamine.adb.builtin.filemanager.FileManagerScreen
 import io.github.rhythmcache.dioxamine.adb.builtin.filemanager.FileManagerTile
+import io.github.rhythmcache.dioxamine.adb.builtin.logcat.LogcatScreen
+import io.github.rhythmcache.dioxamine.adb.builtin.logcat.LogcatTile
 import io.github.rhythmcache.dioxamine.adb.builtin.misc.MiscScreen
 import io.github.rhythmcache.dioxamine.adb.builtin.misc.MiscTile
 import io.github.rhythmcache.dioxamine.adb.builtin.packagemanager.PackageManagerScreen
@@ -37,6 +39,7 @@ sealed class BuiltInSubScreen {
     object FileManager : BuiltInSubScreen()
     object PackageManager : BuiltInSubScreen()
     object ProcessManager : BuiltInSubScreen()
+    object Logcat : BuiltInSubScreen()
     object Misc : BuiltInSubScreen()
     object Screenshot : BuiltInSubScreen()
     object Reboot : BuiltInSubScreen()
@@ -108,6 +111,12 @@ fun BuiltInActionsTab(vm: AdbViewModel) {
                     )
                 }
                 item {
+                    LogcatTile(
+                        isConnected = isConnected,
+                        onClick = { activeSubScreen = BuiltInSubScreen.Logcat }
+                    )
+                }
+                item {
                     MiscTile(
                         isConnected = isConnected,
                         onClick = { activeSubScreen = BuiltInSubScreen.Misc }
@@ -160,6 +169,12 @@ fun BuiltInActionsTab(vm: AdbViewModel) {
         }
         BuiltInSubScreen.ProcessManager -> {
             ProcessManagerScreen(
+                vm = vm,
+                onBack = { activeSubScreen = BuiltInSubScreen.TilesList }
+            )
+        }
+        BuiltInSubScreen.Logcat -> {
+            LogcatScreen(
                 vm = vm,
                 onBack = { activeSubScreen = BuiltInSubScreen.TilesList }
             )
