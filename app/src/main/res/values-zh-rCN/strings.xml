@@ -131,6 +131,9 @@
     <string name="scrcpy_target_version">目标：%1$s &#8226; Android %2$s</string>
     <string name="scrcpy_start_mirroring">开始镜像</string>
     <string name="scrcpy_stop_mirroring">停止镜像</string>
+    <string name="scrcpy_remember_settings">为此设备保存设置</string>
+    <string name="scrcpy_btn_reset_defaults">恢复默认</string>
+    <string name="scrcpy_settings_reset">已恢复默认设置</string>
     <string name="scrcpy_tab_configurator">配置</string>
     <string name="scrcpy_tab_logs">日志</string>
     <string name="scrcpy_logs_empty">暂无 scrcpy 日志。</string>

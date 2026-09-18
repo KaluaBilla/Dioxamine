@@ -131,6 +131,9 @@
     <string name="scrcpy_target_version">लक्ष्य: %1$s &#8226; Android %2$s</string>
     <string name="scrcpy_start_mirroring">मिररिंग शुरू करें</string>
     <string name="scrcpy_stop_mirroring">मिररिंग बंद करें</string>
+    <string name="scrcpy_remember_settings">इस डिवाइस के लिए याद रखें</string>
+    <string name="scrcpy_btn_reset_defaults">डिफ़ॉल्ट रीसेट करें</string>
+    <string name="scrcpy_settings_reset">सेटिंग्स डिफ़ॉल्ट पर रीसेट की गईं</string>
     <string name="scrcpy_tab_configurator">कॉन्फ़िगरेशन</string>
     <string name="scrcpy_tab_logs">लॉग्स</string>
     <string name="scrcpy_logs_empty">अभी तक कोई scrcpy लॉग नहीं है।</string>

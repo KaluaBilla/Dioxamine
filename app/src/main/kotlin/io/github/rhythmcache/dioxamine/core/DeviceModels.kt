@@ -23,7 +23,8 @@ data class DeviceConnection(
     val apiLevel: Int? = null,
     val model: String? = null,
     val mode: AdbDeviceMode = AdbDeviceMode.UNKNOWN,
-    val isRoot: Boolean = false
+    val isRoot: Boolean = false,
+    val uniqueId: String? = null
 )
 
 data class DeviceDetails(
@@ -31,7 +32,8 @@ data class DeviceDetails(
     val androidVersion: String?,
     val apiLevel: Int?,
     val supportsShellV2: Boolean,
-    val isRoot: Boolean = false
+    val isRoot: Boolean = false,
+    val uniqueId: String? = null
 )
 
 suspend fun fetchDeviceDetails(client: AdbClient): DeviceDetails {
@@ -42,24 +44,31 @@ suspend fun fetchDeviceDetails(client: AdbClient): DeviceDetails {
         AdbDeviceMode.RESCUE -> {
             try {
                 val model = client.rescue.getProp("ro.product.model").ifBlank { null }
-                DeviceDetails(model = model, androidVersion = null, apiLevel = null, supportsShellV2 = false, isRoot = true)
+                val serial = client.rescue.getProp("ro.serialno").ifBlank { client.rescue.getProp("ro.boot.serialno") }.ifBlank { null }
+                DeviceDetails(model = model, androidVersion = null, apiLevel = null, supportsShellV2 = false, isRoot = true, uniqueId = serial)
             } catch (_: Exception) {
                 DeviceDetails(null, null, null, false, isRoot = false)
             }
         }
         else -> {
             try {
-                val rawOutput = client.open("shell:getprop ro.product.model; echo '---'; getprop ro.build.version.release; echo '---'; getprop ro.build.version.sdk; echo '---'; id -u").use { stream ->
+                val rawOutput = client.open("shell:getprop ro.serialno; echo '---'; getprop ro.boot.serialno; echo '---'; settings get secure android_id; echo '---'; getprop ro.product.model; echo '---'; getprop ro.build.version.release; echo '---'; getprop ro.build.version.sdk; echo '---'; id -u").use { stream ->
                     String(stream.readToEnd(), Charsets.UTF_8).trim()
                 }
                 val parts = rawOutput.split("---").map { it.trim() }
-                val model = parts.getOrNull(0)?.ifEmpty { null }
-                val release = parts.getOrNull(1)?.ifEmpty { null }
-                val apiLevel = parts.getOrNull(2)?.toIntOrNull()
-                val uidStr = parts.getOrNull(3)?.ifEmpty { null }
+                val roSerial = parts.getOrNull(0)?.ifEmpty { null }
+                val bootSerial = parts.getOrNull(1)?.ifEmpty { null }
+                val androidId = parts.getOrNull(2)?.ifEmpty { null }
+                val model = parts.getOrNull(3)?.ifEmpty { null }
+                val release = parts.getOrNull(4)?.ifEmpty { null }
+                val apiLevel = parts.getOrNull(5)?.toIntOrNull()
+                val uidStr = parts.getOrNull(6)?.ifEmpty { null }
                 val supportsV2 = apiLevel != null && apiLevel >= 24
                 val isRoot = uidStr == "0" || uidStr?.startsWith("uid=0") == true
-                DeviceDetails(model, release, apiLevel, supportsV2, isRoot)
+                val hardwareSerial = roSerial?.takeIf { it != "unknown" }
+                    ?: bootSerial?.takeIf { it != "unknown" }
+                val uniqueId = hardwareSerial ?: androidId?.takeIf { it != "null" }
+                DeviceDetails(model, release, apiLevel, supportsV2, isRoot, uniqueId)
             } catch (_: Exception) {
                 DeviceDetails(null, null, null, false, isRoot = false)
             }

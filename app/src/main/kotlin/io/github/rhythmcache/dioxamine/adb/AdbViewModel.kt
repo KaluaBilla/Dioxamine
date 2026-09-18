@@ -276,7 +276,8 @@ class AdbViewModel(
                     apiLevel = details.apiLevel,
                     model = details.model,
                     mode = client.deviceMode,
-                    isRoot = details.isRoot
+                    isRoot = details.isRoot,
+                    uniqueId = details.uniqueId ?: id
                 )
                 if (activeDeviceId == null) activeDeviceId = id
             } catch (e: Exception) {
@@ -317,7 +318,8 @@ class AdbViewModel(
                     apiLevel = details.apiLevel,
                     model = details.model,
                     mode = client.deviceMode,
-                    isRoot = details.isRoot
+                    isRoot = details.isRoot,
+                    uniqueId = details.uniqueId ?: id
                 )
                 if (activeDeviceId == null) activeDeviceId = id
             } catch (e: Exception) {
@@ -371,7 +373,8 @@ class AdbViewModel(
                     apiLevel = details.apiLevel,
                     model = details.model,
                     mode = client.deviceMode,
-                    isRoot = details.isRoot
+                    isRoot = details.isRoot,
+                    uniqueId = details.uniqueId ?: serial
                 )
                 if (activeDeviceId == null) activeDeviceId = id
             } catch (e: Exception) {
@@ -406,7 +409,8 @@ class AdbViewModel(
                     apiLevel = details.apiLevel,
                     model = details.model,
                     mode = client.deviceMode,
-                    isRoot = details.isRoot
+                    isRoot = details.isRoot,
+                    uniqueId = details.uniqueId ?: id
                 )
                 if (activeDeviceId == null) activeDeviceId = id
                 onResult?.invoke(true, null)
