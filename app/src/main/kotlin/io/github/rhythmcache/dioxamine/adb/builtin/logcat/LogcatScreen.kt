@@ -56,7 +56,7 @@ fun LogcatScreen(
     var debouncedSearchQuery by remember { mutableStateOf("") }
     var isRegex by remember { mutableStateOf(false) }
     var isCaseSensitive by remember { mutableStateOf(false) }
-    var selectedLevel by remember { mutableStateOf<LogLevel?>(null) } // null = ALL
+    var selectedLevels by remember { mutableStateOf(emptySet<LogLevel>()) }
     var tagFilter by remember { mutableStateOf("") }
     var pidFilter by remember { mutableStateOf("") }
     var showAdvancedFilters by remember { mutableStateOf(false) }
@@ -139,7 +139,7 @@ fun LogcatScreen(
     }
 
     // Filter computation
-    val filteredEntries by remember(entries, debouncedSearchQuery, isRegex, isCaseSensitive, selectedLevel, tagFilter, pidFilter) {
+    val filteredEntries by remember(entries, debouncedSearchQuery, isRegex, isCaseSensitive, selectedLevels, tagFilter, pidFilter) {
         derivedStateOf {
             val query = debouncedSearchQuery
             val compiledRegex = if (isRegex && query.isNotBlank()) {
@@ -148,8 +148,8 @@ fun LogcatScreen(
             } else null
 
             entries.filter { entry ->
-                // Level filter: exact match when a specific level chip is selected
-                if (selectedLevel != null && entry.level != selectedLevel) {
+                // Level filter: multi-select matching (empty set means ALL)
+                if (selectedLevels.isNotEmpty() && entry.level !in selectedLevels) {
                     return@filter false
                 }
 
@@ -260,7 +260,7 @@ fun LogcatScreen(
             }
 
             // Toggle Search & Filters Visibility (Drop down arrow)
-            val hasActiveFilters = searchQuery.isNotEmpty() || selectedLevel != null || tagFilter.isNotEmpty() || pidFilter.isNotEmpty()
+            val hasActiveFilters = searchQuery.isNotEmpty() || selectedLevels.isNotEmpty() || tagFilter.isNotEmpty() || pidFilter.isNotEmpty()
             IconButton(onClick = { isSearchFilterVisible = !isSearchFilterVisible }) {
                 Icon(
                     imageVector = if (isSearchFilterVisible) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
@@ -381,24 +381,31 @@ fun LogcatScreen(
                                     .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                             )
 
-                            // Log Level Chips
+                            // Log Level Chips (Multi-select)
                             FilterChip(
-                                selected = selectedLevel == null,
-                                onClick = { selectedLevel = null },
+                                selected = selectedLevels.isEmpty(),
+                                onClick = { selectedLevels = emptySet() },
                                 label = { Text("ALL", fontSize = 11.sp, fontWeight = FontWeight.SemiBold) },
                                 shape = RoundedCornerShape(8.dp)
                             )
 
                             LogLevel.values().forEach { level ->
+                                val isSelected = level in selectedLevels
                                 FilterChip(
-                                    selected = selectedLevel == level,
-                                    onClick = { selectedLevel = if (selectedLevel == level) null else level },
+                                    selected = isSelected,
+                                    onClick = {
+                                        selectedLevels = if (isSelected) {
+                                            selectedLevels - level
+                                        } else {
+                                            selectedLevels + level
+                                        }
+                                    },
                                     label = {
                                         Text(
                                             level.label,
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = if (selectedLevel == level) MaterialTheme.colorScheme.onPrimary else level.color
+                                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else level.color
                                         )
                                     },
                                     colors = FilterChipDefaults.filterChipColors(
