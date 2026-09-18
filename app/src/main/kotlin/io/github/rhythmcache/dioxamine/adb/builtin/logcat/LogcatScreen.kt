@@ -4,10 +4,12 @@ import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -266,71 +268,44 @@ fun LogcatScreen(
             )
         ) {
             Column(modifier = Modifier.padding(10.dp)) {
-                Row(
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
                     modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    OutlinedTextField(
-                        value = searchQuery,
-                        onValueChange = { searchQuery = it },
-                        modifier = Modifier.weight(1f),
-                        placeholder = {
-                            Text(
-                                stringResource(R.string.logcat_search_hint),
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                        },
-                        singleLine = true,
-                        shape = RoundedCornerShape(10.dp),
-                        leadingIcon = {
-                            Icon(Icons.Filled.Search, contentDescription = null, modifier = Modifier.size(18.dp))
-                        },
-                        trailingIcon = {
+                    placeholder = {
+                        Text(
+                            stringResource(R.string.logcat_search_hint),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    },
+                    singleLine = true,
+                    shape = RoundedCornerShape(12.dp),
+                    leadingIcon = {
+                        Icon(Icons.Filled.Search, contentDescription = null, modifier = Modifier.size(20.dp))
+                    },
+                    trailingIcon = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
                             if (searchQuery.isNotEmpty()) {
                                 IconButton(onClick = { searchQuery = "" }) {
-                                    Icon(Icons.Filled.Clear, contentDescription = null, modifier = Modifier.size(16.dp))
+                                    Icon(Icons.Filled.Clear, contentDescription = null, modifier = Modifier.size(18.dp))
                                 }
                             }
-                        }
-                    )
-
-                    Spacer(modifier = Modifier.width(6.dp))
-
-                    // Regex Toggle Button
-                    FilterChip(
-                        selected = isRegex,
-                        onClick = { isRegex = !isRegex },
-                        label = { Text(".*", fontWeight = FontWeight.Bold, fontSize = 13.sp) },
-                        shape = RoundedCornerShape(8.dp)
-                    )
-
-                    Spacer(modifier = Modifier.width(4.dp))
-
-                    // Case-Sensitive Toggle Button
-                    FilterChip(
-                        selected = isCaseSensitive,
-                        onClick = { isCaseSensitive = !isCaseSensitive },
-                        label = { Text("Aa", fontWeight = FontWeight.Bold, fontSize = 12.sp) },
-                        shape = RoundedCornerShape(8.dp)
-                    )
-
-                    Spacer(modifier = Modifier.width(4.dp))
-
-                    // Expand advanced filters toggle
-                    IconButton(
-                        onClick = { showAdvancedFilters = !showAdvancedFilters }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Tune,
-                            contentDescription = null,
-                            tint = if (showAdvancedFilters || tagFilter.isNotEmpty() || pidFilter.isNotEmpty()) {
-                                MaterialTheme.colorScheme.primary
-                            } else {
-                                MaterialTheme.colorScheme.onSurfaceVariant
+                            IconButton(
+                                onClick = { showAdvancedFilters = !showAdvancedFilters }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Tune,
+                                    contentDescription = null,
+                                    tint = if (showAdvancedFilters || tagFilter.isNotEmpty() || pidFilter.isNotEmpty()) {
+                                        MaterialTheme.colorScheme.primary
+                                    } else {
+                                        MaterialTheme.colorScheme.onSurfaceVariant
+                                    }
+                                )
                             }
-                        )
+                        }
                     }
-                }
+                )
 
                 // Advanced filters (Tag & PID)
                 AnimatedVisibility(visible = showAdvancedFilters) {
@@ -346,7 +321,7 @@ fun LogcatScreen(
                             modifier = Modifier.weight(1f),
                             label = { Text(stringResource(R.string.logcat_filter_tag_hint)) },
                             singleLine = true,
-                            shape = RoundedCornerShape(8.dp)
+                            shape = RoundedCornerShape(12.dp)
                         )
                         OutlinedTextField(
                             value = pidFilter,
@@ -354,19 +329,45 @@ fun LogcatScreen(
                             modifier = Modifier.weight(0.7f),
                             label = { Text(stringResource(R.string.logcat_filter_pid_hint)) },
                             singleLine = true,
-                            shape = RoundedCornerShape(8.dp)
+                            shape = RoundedCornerShape(12.dp)
                         )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // --- Log Level Chips ---
+                // --- Chips Row (Search modifiers + Log Level chips) ---
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    // Regex Toggle Chip
+                    FilterChip(
+                        selected = isRegex,
+                        onClick = { isRegex = !isRegex },
+                        label = { Text(".*", fontWeight = FontWeight.Bold, fontSize = 12.sp) },
+                        shape = RoundedCornerShape(8.dp)
+                    )
+
+                    // Case-Sensitive Toggle Chip
+                    FilterChip(
+                        selected = isCaseSensitive,
+                        onClick = { isCaseSensitive = !isCaseSensitive },
+                        label = { Text("Aa", fontWeight = FontWeight.Bold, fontSize = 12.sp) },
+                        shape = RoundedCornerShape(8.dp)
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .height(20.dp)
+                            .width(1.dp)
+                            .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    )
+
+                    // Log Level Chips
                     FilterChip(
                         selected = selectedLevel == null,
                         onClick = { selectedLevel = null },
@@ -448,6 +449,7 @@ fun LogcatScreen(
                     .align(Alignment.BottomEnd)
                     .padding(12.dp)
                     .size(40.dp),
+                shape = RoundedCornerShape(12.dp),
                 containerColor = if (isAutoScroll) MaterialTheme.colorScheme.primary
                                 else MaterialTheme.colorScheme.surfaceVariant
             ) {
@@ -463,6 +465,7 @@ fun LogcatScreen(
     // --- Entry Detail Dialog ---
     selectedEntry?.let { entry ->
         AlertDialog(
+            shape = RoundedCornerShape(16.dp),
             onDismissRequest = { selectedEntry = null },
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -513,18 +516,22 @@ fun LogcatScreen(
                 }
             },
             confirmButton = {
-                TextButton(
+                Button(
                     onClick = {
                         clipboardManager.setText(AnnotatedString(entry.raw))
                         Toast.makeText(context, context.getString(R.string.logcat_logs_copied, 1), Toast.LENGTH_SHORT).show()
                         selectedEntry = null
-                    }
+                    },
+                    shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(stringResource(R.string.logcat_btn_copy))
                 }
             },
             dismissButton = {
-                TextButton(onClick = { selectedEntry = null }) {
+                TextButton(
+                    onClick = { selectedEntry = null },
+                    shape = RoundedCornerShape(12.dp)
+                ) {
                     Text(stringResource(R.string.cd_close))
                 }
             }
@@ -534,6 +541,7 @@ fun LogcatScreen(
     // --- Clear Dialog ---
     if (showClearDialog) {
         AlertDialog(
+            shape = RoundedCornerShape(16.dp),
             onDismissRequest = { showClearDialog = false },
             title = { Text(stringResource(R.string.logcat_btn_clear)) },
             text = {
@@ -544,7 +552,8 @@ fun LogcatScreen(
                     onClick = {
                         entries.clear()
                         showClearDialog = false
-                    }
+                    },
+                    shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(stringResource(R.string.logcat_clear_screen))
                 }
@@ -560,7 +569,8 @@ fun LogcatScreen(
                         }
                         showClearDialog = false
                         Toast.makeText(context, context.getString(R.string.logcat_device_buffer_cleared), Toast.LENGTH_SHORT).show()
-                    }
+                    },
+                    shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(stringResource(R.string.logcat_clear_device_buffer))
                 }
