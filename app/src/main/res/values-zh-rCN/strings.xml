@@ -425,6 +425,7 @@
     <string name="logcat_clear_dialog_msg">仅清空屏幕上的本地日志，还是同时清空设备内部的 Logcat 缓冲区？</string>
     <string name="logcat_clear_screen">清空屏幕</string>
     <string name="logcat_clear_device_buffer">清空设备缓冲区</string>
+    <string name="logcat_btn_toggle_filters">切换搜索与过滤器</string>
 
     <!-- ADB 重启选项 -->
     <string name="adb_reboot_tile_title">重启选项</string>

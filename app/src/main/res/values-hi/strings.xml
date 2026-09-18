@@ -422,6 +422,7 @@
     <string name="logcat_clear_dialog_msg">स्क्रीन पर स्थानीय लॉग बफ़र साफ़ करें, या डिवाइस का आंतरिक logcat बफ़र भी साफ़ करें?</string>
     <string name="logcat_clear_screen">स्क्रीन साफ़ करें</string>
     <string name="logcat_clear_device_buffer">डिवाइस बफ़र साफ़ करें</string>
+    <string name="logcat_btn_toggle_filters">खोज और फ़िल्टर टॉगल करें</string>
 
     <!-- ADB Reboot Options Strings -->
     <string name="adb_reboot_tile_title">रीबूट विकल्प</string>

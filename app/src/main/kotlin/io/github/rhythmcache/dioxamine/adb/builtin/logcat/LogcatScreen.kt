@@ -60,6 +60,7 @@ fun LogcatScreen(
     var tagFilter by remember { mutableStateOf("") }
     var pidFilter by remember { mutableStateOf("") }
     var showAdvancedFilters by remember { mutableStateOf(false) }
+    var isSearchFilterVisible by remember { mutableStateOf(true) }
 
     var selectedEntry by remember { mutableStateOf<LogcatEntry?>(null) }
     var showClearDialog by remember { mutableStateOf(false) }
@@ -147,8 +148,8 @@ fun LogcatScreen(
             } else null
 
             entries.filter { entry ->
-                // Level filter
-                if (selectedLevel != null && entry.level.priority < selectedLevel!!.priority) {
+                // Level filter: exact match when a specific level chip is selected
+                if (selectedLevel != null && entry.level != selectedLevel) {
                     return@filter false
                 }
 
@@ -257,147 +258,161 @@ fun LogcatScreen(
                     contentDescription = stringResource(R.string.logcat_btn_clear)
                 )
             }
+
+            // Toggle Search & Filters Visibility (Drop down arrow)
+            val hasActiveFilters = searchQuery.isNotEmpty() || selectedLevel != null || tagFilter.isNotEmpty() || pidFilter.isNotEmpty()
+            IconButton(onClick = { isSearchFilterVisible = !isSearchFilterVisible }) {
+                Icon(
+                    imageVector = if (isSearchFilterVisible) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                    contentDescription = stringResource(R.string.logcat_btn_toggle_filters),
+                    tint = if (hasActiveFilters && !isSearchFilterVisible) MaterialTheme.colorScheme.primary
+                           else MaterialTheme.colorScheme.onSurface
+                )
+            }
         }
 
-        // --- Search & Filter Bar ---
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-            )
-        ) {
-            Column(modifier = Modifier.padding(10.dp)) {
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { searchQuery = it },
+        // --- Search & Filter Bar (Collapsible) ---
+        AnimatedVisibility(visible = isSearchFilterVisible) {
+            Column {
+                Card(
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = {
-                        Text(
-                            stringResource(R.string.logcat_search_hint),
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    },
-                    singleLine = true,
                     shape = RoundedCornerShape(12.dp),
-                    leadingIcon = {
-                        Icon(Icons.Filled.Search, contentDescription = null, modifier = Modifier.size(20.dp))
-                    },
-                    trailingIcon = {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            if (searchQuery.isNotEmpty()) {
-                                IconButton(onClick = { searchQuery = "" }) {
-                                    Icon(Icons.Filled.Clear, contentDescription = null, modifier = Modifier.size(18.dp))
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    )
+                ) {
+                    Column(modifier = Modifier.padding(10.dp)) {
+                        OutlinedTextField(
+                            value = searchQuery,
+                            onValueChange = { searchQuery = it },
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = {
+                                Text(
+                                    stringResource(R.string.logcat_search_hint),
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            },
+                            singleLine = true,
+                            shape = RoundedCornerShape(12.dp),
+                            leadingIcon = {
+                                Icon(Icons.Filled.Search, contentDescription = null, modifier = Modifier.size(20.dp))
+                            },
+                            trailingIcon = {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    if (searchQuery.isNotEmpty()) {
+                                        IconButton(onClick = { searchQuery = "" }) {
+                                            Icon(Icons.Filled.Clear, contentDescription = null, modifier = Modifier.size(18.dp))
+                                        }
+                                    }
+                                    IconButton(
+                                        onClick = { showAdvancedFilters = !showAdvancedFilters }
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.Tune,
+                                            contentDescription = null,
+                                            tint = if (showAdvancedFilters || tagFilter.isNotEmpty() || pidFilter.isNotEmpty()) {
+                                                MaterialTheme.colorScheme.primary
+                                            } else {
+                                                MaterialTheme.colorScheme.onSurfaceVariant
+                                            }
+                                        )
+                                    }
                                 }
                             }
-                            IconButton(
-                                onClick = { showAdvancedFilters = !showAdvancedFilters }
+                        )
+
+                        // Advanced filters (Tag & PID)
+                        AnimatedVisibility(visible = showAdvancedFilters) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Icon(
-                                    imageVector = Icons.Filled.Tune,
-                                    contentDescription = null,
-                                    tint = if (showAdvancedFilters || tagFilter.isNotEmpty() || pidFilter.isNotEmpty()) {
-                                        MaterialTheme.colorScheme.primary
-                                    } else {
-                                        MaterialTheme.colorScheme.onSurfaceVariant
-                                    }
+                                OutlinedTextField(
+                                    value = tagFilter,
+                                    onValueChange = { tagFilter = it },
+                                    modifier = Modifier.weight(1f),
+                                    label = { Text(stringResource(R.string.logcat_filter_tag_hint)) },
+                                    singleLine = true,
+                                    shape = RoundedCornerShape(12.dp)
+                                )
+                                OutlinedTextField(
+                                    value = pidFilter,
+                                    onValueChange = { pidFilter = it },
+                                    modifier = Modifier.weight(0.7f),
+                                    label = { Text(stringResource(R.string.logcat_filter_pid_hint)) },
+                                    singleLine = true,
+                                    shape = RoundedCornerShape(12.dp)
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // --- Chips Row (Search modifiers + Log Level chips) ---
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // Regex Toggle Chip
+                            FilterChip(
+                                selected = isRegex,
+                                onClick = { isRegex = !isRegex },
+                                label = { Text(".*", fontWeight = FontWeight.Bold, fontSize = 12.sp) },
+                                shape = RoundedCornerShape(8.dp)
+                            )
+
+                            // Case-Sensitive Toggle Chip
+                            FilterChip(
+                                selected = isCaseSensitive,
+                                onClick = { isCaseSensitive = !isCaseSensitive },
+                                label = { Text("Aa", fontWeight = FontWeight.Bold, fontSize = 12.sp) },
+                                shape = RoundedCornerShape(8.dp)
+                            )
+
+                            Box(
+                                modifier = Modifier
+                                    .height(20.dp)
+                                    .width(1.dp)
+                                    .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                            )
+
+                            // Log Level Chips
+                            FilterChip(
+                                selected = selectedLevel == null,
+                                onClick = { selectedLevel = null },
+                                label = { Text("ALL", fontSize = 11.sp, fontWeight = FontWeight.SemiBold) },
+                                shape = RoundedCornerShape(8.dp)
+                            )
+
+                            LogLevel.values().forEach { level ->
+                                FilterChip(
+                                    selected = selectedLevel == level,
+                                    onClick = { selectedLevel = if (selectedLevel == level) null else level },
+                                    label = {
+                                        Text(
+                                            level.label,
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = if (selectedLevel == level) MaterialTheme.colorScheme.onPrimary else level.color
+                                        )
+                                    },
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = level.color
+                                    ),
+                                    shape = RoundedCornerShape(8.dp)
                                 )
                             }
                         }
                     }
-                )
-
-                // Advanced filters (Tag & PID)
-                AnimatedVisibility(visible = showAdvancedFilters) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        OutlinedTextField(
-                            value = tagFilter,
-                            onValueChange = { tagFilter = it },
-                            modifier = Modifier.weight(1f),
-                            label = { Text(stringResource(R.string.logcat_filter_tag_hint)) },
-                            singleLine = true,
-                            shape = RoundedCornerShape(12.dp)
-                        )
-                        OutlinedTextField(
-                            value = pidFilter,
-                            onValueChange = { pidFilter = it },
-                            modifier = Modifier.weight(0.7f),
-                            label = { Text(stringResource(R.string.logcat_filter_pid_hint)) },
-                            singleLine = true,
-                            shape = RoundedCornerShape(12.dp)
-                        )
-                    }
                 }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // --- Chips Row (Search modifiers + Log Level chips) ---
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Regex Toggle Chip
-                    FilterChip(
-                        selected = isRegex,
-                        onClick = { isRegex = !isRegex },
-                        label = { Text(".*", fontWeight = FontWeight.Bold, fontSize = 12.sp) },
-                        shape = RoundedCornerShape(8.dp)
-                    )
-
-                    // Case-Sensitive Toggle Chip
-                    FilterChip(
-                        selected = isCaseSensitive,
-                        onClick = { isCaseSensitive = !isCaseSensitive },
-                        label = { Text("Aa", fontWeight = FontWeight.Bold, fontSize = 12.sp) },
-                        shape = RoundedCornerShape(8.dp)
-                    )
-
-                    Box(
-                        modifier = Modifier
-                            .height(20.dp)
-                            .width(1.dp)
-                            .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                    )
-
-                    // Log Level Chips
-                    FilterChip(
-                        selected = selectedLevel == null,
-                        onClick = { selectedLevel = null },
-                        label = { Text("ALL", fontSize = 11.sp, fontWeight = FontWeight.SemiBold) },
-                        shape = RoundedCornerShape(8.dp)
-                    )
-
-                    LogLevel.values().forEach { level ->
-                        FilterChip(
-                            selected = selectedLevel == level,
-                            onClick = { selectedLevel = level },
-                            label = {
-                                Text(
-                                    level.label,
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = if (selectedLevel == level) MaterialTheme.colorScheme.onPrimary else level.color
-                                )
-                            },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = level.color
-                            ),
-                            shape = RoundedCornerShape(8.dp)
-                        )
-                    }
-                }
+                Spacer(modifier = Modifier.height(10.dp))
             }
         }
-
-        Spacer(modifier = Modifier.height(10.dp))
 
         // --- Log Output LazyColumn ---
         Box(
