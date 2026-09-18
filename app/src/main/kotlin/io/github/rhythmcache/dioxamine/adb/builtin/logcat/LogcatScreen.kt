@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import io.github.rhythmcache.dioxamine.R
 import io.github.rhythmcache.dioxamine.adb.AdbViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -50,6 +51,7 @@ fun LogcatScreen(
     var isAutoScroll by remember { mutableStateOf(true) }
 
     var searchQuery by remember { mutableStateOf("") }
+    var debouncedSearchQuery by remember { mutableStateOf("") }
     var isRegex by remember { mutableStateOf(false) }
     var isCaseSensitive by remember { mutableStateOf(false) }
     var selectedLevel by remember { mutableStateOf<LogLevel?>(null) } // null = ALL
@@ -61,6 +63,16 @@ fun LogcatScreen(
     var showClearDialog by remember { mutableStateOf(false) }
 
     val listState = rememberLazyListState()
+
+    // Debounce search query to avoid heavy re-filtering and regex compilation on every keystroke
+    LaunchedEffect(searchQuery) {
+        if (searchQuery.isEmpty()) {
+            debouncedSearchQuery = ""
+        } else {
+            delay(150)
+            debouncedSearchQuery = searchQuery
+        }
+    }
 
     // Streaming Coroutine
     LaunchedEffect(client, isStreaming) {
@@ -76,17 +88,15 @@ fun LogcatScreen(
                 var lastLevel = LogLevel.VERBOSE
                 var lastTag = ""
 
-                fun flushBatch() {
+                suspend fun flushBatch() {
                     if (batch.isNotEmpty()) {
                         val toAdd = ArrayList(batch)
                         batch.clear()
-                        coroutineScope.launch(Dispatchers.Main) {
+                        withContext(Dispatchers.Main) {
                             entries.addAll(toAdd)
                             if (entries.size > 3000) {
                                 val excess = entries.size - 2500
-                                repeat(excess) {
-                                    if (entries.isNotEmpty()) entries.removeAt(0)
-                                }
+                                entries.subList(0, excess).clear()
                             }
                         }
                     }
@@ -126,11 +136,12 @@ fun LogcatScreen(
     }
 
     // Filter computation
-    val filteredEntries by remember(entries, searchQuery, isRegex, isCaseSensitive, selectedLevel, tagFilter, pidFilter) {
+    val filteredEntries by remember(entries, debouncedSearchQuery, isRegex, isCaseSensitive, selectedLevel, tagFilter, pidFilter) {
         derivedStateOf {
-            val compiledRegex = if (isRegex && searchQuery.isNotBlank()) {
+            val query = debouncedSearchQuery
+            val compiledRegex = if (isRegex && query.isNotBlank()) {
                 val opts = if (isCaseSensitive) emptySet() else setOf(RegexOption.IGNORE_CASE)
-                runCatching { searchQuery.toRegex(opts) }.getOrNull()
+                runCatching { query.toRegex(opts) }.getOrNull()
             } else null
 
             entries.filter { entry ->
@@ -150,7 +161,7 @@ fun LogcatScreen(
                 }
 
                 // Text / Regex Search Query
-                if (searchQuery.isNotBlank()) {
+                if (query.isNotBlank()) {
                     if (compiledRegex != null) {
                         if (!compiledRegex.containsMatchIn(entry.message) &&
                             !compiledRegex.containsMatchIn(entry.tag) &&
@@ -158,8 +169,8 @@ fun LogcatScreen(
                         ) return@filter false
                     } else {
                         val ignoreCase = !isCaseSensitive
-                        if (!entry.message.contains(searchQuery, ignoreCase = ignoreCase) &&
-                            !entry.tag.contains(searchQuery, ignoreCase = ignoreCase)
+                        if (!entry.message.contains(query, ignoreCase = ignoreCase) &&
+                            !entry.tag.contains(query, ignoreCase = ignoreCase)
                         ) return@filter false
                     }
                 }
@@ -548,7 +559,7 @@ fun LogcatScreen(
                             }
                         }
                         showClearDialog = false
-                        Toast.makeText(context, R.string.logcat_device_buffer_cleared, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getString(R.string.logcat_device_buffer_cleared), Toast.LENGTH_SHORT).show()
                     }
                 ) {
                     Text(stringResource(R.string.logcat_clear_device_buffer))
