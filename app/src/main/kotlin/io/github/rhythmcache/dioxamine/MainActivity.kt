@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -93,7 +94,7 @@ class MainActivity : AppCompatActivity() {
 @Composable
 fun DioxamineApp(keyDir: File) {
     val context = LocalContext.current
-    var selectedTab by remember { mutableStateOf(Tab.ADB) }
+    var selectedTab by rememberSaveable { mutableStateOf(Tab.ADB) }
     val vm: AdbViewModel = viewModel(factory = object : androidx.lifecycle.ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {

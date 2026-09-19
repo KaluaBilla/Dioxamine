@@ -34,8 +34,8 @@ class ScrcpySession(
     private var control: ScrcpyControl? = null
     private var recorder: ScrcpyRecorder? = null
 
-    private var videoWidth = 486
-    private var videoHeight = 1080
+    private var videoWidth = 0
+    private var videoHeight = 0
 
     val isRecording: Boolean get() = recorder?.isRecording == true
 
@@ -185,8 +185,8 @@ class ScrcpySession(
                     val currentVideoStream = videoStream ?: throw Exception("Video stream not available")
                     val surface = holder?.surface ?: throw IllegalArgumentException("SurfaceHolder is required when video is enabled")
                     AppLogger.i(TAG_CLIENT, "Step 4: Initializing MediaCodec video decoder pipeline...")
-                    val targetWidth = if (config.maxSize > 0) (config.maxSize * 9 / 16) else 1080
-                    val targetHeight = if (config.maxSize > 0) config.maxSize else 1920
+                    val targetWidth = if (config.maxSize > 0) config.maxSize else 1920
+                    val targetHeight = if (config.maxSize > 0) config.maxSize else 1080
 
                     val decoder = ScrcpyDecoder(
                         surface = surface,
@@ -278,6 +278,10 @@ class ScrcpySession(
 
     fun sendNavRecents() {
         control?.sendNavRecents()
+    }
+
+    fun sendRotateDevice() {
+        control?.sendRotateDevice()
     }
 
     fun startRecording() {
