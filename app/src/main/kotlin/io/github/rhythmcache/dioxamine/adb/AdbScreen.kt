@@ -578,7 +578,7 @@ fun SideloadFlashScreen(vm: AdbViewModel) {
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(Modifier.height(8.dp))
-                Text("${state.percent.toInt()}% - ${state.bytesTransferred / 1024 / 1024}MB / ${state.totalBytes / 1024 / 1024}MB")
+                Text("${state.percent.toInt()}% - ${formatFileSize(state.bytesTransferred)} / ${formatFileSize(state.totalBytes)}")
                 Spacer(Modifier.height(12.dp))
                 TextButton(onClick = { vm.cancelFlash() }) { Text(stringResource(R.string.btn_cancel)) }
             }

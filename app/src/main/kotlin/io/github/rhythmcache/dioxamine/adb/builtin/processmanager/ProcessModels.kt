@@ -1,5 +1,7 @@
 package io.github.rhythmcache.dioxamine.adb.builtin.processmanager
 
+import io.github.rhythmcache.dioxamine.core.formatKb
+
 data class ProcessItem(
     val pid: Int,
     val uid: Int,
@@ -15,11 +17,7 @@ data class ProcessItem(
         get() = if (appLabel.isNotBlank()) appLabel else processName
 
     val formattedRam: String
-        get() = when {
-            rssKb >= 1024 * 1024 -> String.format("%.1f GB", rssKb / (1024.0 * 1024.0))
-            rssKb >= 1024 -> String.format("%.1f MB", rssKb / 1024.0)
-            else -> "$rssKb KB"
-        }
+        get() = formatKb(rssKb)
 
     val formattedCpu: String
         get() = String.format("%.2f%%", cpuPercent)
@@ -54,12 +52,6 @@ data class SystemMemoryStats(
 
     val formattedAvail: String
         get() = formatKb(availRamKb)
-
-    private fun formatKb(kb: Long): String = when {
-        kb >= 1024 * 1024 -> String.format("%.1f GB", kb / (1024.0 * 1024.0))
-        kb >= 1024 -> String.format("%.1f MB", kb / 1024.0)
-        else -> "$kb KB"
-    }
 }
 
 enum class ProcessFilter {

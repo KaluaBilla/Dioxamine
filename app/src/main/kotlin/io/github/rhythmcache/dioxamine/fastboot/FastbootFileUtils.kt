@@ -4,6 +4,8 @@ import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
 
+import io.github.rhythmcache.dioxamine.core.FormatUtils
+
 object FastbootFileUtils {
 
     fun resolveNameAndSize(context: Context, uri: Uri): Pair<String, Long> {
@@ -21,15 +23,7 @@ object FastbootFileUtils {
     }
 
     /** Strips a trailing extension, e.g. "boot.img" -> "boot", "vbmeta.tar.gz" -> "vbmeta.tar" (single strip only). */
-    fun stripExtension(fileName: String): String {
-        val dot = fileName.lastIndexOf('.')
-        return if (dot > 0) fileName.substring(0, dot) else fileName
-    }
+    fun stripExtension(fileName: String): String = fileName.substringBeforeLast('.', fileName)
 
-    fun formatBytes(bytes: Long): String {
-        if (bytes <= 0) return "0 B"
-        val exp = (Math.log(bytes.toDouble()) / Math.log(1024.0)).toInt().coerceAtLeast(1)
-        val pre = "KMGTPE"[exp - 1]
-        return String.format(java.util.Locale.US, "%.1f %sB", bytes / Math.pow(1024.0, exp.toDouble()), pre)
-    }
+    fun formatBytes(bytes: Long): String = FormatUtils.formatFileSize(bytes)
 }
