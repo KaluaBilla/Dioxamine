@@ -148,8 +148,8 @@ fun ScrcpyScreen(
     var torchOn by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    var videoWidth by remember { mutableStateOf(486) }
-    var videoHeight by remember { mutableStateOf(1080) }
+    var videoWidth by remember { mutableStateOf<Int?>(null) }
+    var videoHeight by remember { mutableStateOf<Int?>(null) }
 
     var activeSession by remember { mutableStateOf<ScrcpySession?>(null) }
 
@@ -212,6 +212,8 @@ fun ScrcpyScreen(
         isMirroring = false
         isFullScreen = false
         isRecording = false
+        videoWidth = null
+        videoHeight = null
     }
 
     DisposableEffect(Unit) {
@@ -298,6 +300,7 @@ fun ScrcpyScreen(
                                 activeSession?.sendCameraSetTorch(torchOn)
                             },
                             onToggleFullScreen = { isFullScreen = !isFullScreen },
+                            onRotateDevice = { activeSession?.sendRotateDevice() },
                             onStop = { stopMirroring() },
                             onNavBack = { activeSession?.sendNavBack() },
                             onNavHome = { activeSession?.sendNavHome() },
@@ -1459,8 +1462,8 @@ private fun FloatingVerticalNavBar(
 @Composable
 private fun ScrcpyVideoPlayer(
     modifier: Modifier,
-    videoWidth: Int,
-    videoHeight: Int,
+    videoWidth: Int?,
+    videoHeight: Int?,
     isFullScreen: Boolean,
     showFloatingNav: Boolean,
     bindVolumeKeys: Boolean,
@@ -1471,6 +1474,7 @@ private fun ScrcpyVideoPlayer(
     onToggleRecord: () -> Unit,
     onToggleTorch: () -> Unit,
     onToggleFullScreen: () -> Unit,
+    onRotateDevice: () -> Unit,
     onStop: () -> Unit,
     onNavBack: () -> Unit,
     onNavHome: () -> Unit,
@@ -1485,7 +1489,7 @@ private fun ScrcpyVideoPlayer(
         focusRequester.requestFocus()
     }
 
-    Box(
+    BoxWithConstraints(
         modifier = modifier
             .focusRequester(focusRequester)
             .focusTarget()
@@ -1512,7 +1516,19 @@ private fun ScrcpyVideoPlayer(
             },
         contentAlignment = Alignment.Center
     ) {
-        val aspectRatio = (videoWidth.toFloat() / maxOf(videoHeight, 1).toFloat()).coerceIn(0.2f, 5.0f)
+        val hasDimensions = videoWidth != null && videoHeight != null && videoWidth > 0 && videoHeight > 0
+        val videoRatio = if (hasDimensions) {
+            (videoWidth!!.toFloat() / maxOf(videoHeight!!, 1).toFloat()).coerceIn(0.2f, 5.0f)
+        } else {
+            16f / 9f
+        }
+        val containerRatio = if (maxHeight.value > 0f) (maxWidth / maxHeight).coerceIn(0.05f, 20f) else 1f
+
+        val playerModifier = if (videoRatio > containerRatio) {
+            Modifier.fillMaxWidth().aspectRatio(videoRatio)
+        } else {
+            Modifier.fillMaxHeight().aspectRatio(videoRatio)
+        }
 
         AndroidView(
             factory = { ctx ->
@@ -1565,8 +1581,15 @@ private fun ScrcpyVideoPlayer(
                 }
             },
             update = { /* view identity persists across recompositions */ },
-            modifier = Modifier.fillMaxHeight().aspectRatio(aspectRatio)
+            modifier = playerModifier
         )
+
+        if (!hasDimensions) {
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.Center),
+                color = Color.White
+            )
+        }
 
         Row(
             modifier = Modifier
@@ -1598,6 +1621,18 @@ private fun ScrcpyVideoPlayer(
                         if (torchOn) Icons.Filled.FlashOn else Icons.Filled.FlashOff,
                         contentDescription = stringResource(R.string.cd_toggle_torch),
                         tint = if (torchOn) Color.Yellow else Color.White
+                    )
+                }
+            }
+            if (!videoSourceIsCamera) {
+                IconButton(
+                    onClick = onRotateDevice,
+                    colors = IconButtonDefaults.iconButtonColors(containerColor = Color.Black.copy(alpha = 0.6f))
+                ) {
+                    Icon(
+                        Icons.Filled.ScreenRotation,
+                        contentDescription = stringResource(R.string.cd_rotate_device),
+                        tint = Color.White
                     )
                 }
             }

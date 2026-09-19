@@ -221,6 +221,7 @@
     <string name="display_bind_volume_subtitle">Bind hardware volume buttons to the mirrored device</string>
 
     <string name="cd_toggle_torch">Toggle Torch</string>
+    <string name="cd_rotate_device">Rotate Device</string>
     <string name="cd_toggle_fullscreen">Toggle Fullscreen</string>
     <string name="cd_stop_mirroring">Stop Mirroring</string>
     <string name="cd_nav_back">Back</string>
