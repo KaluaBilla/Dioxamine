@@ -329,21 +329,6 @@ private fun ManualTcpStep(
 
     var ip by remember { mutableStateOf(defaultIp) }
     var port by remember { mutableStateOf(defaultPort) }
-    var suggestionsExpanded by remember { mutableStateOf(false) }
-    var showAllSuggestions by remember { mutableStateOf(false) }
-    var ipFieldWidthPx by remember { mutableStateOf(0) }
-
-    val filteredAddresses = remember(ip, savedAddresses, showAllSuggestions) {
-        if (showAllSuggestions || ip.isBlank()) {
-            savedAddresses
-        } else {
-            val query = ip.trim()
-            savedAddresses.filter { addr ->
-                addr.substringBefore(":").contains(query, ignoreCase = true)
-            }
-        }
-    }
-
     val isIpValid = ip.isEmpty() || isValidIp(ip)
     val isPortValid = port.isEmpty() || isValidPort(port)
     val isFormValid = ip.isNotBlank() && isValidIp(ip) && isValidPort(port)
@@ -352,98 +337,20 @@ private fun ManualTcpStep(
         StepHeader(stringResource(R.string.discovery_connect_tcp), onBack)
         Spacer(Modifier.height(12.dp))
 
-        Box(modifier = Modifier.fillMaxWidth()) {
-            OutlinedTextField(
-                value = ip,
-                onValueChange = { input ->
-                    val (parsedIp, parsedPort) = parseIpAndPort(input)
-                    ip = parsedIp
-                    if (parsedPort != null) {
-                        port = parsedPort
-                    }
-                    showAllSuggestions = false
-                    val query = parsedIp.trim()
-                    val matches = savedAddresses.filter {
-                        it.substringBefore(":").contains(query, ignoreCase = true)
-                    }
-                    suggestionsExpanded = query.isNotBlank() && matches.isNotEmpty() && matches.any { it.substringBefore(":") != query }
-                },
-                label = { Text(stringResource(R.string.label_ip_address)) },
-                placeholder = {
-                    Text(
-                        stringResource(R.string.adb_ip_placeholder),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
-                    )
-                },
-                singleLine = true,
-                shape = RoundedCornerShape(12.dp),
-                isError = !isIpValid,
-                supportingText = if (!isIpValid) {
-                    { Text(stringResource(R.string.err_invalid_ip_format), color = MaterialTheme.colorScheme.error) }
-                } else null,
-                trailingIcon = {
-                    if (savedAddresses.isNotEmpty()) {
-                        IconButton(onClick = {
-                            showAllSuggestions = true
-                            suggestionsExpanded = !suggestionsExpanded
-                        }) {
-                            Icon(
-                                imageVector = if (suggestionsExpanded) Icons.Filled.ArrowDropUp else Icons.Filled.ArrowDropDown,
-                                contentDescription = stringResource(R.string.cd_expand_collapse)
-                            )
-                        }
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .onGloballyPositioned { coordinates ->
-                        ipFieldWidthPx = coordinates.size.width
-                    }
-            )
-
-            DropdownMenu(
-                expanded = suggestionsExpanded && filteredAddresses.isNotEmpty(),
-                onDismissRequest = { suggestionsExpanded = false },
-                properties = PopupProperties(focusable = false),
-                modifier = Modifier.width(with(LocalDensity.current) { ipFieldWidthPx.toDp() })
-            ) {
-                filteredAddresses.forEach { address ->
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                address,
-                                style = MaterialTheme.typography.bodyMedium,
-                                maxLines = 1
-                            )
-                        },
-                        onClick = {
-                            val (parsedIp, parsedPort) = parseIpAndPort(address)
-                            ip = parsedIp
-                            if (parsedPort != null) port = parsedPort
-                            suggestionsExpanded = false
-                        },
-                        trailingIcon = {
-                            IconButton(
-                                onClick = {
-                                    SavedAdbAddresses.remove(context, address)
-                                    savedAddresses = SavedAdbAddresses.getAll(context)
-                                    if (savedAddresses.isEmpty()) {
-                                        suggestionsExpanded = false
-                                    }
-                                },
-                                modifier = Modifier.size(24.dp)
-                            ) {
-                                Icon(
-                                    Icons.Filled.Close,
-                                    contentDescription = stringResource(R.string.cd_remove),
-                                    modifier = Modifier.size(16.dp)
-                                )
-                            }
-                        }
-                    )
-                }
-            }
-        }
+        AddressInputField(
+            ip = ip,
+            onIpChange = { ip = it },
+            onPortChange = { port = it },
+            suggestions = savedAddresses,
+            onRemoveSuggestion = { addr ->
+                SavedAdbAddresses.remove(context, addr)
+                savedAddresses = SavedAdbAddresses.getAll(context)
+            },
+            isError = !isIpValid,
+            supportingText = if (!isIpValid) {
+                { Text(stringResource(R.string.err_invalid_ip_format), color = MaterialTheme.colorScheme.error) }
+            } else null
+        )
 
         Spacer(Modifier.height(8.dp))
         OutlinedTextField(
@@ -534,18 +441,6 @@ private fun ManualTlsConnectStep(
     var port by remember { mutableStateOf(initial.port) }
     var isConnecting by remember { mutableStateOf(false) }
     var autoConnectAttempted by remember(initial.serviceName, initial.isJustPaired) { mutableStateOf(false) }
-    var suggestionsExpanded by remember { mutableStateOf(false) }
-    var showAllSuggestions by remember { mutableStateOf(false) }
-    var ipFieldWidthPx by remember { mutableStateOf(0) }
-
-    val filteredIps = remember(ip, savedIps, showAllSuggestions) {
-        if (showAllSuggestions || ip.isBlank()) {
-            savedIps
-        } else {
-            val query = ip.trim()
-            savedIps.filter { it.contains(query, ignoreCase = true) }
-        }
-    }
     val isValid = ip.isNotBlank() && port.toIntOrNull() != null
 
     val matchedDeviceId = extractDeviceIdentity(initial.serviceName)
@@ -587,90 +482,16 @@ private fun ManualTlsConnectStep(
         }
 
         Spacer(Modifier.height(12.dp))
-        Box(modifier = Modifier.fillMaxWidth()) {
-            OutlinedTextField(
-                value = ip,
-                onValueChange = { input ->
-                    val (parsedIp, parsedPort) = parseIpAndPort(input)
-                    ip = parsedIp
-                    if (parsedPort != null) {
-                        port = parsedPort
-                    }
-                    showAllSuggestions = false
-                    val query = parsedIp.trim()
-                    val matches = savedIps.filter { it.contains(query, ignoreCase = true) }
-                    suggestionsExpanded = query.isNotBlank() && matches.isNotEmpty() && matches.any { it != query }
-                },
-                label = { Text(stringResource(R.string.label_ip_address)) },
-                placeholder = {
-                    Text(
-                        stringResource(R.string.adb_ip_placeholder),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
-                    )
-                },
-                singleLine = true,
-                shape = RoundedCornerShape(12.dp),
-                trailingIcon = {
-                    if (savedIps.isNotEmpty()) {
-                        IconButton(onClick = {
-                            showAllSuggestions = true
-                            suggestionsExpanded = !suggestionsExpanded
-                        }) {
-                            Icon(
-                                imageVector = if (suggestionsExpanded) Icons.Filled.ArrowDropUp else Icons.Filled.ArrowDropDown,
-                                contentDescription = stringResource(R.string.cd_expand_collapse)
-                            )
-                        }
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .onGloballyPositioned { coordinates ->
-                        ipFieldWidthPx = coordinates.size.width
-                    }
-            )
-
-            DropdownMenu(
-                expanded = suggestionsExpanded && filteredIps.isNotEmpty(),
-                onDismissRequest = { suggestionsExpanded = false },
-                properties = PopupProperties(focusable = false),
-                modifier = Modifier.width(with(LocalDensity.current) { ipFieldWidthPx.toDp() })
-            ) {
-                filteredIps.forEach { savedIp ->
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                savedIp,
-                                style = MaterialTheme.typography.bodyMedium,
-                                maxLines = 1
-                            )
-                        },
-                        onClick = {
-                            ip = savedIp
-                            suggestionsExpanded = false
-                        },
-                        trailingIcon = {
-                            IconButton(
-                                onClick = {
-                                    SavedAdbAddresses.removeIp(context, savedIp)
-                                    savedIps = SavedAdbAddresses.getAllIps(context)
-                                    if (savedIps.isEmpty()) {
-                                        suggestionsExpanded = false
-                                    }
-                                },
-                                modifier = Modifier.size(24.dp)
-                            ) {
-                                Icon(
-                                    Icons.Filled.Close,
-                                    contentDescription = stringResource(R.string.cd_remove),
-                                    modifier = Modifier.size(16.dp)
-                                )
-                            }
-                        }
-                    )
-                }
+        AddressInputField(
+            ip = ip,
+            onIpChange = { ip = it },
+            onPortChange = { port = it },
+            suggestions = savedIps,
+            onRemoveSuggestion = { addr ->
+                SavedAdbAddresses.removeIp(context, addr)
+                savedIps = SavedAdbAddresses.getAllIps(context)
             }
-        }
+        )
         Spacer(Modifier.height(8.dp))
         OutlinedTextField(
             value = port, onValueChange = { port = it.filter(Char::isDigit) },
@@ -745,108 +566,22 @@ private fun ManualTlsPairStep(
     var code by remember { mutableStateOf(initial.code) }
     var isPairing by remember { mutableStateOf(false) }
     var errorMsg by remember { mutableStateOf<String?>(null) }
-    var suggestionsExpanded by remember { mutableStateOf(false) }
-    var showAllSuggestions by remember { mutableStateOf(false) }
-    var ipFieldWidthPx by remember { mutableStateOf(0) }
-
-    val filteredIps = remember(ip, savedIps, showAllSuggestions) {
-        if (showAllSuggestions || ip.isBlank()) {
-            savedIps
-        } else {
-            val query = ip.trim()
-            savedIps.filter { it.contains(query, ignoreCase = true) }
-        }
-    }
     val isValid = ip.isNotBlank() && port.toIntOrNull() != null && code.isNotBlank()
 
     Column(modifier = Modifier.fillMaxWidth()) {
         StepHeader(stringResource(R.string.discovery_pair_device), onBack)
         Spacer(Modifier.height(12.dp))
 
-        Box(modifier = Modifier.fillMaxWidth()) {
-            OutlinedTextField(
-                value = ip,
-                onValueChange = { input ->
-                    val (parsedIp, parsedPort) = parseIpAndPort(input)
-                    ip = parsedIp
-                    if (parsedPort != null) {
-                        port = parsedPort
-                    }
-                    showAllSuggestions = false
-                    val query = parsedIp.trim()
-                    val matches = savedIps.filter { it.contains(query, ignoreCase = true) }
-                    suggestionsExpanded = query.isNotBlank() && matches.isNotEmpty() && matches.any { it != query }
-                },
-                label = { Text(stringResource(R.string.label_ip_address)) },
-                placeholder = {
-                    Text(
-                        stringResource(R.string.adb_ip_placeholder),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
-                    )
-                },
-                singleLine = true,
-                shape = RoundedCornerShape(12.dp),
-                trailingIcon = {
-                    if (savedIps.isNotEmpty()) {
-                        IconButton(onClick = {
-                            showAllSuggestions = true
-                            suggestionsExpanded = !suggestionsExpanded
-                        }) {
-                            Icon(
-                                imageVector = if (suggestionsExpanded) Icons.Filled.ArrowDropUp else Icons.Filled.ArrowDropDown,
-                                contentDescription = stringResource(R.string.cd_expand_collapse)
-                            )
-                        }
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .onGloballyPositioned { coordinates ->
-                        ipFieldWidthPx = coordinates.size.width
-                    }
-            )
-
-            DropdownMenu(
-                expanded = suggestionsExpanded && filteredIps.isNotEmpty(),
-                onDismissRequest = { suggestionsExpanded = false },
-                properties = PopupProperties(focusable = false),
-                modifier = Modifier.width(with(LocalDensity.current) { ipFieldWidthPx.toDp() })
-            ) {
-                filteredIps.forEach { savedIp ->
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                savedIp,
-                                style = MaterialTheme.typography.bodyMedium,
-                                maxLines = 1
-                            )
-                        },
-                        onClick = {
-                            ip = savedIp
-                            suggestionsExpanded = false
-                        },
-                        trailingIcon = {
-                            IconButton(
-                                onClick = {
-                                    SavedAdbAddresses.removeIp(context, savedIp)
-                                    savedIps = SavedAdbAddresses.getAllIps(context)
-                                    if (savedIps.isEmpty()) {
-                                        suggestionsExpanded = false
-                                    }
-                                },
-                                modifier = Modifier.size(24.dp)
-                            ) {
-                                Icon(
-                                    Icons.Filled.Close,
-                                    contentDescription = stringResource(R.string.cd_remove),
-                                    modifier = Modifier.size(16.dp)
-                                )
-                            }
-                        }
-                    )
-                }
+        AddressInputField(
+            ip = ip,
+            onIpChange = { ip = it },
+            onPortChange = { port = it },
+            suggestions = savedIps,
+            onRemoveSuggestion = { addr ->
+                SavedAdbAddresses.removeIp(context, addr)
+                savedIps = SavedAdbAddresses.getAllIps(context)
             }
-        }
+        )
         Spacer(Modifier.height(8.dp))
         OutlinedTextField(
             value = port, onValueChange = { port = it.filter(Char::isDigit) },
@@ -894,6 +629,125 @@ private fun ManualTlsPairStep(
                 CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
             } else {
                 Text(stringResource(R.string.discovery_btn_pair))
+            }
+        }
+    }
+}
+
+@Composable
+private fun AddressInputField(
+    ip: String,
+    onIpChange: (String) -> Unit,
+    onPortChange: (String) -> Unit,
+    suggestions: List<String>,
+    onRemoveSuggestion: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    isError: Boolean = false,
+    supportingText: @Composable (() -> Unit)? = null
+) {
+    var suggestionsExpanded by remember { mutableStateOf(false) }
+    var showAllSuggestions by remember { mutableStateOf(false) }
+    var ipFieldWidthPx by remember { mutableStateOf(0) }
+
+    val filteredSuggestions = remember(ip, suggestions, showAllSuggestions) {
+        if (showAllSuggestions || ip.isBlank()) {
+            suggestions
+        } else {
+            val query = ip.trim()
+            suggestions.filter { item ->
+                item.substringBefore(":").contains(query, ignoreCase = true)
+            }
+        }
+    }
+
+    Box(modifier = modifier.fillMaxWidth()) {
+        OutlinedTextField(
+            value = ip,
+            onValueChange = { input ->
+                val (parsedIp, parsedPort) = parseIpAndPort(input)
+                onIpChange(parsedIp)
+                if (parsedPort != null) {
+                    onPortChange(parsedPort)
+                }
+                showAllSuggestions = false
+                val query = parsedIp.trim()
+                val matches = suggestions.filter {
+                    it.substringBefore(":").contains(query, ignoreCase = true)
+                }
+                suggestionsExpanded = query.isNotBlank() && matches.isNotEmpty() && matches.any { it.substringBefore(":") != query }
+            },
+            label = { Text(stringResource(R.string.label_ip_address)) },
+            placeholder = {
+                Text(
+                    stringResource(R.string.adb_ip_placeholder),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+                )
+            },
+            singleLine = true,
+            shape = RoundedCornerShape(12.dp),
+            isError = isError,
+            supportingText = supportingText,
+            trailingIcon = {
+                if (suggestions.isNotEmpty()) {
+                    IconButton(onClick = {
+                        showAllSuggestions = true
+                        suggestionsExpanded = !suggestionsExpanded
+                    }) {
+                        Icon(
+                            imageVector = if (suggestionsExpanded) Icons.Filled.ArrowDropUp else Icons.Filled.ArrowDropDown,
+                            contentDescription = stringResource(R.string.cd_expand_collapse)
+                        )
+                    }
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .onGloballyPositioned { coordinates ->
+                    ipFieldWidthPx = coordinates.size.width
+                }
+        )
+
+        DropdownMenu(
+            expanded = suggestionsExpanded && filteredSuggestions.isNotEmpty(),
+            onDismissRequest = { suggestionsExpanded = false },
+            properties = PopupProperties(focusable = false),
+            modifier = Modifier.width(with(LocalDensity.current) { ipFieldWidthPx.toDp() })
+        ) {
+            filteredSuggestions.forEach { item ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            item,
+                            style = MaterialTheme.typography.bodyMedium,
+                            maxLines = 1
+                        )
+                    },
+                    onClick = {
+                        val (parsedIp, parsedPort) = parseIpAndPort(item)
+                        onIpChange(parsedIp)
+                        if (parsedPort != null) {
+                            onPortChange(parsedPort)
+                        }
+                        suggestionsExpanded = false
+                    },
+                    trailingIcon = {
+                        IconButton(
+                            onClick = {
+                                onRemoveSuggestion(item)
+                                if (suggestions.size <= 1) {
+                                    suggestionsExpanded = false
+                                }
+                            },
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                Icons.Filled.Close,
+                                contentDescription = stringResource(R.string.cd_remove),
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+                )
             }
         }
     }

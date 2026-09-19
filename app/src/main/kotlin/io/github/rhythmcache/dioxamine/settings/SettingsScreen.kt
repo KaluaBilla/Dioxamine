@@ -38,6 +38,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -268,41 +269,13 @@ fun SettingsScreen(vm: AdbViewModel) {
         Spacer(Modifier.height(16.dp))
 
         // -- Theme Settings Card (Expandable) ------------------------
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Column {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { themeExpanded = !themeExpanded }
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(Icons.Filled.Palette, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                        Spacer(Modifier.width(12.dp))
-                        Column {
-                            Text(stringResource(R.string.settings_theme_title), fontWeight = FontWeight.Bold)
-                            Text(
-                                stringResource(themeMode.labelRes),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                    Icon(
-                        imageVector = if (themeExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                        contentDescription = stringResource(if (themeExpanded) R.string.cd_collapse else R.string.cd_expand)
-                    )
-                }
-
-                if (themeExpanded) {
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
-
-                    Column(modifier = Modifier.padding(16.dp)) {
+        ExpandableSettingsCard(
+            title = stringResource(R.string.settings_theme_title),
+            subtitle = stringResource(themeMode.labelRes),
+            icon = Icons.Filled.Palette,
+            expanded = themeExpanded,
+            onToggle = { themeExpanded = !themeExpanded }
+        ) {
                         // Monet / Dynamic Colors Option
                         Row(
                             modifier = Modifier
@@ -369,49 +342,18 @@ fun SettingsScreen(vm: AdbViewModel) {
                                 }
                             }
                         }
-                    }
-                }
-            }
         }
 
         Spacer(Modifier.height(16.dp))
 
         // -- Language Settings Card (Expandable) ---------------------
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Column {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { languageExpanded = !languageExpanded }
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(Icons.Filled.Language, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                        Spacer(Modifier.width(12.dp))
-                        Column {
-                            Text(stringResource(R.string.settings_language_title), fontWeight = FontWeight.Bold)
-                            Text(
-                                stringResource(currentSelectedLanguage.nameRes),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                    Icon(
-                        imageVector = if (languageExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                        contentDescription = stringResource(if (languageExpanded) R.string.cd_collapse else R.string.cd_expand)
-                    )
-                }
-
-                if (languageExpanded) {
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
-
-                    Column(modifier = Modifier.padding(16.dp)) {
+        ExpandableSettingsCard(
+            title = stringResource(R.string.settings_language_title),
+            subtitle = stringResource(currentSelectedLanguage.nameRes),
+            icon = Icons.Filled.Language,
+            expanded = languageExpanded,
+            onToggle = { languageExpanded = !languageExpanded }
+        ) {
                         supportedLanguages.forEach { option ->
                             val isSelected = option.languageTag == currentTag
                             Row(
@@ -469,49 +411,18 @@ fun SettingsScreen(vm: AdbViewModel) {
                                 color = MaterialTheme.colorScheme.primary
                             )
                         }
-                    }
-                }
-            }
         }
 
         Spacer(Modifier.height(16.dp))
 
         // -- ADB Key Card (Expandable) ------------------------------
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Column {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { keyExpanded = !keyExpanded }
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(Icons.Filled.Refresh, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                        Spacer(Modifier.width(12.dp))
-                        Column {
-                            Text(stringResource(R.string.settings_key_title), fontWeight = FontWeight.Bold)
-                            Text(
-                                stringResource(R.string.settings_adb_subtitle),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                    Icon(
-                        imageVector = if (keyExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                        contentDescription = stringResource(if (keyExpanded) R.string.cd_collapse else R.string.cd_expand)
-                    )
-                }
-
-                if (keyExpanded) {
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
-
-                    Column(modifier = Modifier.padding(16.dp)) {
+        ExpandableSettingsCard(
+            title = stringResource(R.string.settings_key_title),
+            subtitle = stringResource(R.string.settings_adb_subtitle),
+            icon = Icons.Filled.Refresh,
+            expanded = keyExpanded,
+            onToggle = { keyExpanded = !keyExpanded }
+        ) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -652,49 +563,18 @@ fun SettingsScreen(vm: AdbViewModel) {
                                 color = MaterialTheme.colorScheme.primary
                             )
                         }
-                    }
-                }
-            }
         }
 
         Spacer(Modifier.height(16.dp))
 
         // -- scrcpy Settings Card (Expandable) -----------------------
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Column {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { scrcpyExpanded = !scrcpyExpanded }
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(Icons.AutoMirrored.Filled.ScreenShare, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                        Spacer(Modifier.width(12.dp))
-                        Column {
-                            Text(stringResource(R.string.settings_scrcpy_title), fontWeight = FontWeight.Bold)
-                            Text(
-                                stringResource(R.string.settings_scrcpy_subtitle),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                    Icon(
-                        imageVector = if (scrcpyExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                        contentDescription = stringResource(if (scrcpyExpanded) R.string.cd_collapse else R.string.cd_expand)
-                    )
-                }
-
-                if (scrcpyExpanded) {
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
-
-                    Column(modifier = Modifier.padding(16.dp)) {
+        ExpandableSettingsCard(
+            title = stringResource(R.string.settings_scrcpy_title),
+            subtitle = stringResource(R.string.settings_scrcpy_subtitle),
+            icon = Icons.AutoMirrored.Filled.ScreenShare,
+            expanded = scrcpyExpanded,
+            onToggle = { scrcpyExpanded = !scrcpyExpanded }
+        ) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -750,49 +630,18 @@ fun SettingsScreen(vm: AdbViewModel) {
                                 }
                             )
                         }
-                    }
-                }
-            }
         }
 
         Spacer(Modifier.height(16.dp))
 
         // -- Logs Settings Card (Expandable) -------------------------
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Column {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { logsExpanded = !logsExpanded }
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(Icons.AutoMirrored.Filled.Article, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                        Spacer(Modifier.width(12.dp))
-                        Column {
-                            Text(stringResource(R.string.settings_logs_title), fontWeight = FontWeight.Bold)
-                            Text(
-                                stringResource(R.string.settings_logs_subtitle),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                    Icon(
-                        imageVector = if (logsExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                        contentDescription = stringResource(if (logsExpanded) R.string.cd_collapse else R.string.cd_expand)
-                    )
-                }
-
-                if (logsExpanded) {
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
-
-                    Column(modifier = Modifier.padding(16.dp)) {
+        ExpandableSettingsCard(
+            title = stringResource(R.string.settings_logs_title),
+            subtitle = stringResource(R.string.settings_logs_subtitle),
+            icon = Icons.AutoMirrored.Filled.Article,
+            expanded = logsExpanded,
+            onToggle = { logsExpanded = !logsExpanded }
+        ) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -850,49 +699,18 @@ fun SettingsScreen(vm: AdbViewModel) {
                             Spacer(Modifier.width(8.dp))
                             Text(stringResource(R.string.settings_btn_clear_logs))
                         }
-                    }
-                }
-            }
         }
 
         Spacer(Modifier.height(16.dp))
 
         // -- Plugin Settings Card (Expandable) -----------------------
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Column {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { pluginExpanded = !pluginExpanded }
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(Icons.Filled.Extension, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                        Spacer(Modifier.width(12.dp))
-                        Column {
-                            Text(stringResource(R.string.settings_plugins_title), fontWeight = FontWeight.Bold)
-                            Text(
-                                stringResource(R.string.settings_plugins_desc),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                    Icon(
-                        imageVector = if (pluginExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                        contentDescription = stringResource(if (pluginExpanded) R.string.cd_collapse else R.string.cd_expand)
-                    )
-                }
-
-                if (pluginExpanded) {
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
-
-                    Column(modifier = Modifier.padding(16.dp)) {
+        ExpandableSettingsCard(
+            title = stringResource(R.string.settings_plugins_title),
+            subtitle = stringResource(R.string.settings_plugins_desc),
+            icon = Icons.Filled.Extension,
+            expanded = pluginExpanded,
+            onToggle = { pluginExpanded = !pluginExpanded }
+        ) {
                         // WebView Debugging Toggle
                         Row(
                             modifier = Modifier
@@ -977,49 +795,18 @@ fun SettingsScreen(vm: AdbViewModel) {
                                 Text(stringResource(R.string.settings_plugins_btn_manage), style = MaterialTheme.typography.bodySmall)
                             }
                         }
-                    }
-                }
-            }
         }
 
         Spacer(Modifier.height(16.dp))
 
         // -- Miscellaneous Settings Card (Expandable) ----------------
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Column {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { miscExpanded = !miscExpanded }
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(Icons.Filled.Tune, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                        Spacer(Modifier.width(12.dp))
-                        Column {
-                            Text(stringResource(R.string.settings_misc_title), fontWeight = FontWeight.Bold)
-                            Text(
-                                stringResource(R.string.settings_misc_desc),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                    Icon(
-                        imageVector = if (miscExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                        contentDescription = stringResource(if (miscExpanded) R.string.cd_collapse else R.string.cd_expand)
-                    )
-                }
-
-                if (miscExpanded) {
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
-
-                    Column(modifier = Modifier.padding(16.dp)) {
+        ExpandableSettingsCard(
+            title = stringResource(R.string.settings_misc_title),
+            subtitle = stringResource(R.string.settings_misc_desc),
+            icon = Icons.Filled.Tune,
+            expanded = miscExpanded,
+            onToggle = { miscExpanded = !miscExpanded }
+        ) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -1045,54 +832,19 @@ fun SettingsScreen(vm: AdbViewModel) {
                                 }
                             )
                         }
-                    }
-                }
-            }
         }
 
         Spacer(Modifier.height(16.dp))
 
         // -- About Card (Expandable) --------------------------------
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Column {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { aboutExpanded = !aboutExpanded }
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(Icons.Filled.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                        Spacer(Modifier.width(12.dp))
-                        Column {
-                            Text(stringResource(R.string.settings_about_title), fontWeight = FontWeight.Bold)
-                            Text(
-                                stringResource(R.string.settings_about_desc),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                    Icon(
-                        imageVector = if (aboutExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                        contentDescription = stringResource(if (aboutExpanded) R.string.cd_collapse else R.string.cd_expand)
-                    )
-                }
-
-                if (aboutExpanded) {
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
-
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
+        ExpandableSettingsCard(
+            title = stringResource(R.string.settings_about_title),
+            subtitle = stringResource(R.string.settings_about_desc),
+            icon = Icons.Filled.Info,
+            expanded = aboutExpanded,
+            onToggle = { aboutExpanded = !aboutExpanded },
+            contentHorizontalAlignment = Alignment.CenterHorizontally
+        ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center
@@ -1183,9 +935,6 @@ fun SettingsScreen(vm: AdbViewModel) {
                             color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.clickable { openUrl(BuildConfig.SOURCE_CODE_URL) }
                         )
-                    }
-                }
-            }
         }
     }
 
@@ -1393,4 +1142,63 @@ private fun PluginPermissionsDialog(
             }
         }
     )
+}
+
+@Composable
+private fun ExpandableSettingsCard(
+    title: String,
+    subtitle: String?,
+    icon: ImageVector,
+    expanded: Boolean,
+    onToggle: () -> Unit,
+    modifier: Modifier = Modifier,
+    contentHorizontalAlignment: Alignment.Horizontal = Alignment.Start,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Card(modifier = modifier.fillMaxWidth()) {
+        Column {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onToggle)
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    Spacer(Modifier.width(12.dp))
+                    Column {
+                        Text(title, fontWeight = FontWeight.Bold)
+                        if (subtitle != null) {
+                            Text(
+                                subtitle,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+                Icon(
+                    imageVector = if (expanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                    contentDescription = stringResource(if (expanded) R.string.cd_collapse else R.string.cd_expand)
+                )
+            }
+
+            if (expanded) {
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalAlignment = contentHorizontalAlignment,
+                    content = content
+                )
+            }
+        }
+    }
 }
