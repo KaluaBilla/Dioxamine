@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "coal";
             const default_dark_theme = "coal";
-            window.path_to_searchindex_js = "searchindex-ef7a03c3.js";
+            window.path_to_searchindex_js = "searchindex-f5743248.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-9219018d.js"></script>
+        <script src="toc-1f612337.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -1935,7 +1935,7 @@ if (window.dioxamine &amp;&amp; window.__dioxamine_bridge_ready) {
 </li>
 <li><strong>Permission Whitelist</strong>:
 <ul>
-<li>Every entry in <code>permissions</code> must be one of the recognized permission strings: <code>shell</code>, <code>push</code>, <code>pull</code>, <code>install</code>, <code>forward</code>, <code>reverse</code>.</li>
+<li>Every entry in <code>permissions</code> must be one of the recognized permission strings: <code>shell</code>, <code>push</code>, <code>pull</code>, <code>install</code>, <code>forward</code>, <code>reverse</code>, <code>network</code> (or <code>internet</code>).</li>
 <li>Unknown permissions will fail manifest validation with an explicit error.</li>
 </ul>
 </li>
@@ -1962,6 +1962,7 @@ if (window.dioxamine &amp;&amp; window.__dioxamine_bridge_ready) {
 <tr><td style="text-align: left"><strong>Package Install</strong></td><td style="text-align: left"><code>"install"</code></td><td style="text-align: left">Allows streaming APK files to the device package manager (<code>pm install</code>).</td><td style="text-align: left"><code>dioxamine.installApk()</code></td></tr>
 <tr><td style="text-align: left"><strong>Port Forward</strong></td><td style="text-align: left"><code>"forward"</code></td><td style="text-align: left">Allows binding local host ports and forwarding traffic to target device sockets.</td><td style="text-align: left"><code>dioxamine.forwardPort()</code>, <code>dioxamine.forwardList()</code>, <code>dioxamine.forwardRemove()</code></td></tr>
 <tr><td style="text-align: left"><strong>Port Reverse</strong></td><td style="text-align: left"><code>"reverse"</code></td><td style="text-align: left">Allows binding target device ports and reversing traffic back to the host system.</td><td style="text-align: left"><code>dioxamine.reversePort()</code>, <code>dioxamine.reverseList()</code>, <code>dioxamine.reverseRemove()</code></td></tr>
+<tr><td style="text-align: left"><strong>Network Access</strong></td><td style="text-align: left"><code>"network"</code></td><td style="text-align: left">Allows sending HTTP/HTTPS requests to the internet, local networks, and localhost services.</td><td style="text-align: left"><code>dioxamine.http.fetch()</code></td></tr>
 </tbody>
 </table>
 </div>
@@ -2165,6 +2166,7 @@ if (window.dioxamine &amp;&amp; window.__dioxamine_bridge_ready) {
 <li><strong><a href="#ui-controls-dialogs-and-fullscreen">UI Controls, Dialogs and Fullscreen</a></strong>: Show native Material toasts, blocking dialogs, and toggle edge-to-edge full-screen mode.</li>
 <li><strong><a href="#native-logging-and-debugging">Native Logging and Debugging</a></strong>: Forward logs and console output directly to Android Logcat.</li>
 <li><strong><a href="#dynamic-theming-and-material-3">Dynamic Theming and Material 3</a></strong>: Integrate with Dioxamine’s dynamic color schemes and listen for theme changes.</li>
+<li><strong><a href="#network-http-client-httpfetch">Network HTTP Client (http.fetch)</a></strong>: Perform asynchronous HTTP/HTTPS network requests with native CORS-free execution and permission gating.</li>
 </ol>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="device-management-api"><a class="header" href="#device-management-api">Device Management API</a></h1>
@@ -2689,6 +2691,109 @@ console.log("Is dark theme active?", theme.isDark);
 });
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div>
+<h1 id="network-http-client-httpfetch"><a class="header" href="#network-http-client-httpfetch">Network HTTP Client (http.fetch)</a></h1>
+<p>The Network API provides native, CORS-free asynchronous HTTP and HTTPS client requests from within the plugin sandbox.</p>
+<p><strong>Required Permission</strong>: <code>"network"</code> (or <code>"internet"</code>).</p>
+<hr>
+<h2 id="overview-and-security-sandbox"><a class="header" href="#overview-and-security-sandbox">Overview and Security Sandbox</a></h2>
+<p>Dioxamine’s plugin runner operates under a hermetic security sandbox:</p>
+<ul>
+<li><strong>Direct WebView Network Calls are Blocked</strong>: All external resource loading via standard DOM elements (<code>&lt;script src="..."&gt;</code>, <code>&lt;img src="..."&gt;</code>, etc.) as well as browser-native <code>window.fetch()</code> or <code>XMLHttpRequest</code> are intercepted and rejected with <code>403 Forbidden</code>. The WebView engine itself is restricted to loading only local bundled plugin assets (<code>https://appassets.androidplatform.net/plugin/...</code>).</li>
+<li><strong>Bridge-Mediated Network Access</strong>: To communicate with external servers, APIs, or local network daemons, plugins must use the native <code>window.dioxamine.http.fetch()</code> API.</li>
+<li><strong>Permission Gate</strong>: The first time a plugin invokes <code>dioxamine.http.fetch()</code>, Dioxamine halts execution and presents an interactive consent dialog to the user. Once approved, the request is executed natively by Android’s network stack without CORS restrictions.</li>
+</ul>
+<hr>
+<h2 id="dioxaminehttpfetch"><a class="header" href="#dioxaminehttpfetch"><code>dioxamine.http.fetch()</code></a></h2>
+<p>Performs an asynchronous HTTP/HTTPS request using the native Android network client.</p>
+<pre><code class="language-javascript">dioxamine.http.fetch(url: string, options?: FetchOptions): Promise&lt;HttpResponse&gt;
+</code></pre>
+<h3 id="parameters-5"><a class="header" href="#parameters-5">Parameters</a></h3>
+<ul>
+<li><code>url</code> (<code>string</code>): Target URL. Must begin with <code>http://</code> or <code>https://</code>. Schemes such as <code>file://</code>, <code>content://</code>, or <code>jar://</code> are strictly rejected.</li>
+<li><code>options</code> (<code>object</code>, optional): Request configuration:
+<ul>
+<li><code>method</code> (<code>string</code>, optional): HTTP request method (<code>'GET'</code>, <code>'POST'</code>, <code>'PUT'</code>, <code>'PATCH'</code>, <code>'DELETE'</code>, <code>'HEAD'</code>). Default: <code>'GET'</code>.</li>
+<li><code>headers</code> (<code>Record&lt;string, string&gt;</code>, optional): Key-value map of request headers (e.g. <code>{ "Content-Type": "application/json", "Authorization": "Bearer ..." }</code>). Default: <code>{}</code>.</li>
+<li><code>body</code> (<code>string</code>, optional): Stringified payload to transmit in the request body for <code>POST</code>, <code>PUT</code>, or <code>PATCH</code>. Default: <code>null</code>.</li>
+<li><code>timeoutMs</code> (<code>number</code>, optional): Connection and read timeout in milliseconds (clamped between <code>1000</code> and <code>60000</code>). Default: <code>15000</code> (15 seconds).</li>
+</ul>
+</li>
+</ul>
+<h3 id="returns-5"><a class="header" href="#returns-5">Returns</a></h3>
+<p>A <code>Promise</code> resolving to an <code>HttpResponse</code> object:</p>
+<ul>
+<li><code>status</code> (<code>number</code>): The HTTP response status code (e.g. <code>200</code>, <code>201</code>, <code>404</code>, <code>500</code>).</li>
+<li><code>statusText</code> (<code>string</code>): The HTTP status message (e.g. <code>'OK'</code>, <code>'Created'</code>, <code>'Not Found'</code>).</li>
+<li><code>headers</code> (<code>Record&lt;string, string&gt;</code>): Map of response headers returned by the server.</li>
+<li><code>data</code> (<code>string</code>): The raw text content of the response body.</li>
+<li><code>text()</code> (<code>() =&gt; Promise&lt;string&gt;</code>): Helper method returning a Promise that resolves with the response body text.</li>
+<li><code>json()</code> (<code>() =&gt; Promise&lt;any&gt;</code>): Helper method returning a Promise that parses and resolves the response body as JSON.</li>
+</ul>
+<hr>
+<h2 id="examples"><a class="header" href="#examples">Examples</a></h2>
+<h3 id="1-basic-get-request-fetching-json"><a class="header" href="#1-basic-get-request-fetching-json">1. Basic GET Request (Fetching JSON)</a></h3>
+<pre><code class="language-javascript">async function fetchLatestRelease() {
+    try {
+        const response = await dioxamine.http.fetch("https://api.github.com/repos/rhythmcache/dioxamine/releases/latest", {
+            headers: {
+                "User-Agent": "Dioxamine-Plugin"
+            }
+        });
+
+        if (response.status === 200) {
+            const data = await response.json();
+            console.log("Latest release tag:", data.tag_name);
+            dioxamine.showToast(`Latest version: ${data.tag_name}`, "short");
+        } else {
+            console.error(`Request failed with status ${response.status}: ${response.statusText}`);
+        }
+    } catch (err) {
+        console.error("Network error:", err.message);
+        dioxamine.showToast(`Fetch error: ${err.message}`, "long");
+    }
+}
+</code></pre>
+<h3 id="2-post-request-with-json-body"><a class="header" href="#2-post-request-with-json-body">2. POST Request with JSON Body</a></h3>
+<pre><code class="language-javascript">async function sendTelemetry(eventData) {
+    try {
+        const response = await dioxamine.http.fetch("https://example.com/api/telemetry", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify(eventData),
+            timeoutMs: 10000
+        });
+
+        const result = await response.json();
+        console.log("Telemetry response:", result);
+    } catch (err) {
+        console.error("Failed to post telemetry:", err);
+    }
+}
+</code></pre>
+<h3 id="3-communicating-with-local-services--adb-forward-daemons"><a class="header" href="#3-communicating-with-local-services--adb-forward-daemons">3. Communicating with Local Services &amp; ADB Forward Daemons</a></h3>
+<p>Because Dioxamine plugins frequently interact with local tools, device daemons, or router administration panels, <code>dioxamine.http.fetch()</code> permits connections to local network IP addresses (<code>192.168.x.x</code>, <code>10.x.x.x</code>) and loopback (<code>127.0.0.1</code>):</p>
+<pre><code class="language-javascript">// Forward local port 8080 to an on-device web service running on port 8080
+await dioxamine.forwardPort("tcp:8080", "tcp:8080");
+
+// Query the on-device web service via loopback
+const res = await dioxamine.http.fetch("http://127.0.0.1:8080/status", {
+    timeoutMs: 5000
+});
+
+console.log("Device service status:", res.data);
+</code></pre>
+<hr>
+<h2 id="security-safeguards"><a class="header" href="#security-safeguards">Security Safeguards</a></h2>
+<ol>
+<li><strong>Permission Gating</strong>: Calling <code>dioxamine.http.fetch()</code> without <code>"network"</code> declared in <code>plugin.json</code> fails immediately. If declared, the user is presented with a native consent dialog on first use.</li>
+<li><strong>Protocol Whitelist</strong>: Only <code>http://</code> and <code>https://</code> URLs are permitted. Internal Android <code>file://</code>, <code>content://</code>, and <code>jar://</code> schemes are strictly prohibited to prevent unauthorized access to local device files.</li>
+<li><strong>Cloud Metadata Protection</strong>: Requests directed to link-local cloud metadata endpoints (<code>169.254.169.254</code> and <code>metadata.google.internal</code>) are blocked to safeguard cloud-hosted testing environments.</li>
+<li><strong>Streaming Transmission</strong>: Request payloads are streamed using fixed-length encoding to prevent memory bloat during large transfers.</li>
+</ol>
+<div style="break-before: page; page-break-before: always;"></div>
 <h1 id="packaging-and-distribution"><a class="header" href="#packaging-and-distribution">Packaging and Distribution</a></h1>
 <p>Dioxamine plugins are distributed as standard ZIP archives containing the manifest and web assets.</p>
 <hr>
@@ -2718,6 +2823,13 @@ Do not zip the outer folder itself. Zip the <strong>contents</strong> of the fol
 Name the archive <code>&lt;plugin-id&gt;.zip</code> (for example, <code>com.example.deviceinfo.zip</code>).</li>
 <li><strong>Asset References</strong>:
 Use relative paths in HTML (<code>&lt;link rel="stylesheet" href="styles.css"&gt;</code>, <code>&lt;script src="app.js"&gt;&lt;/script&gt;</code>). Do not use absolute filesystem paths.</li>
+<li><strong>Package Limits</strong>:
+<ul>
+<li>Maximum total uncompressed archive size: <strong>500 MB</strong>.</li>
+<li>Maximum archive entry count: <strong>5,000 files/folders</strong>.</li>
+<li>Dioxamine automatically checks available disk space before and during extraction to safeguard system storage.</li>
+</ul>
+</li>
 </ol>
 <hr>
 <h2 id="installing-plugins-in-dioxamine"><a class="header" href="#installing-plugins-in-dioxamine">Installing Plugins in Dioxamine</a></h2>
