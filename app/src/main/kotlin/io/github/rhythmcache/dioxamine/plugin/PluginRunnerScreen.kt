@@ -80,13 +80,17 @@ fun PluginRunnerScreen(
 
     var isFullScreen by remember(manifest.id) { mutableStateOf(manifest.fullscreen) }
 
+    val declaredPermissions = remember(manifest.permissions) {
+        manifest.permissions.mapNotNull { PluginPermission.fromManifestString(it) }
+    }
+
     val bridge =
         remember(manifest.id, bridgeScope) {
             DioxaminePluginBridge(
                 context = context.applicationContext,
                 pluginId = manifest.id,
                 pluginName = manifest.name,
-                declaredPermissions = manifest.permissions.mapNotNull { PluginPermission.fromManifestString(it) },
+                declaredPermissions = declaredPermissions,
                 getActiveClient = { vm.activeClient() },
                 permissionGate = permissionGate,
                 dialogGate = dialogGate,
@@ -219,7 +223,23 @@ fun PluginRunnerScreen(
                                 override fun shouldInterceptRequest(
                                     view: WebView,
                                     request: WebResourceRequest,
-                                ): WebResourceResponse? = assetLoader.shouldInterceptRequest(request.url)
+                                ): WebResourceResponse? {
+                                    val url = request.url
+                                    // Strictly allow only local sandbox assets (appassets.androidplatform.net).
+                                    // Direct external network loading (fetch/XHR/images/scripts) by the WebView engine is blocked.
+                                    // Plugins must use the permission-gated window.dioxamine.http.fetch() bridge for network requests.
+                                    if (isTrustedPluginUrl(url)) {
+                                        return assetLoader.shouldInterceptRequest(url)
+                                    }
+                                    return WebResourceResponse(
+                                        "text/plain",
+                                        "UTF-8",
+                                        403,
+                                        "Forbidden",
+                                        emptyMap(),
+                                        java.io.ByteArrayInputStream(ByteArray(0)),
+                                    )
+                                }
 
                                 override fun shouldOverrideUrlLoading(
                                     view: WebView?,
@@ -288,6 +308,11 @@ fun PluginRunnerScreen(
     }
 }
 
+/**
+ * Verifies that a URI targets only local bundled plugin files or app assets loaded via WebViewAssetLoader.
+ * Strictly checks that scheme is "https", host is "appassets.androidplatform.net", and path starts with "/plugin/" or "/assets/".
+ * NEVER matches remote or external internet endpoints.
+ */
 private fun isTrustedPluginUrl(uri: Uri): Boolean {
     if (uri.scheme != "https") return false
     if (uri.host != "appassets.androidplatform.net") return false

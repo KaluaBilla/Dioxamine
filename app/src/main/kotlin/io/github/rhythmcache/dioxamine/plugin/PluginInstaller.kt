@@ -23,12 +23,28 @@ class PluginInstaller(private val context: Context) {
             val stagingDir = File(context.cacheDir, "plugin_staging/${UUID.randomUUID()}").apply { mkdirs() }
 
             try {
+                val minStorageBuffer = 100L * 1024L * 1024L // 100MB safety reserve
+                val maxSizeBytes = 500L * 1024L * 1024L // 500MB total limit
+                val maxEntries = 5000
+
+                val zipSizeBytes = runCatching {
+                    context.contentResolver.openFileDescriptor(zipUri, "r")?.use { it.statSize }
+                }.getOrNull() ?: -1L
+
+                if (zipSizeBytes > maxSizeBytes) {
+                    return@withContext PluginInstallResult.Error("Plugin zip exceeds 500MB limit")
+                }
+
+                val estimatedRequiredSpace = if (zipSizeBytes > 0) (zipSizeBytes * 2) + minStorageBuffer else minStorageBuffer
+                if (context.filesDir.usableSpace < estimatedRequiredSpace) {
+                    return@withContext PluginInstallResult.Error("Insufficient storage space for plugin installation")
+                }
+
                 val inputStream = context.contentResolver.openInputStream(zipUri)
                     ?: return@withContext PluginInstallResult.Error("Could not open file")
 
-                val maxSizeBytes = 50L * 1024L * 1024L // 50MB total limit
-                val maxEntries = 500
                 var totalBytes = 0L
+                var bytesSinceLastCheck = 0L
                 var entryCount = 0
 
                 val canonicalStagingPath = stagingDir.canonicalPath + File.separator
@@ -61,6 +77,13 @@ class PluginInstaller(private val context: Context) {
                                         totalBytes += len
                                         if (totalBytes > maxSizeBytes) {
                                             return@withContext PluginInstallResult.Error("Plugin exceeds size limits")
+                                        }
+                                        bytesSinceLastCheck += len
+                                        if (bytesSinceLastCheck >= 5L * 1024L * 1024L) {
+                                            bytesSinceLastCheck = 0L
+                                            if (stagingDir.usableSpace < minStorageBuffer) {
+                                                return@withContext PluginInstallResult.Error("Device storage space running low during installation")
+                                            }
                                         }
                                         fos.write(buffer, 0, len)
                                     }

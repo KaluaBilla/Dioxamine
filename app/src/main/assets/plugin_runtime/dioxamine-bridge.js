@@ -113,6 +113,43 @@
             w: function(tag, msg) { if (window.DioxamineNative && window.DioxamineNative.logMessage) window.DioxamineNative.logMessage('W', tag, String(msg)); },
             e: function(tag, msg) { if (window.DioxamineNative && window.DioxamineNative.logMessage) window.DioxamineNative.logMessage('E', tag, String(msg)); },
             log: function(msg) { this.d('Plugin', msg); }
+        },
+        http: {
+            fetch: function(url, options) {
+                if (!url || typeof url !== 'string') {
+                    return Promise.reject(new Error("URL must be a non-empty string"));
+                }
+                var trimmed = url.trim().toLowerCase();
+                if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+                    return Promise.reject(new Error("Unsupported URL scheme. Only http:// and https:// URLs are allowed."));
+                }
+                options = options || {};
+                var payload = {
+                    url: url,
+                    method: options.method || 'GET',
+                    headers: options.headers || {},
+                    body: options.body != null ? String(options.body) : null,
+                    timeoutMs: typeof options.timeoutMs === 'number' ? options.timeoutMs : 15000
+                };
+                return callNative('httpRequest', JSON.stringify(payload)).then(function(res) {
+                    return {
+                        status: res.status,
+                        statusText: res.statusText || (res.status >= 200 && res.status < 300 ? 'OK' : 'Error'),
+                        headers: res.headers || {},
+                        data: res.data || '',
+                        text: function() { return Promise.resolve(res.data || ''); },
+                        json: function() {
+                            return new Promise(function(resolve, reject) {
+                                try {
+                                    resolve(JSON.parse(res.data || ''));
+                                } catch (e) {
+                                    reject(e);
+                                }
+                            });
+                        }
+                    };
+                });
+            }
         }
     };
 

@@ -13,7 +13,8 @@ enum class PluginPermission {
     PULL,
     INSTALL,
     FORWARD,
-    REVERSE;
+    REVERSE,
+    NETWORK;
 
     companion object {
         fun fromManifestString(s: String): PluginPermission? =
@@ -24,6 +25,7 @@ enum class PluginPermission {
                 "install" -> INSTALL
                 "forward" -> FORWARD
                 "reverse" -> REVERSE
+                "network", "internet" -> NETWORK
                 else -> null
             }
     }

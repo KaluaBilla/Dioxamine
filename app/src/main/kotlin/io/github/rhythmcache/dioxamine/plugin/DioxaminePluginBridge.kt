@@ -25,6 +25,10 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import org.json.JSONObject
+import java.net.HttpURLConnection
+import java.net.InetAddress
+import java.net.URL
 import java.util.UUID
 
 @Serializable
@@ -718,5 +722,119 @@ class DioxaminePluginBridge(
     @JavascriptInterface
     fun closePlugin() {
         exitPlugin()
+    }
+
+    @JavascriptInterface
+    fun httpRequest(requestJson: String, callbackId: String) {
+        scope.launch(Dispatchers.IO) {
+            try {
+                val granted = permissionGate.checkPermission(
+                    pluginId = pluginId,
+                    pluginName = pluginName,
+                    declaredPermissions = declaredPermissions,
+                    required = PluginPermission.NETWORK,
+                )
+                if (!granted) {
+                    reject(callbackId, "Permission denied: network")
+                    return@launch
+                }
+
+                val req = JSONObject(requestJson)
+                val urlString = req.getString("url").trim()
+                val method = req.optString("method", "GET").uppercase().trim()
+                val body = if (req.isNull("body")) null else req.optString("body", null)
+                val timeoutMs = req.optInt("timeoutMs", 15000).coerceIn(1000, 60000)
+                val headersObj = req.optJSONObject("headers")
+
+                val parsedUrl = runCatching { URL(urlString) }.getOrElse {
+                    reject(callbackId, "Malformed URL: $urlString")
+                    return@launch
+                }
+
+                val protocol = parsedUrl.protocol.lowercase()
+                if (protocol != "http" && protocol != "https") {
+                    reject(callbackId, "Unsupported URL scheme '$protocol'. Only http and https are allowed.")
+                    return@launch
+                }
+
+                val rawHost = parsedUrl.host.lowercase()
+                if (rawHost.isBlank()) {
+                    reject(callbackId, "URL host cannot be empty")
+                    return@launch
+                }
+
+                // SSRF Protection: Block cloud metadata service endpoints (AWS/GCP/Azure link-local 169.254.169.254)
+                if (rawHost == "169.254.169.254" || rawHost == "metadata.google.internal" || rawHost.endsWith(".metadata.google.internal")) {
+                    reject(callbackId, "Access to cloud metadata endpoints is blocked")
+                    return@launch
+                }
+
+                // Verify resolved IP address is not pointing to cloud metadata service
+                val resolvedIp = runCatching { InetAddress.getByName(rawHost) }.getOrNull()
+                if (resolvedIp?.hostAddress == "169.254.169.254") {
+                    reject(callbackId, "Access to cloud metadata endpoints is blocked")
+                    return@launch
+                }
+
+                val connection = (parsedUrl.openConnection() as HttpURLConnection).apply {
+                    requestMethod = method
+                    connectTimeout = timeoutMs
+                    readTimeout = timeoutMs
+                    instanceFollowRedirects = true
+                    if (headersObj != null) {
+                        val keys = headersObj.keys()
+                        while (keys.hasNext()) {
+                            val key = keys.next()
+                            setRequestProperty(key, headersObj.getString(key))
+                        }
+                    }
+                }
+
+                if (body != null && (method == "POST" || method == "PUT" || method == "PATCH")) {
+                    connection.doOutput = true
+                    val bytes = body.toByteArray(Charsets.UTF_8)
+                    connection.setFixedLengthStreamingMode(bytes.size)
+                    connection.outputStream.use { out ->
+                        out.write(bytes)
+                        out.flush()
+                    }
+                }
+
+                val statusCode = connection.responseCode
+                val statusMessage = runCatching { connection.responseMessage }.getOrNull() ?: ""
+
+                val responseText = runCatching {
+                    val stream = if (statusCode >= 400) {
+                        connection.errorStream ?: connection.inputStream
+                    } else {
+                        connection.inputStream
+                    }
+                    stream?.bufferedReader(Charsets.UTF_8)?.use { it.readText() } ?: ""
+                }.getOrDefault("")
+
+                val responseHeaders = buildJsonObject {
+                    connection.headerFields.forEach { (k, v) ->
+                        if (k != null && v.isNotEmpty()) {
+                            put(k, v.joinToString(", "))
+                        }
+                    }
+                }
+
+                connection.disconnect()
+
+                resolve(
+                    callbackId,
+                    buildJsonObject {
+                        put("status", statusCode)
+                        put("statusText", statusMessage)
+                        put("data", responseText)
+                        put("headers", responseHeaders)
+                    }
+                )
+            } catch (e: Exception) {
+                AppLogger.e("PluginBridge", "httpRequest failed for $pluginId", e)
+                reject(callbackId, e.message ?: e.toString())
+            }
+        }
     }
 }
