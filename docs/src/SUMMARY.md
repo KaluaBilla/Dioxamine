@@ -50,5 +50,6 @@
     - [UI Controls, Dialogs and Fullscreen](plugins/api/ui.md)
     - [Native Logging and Debugging](plugins/api/logging.md)
     - [Dynamic Theming and Material 3](plugins/api/theming.md)
+    - [Network HTTP Client (http.fetch)](plugins/api/network.md)
 - [Packaging and Distribution](plugins/packaging.md)
 - [Complete Plugin Examples](plugins/examples.md)

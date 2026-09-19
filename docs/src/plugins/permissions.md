@@ -14,6 +14,7 @@ Plugins must explicitly declare every required capability in `plugin.json`. Atte
 | **Package Install** | `"install"` | Allows streaming APK files to the device package manager (`pm install`). | `dioxamine.installApk()` |
 | **Port Forward** | `"forward"` | Allows binding local host ports and forwarding traffic to target device sockets. | `dioxamine.forwardPort()`, `dioxamine.forwardList()`, `dioxamine.forwardRemove()` |
 | **Port Reverse** | `"reverse"` | Allows binding target device ports and reversing traffic back to the host system. | `dioxamine.reversePort()`, `dioxamine.reverseList()`, `dioxamine.reverseRemove()` |
+| **Network Access** | `"network"` | Allows sending HTTP/HTTPS requests to the internet, local networks, and localhost services. | `dioxamine.http.fetch()` |
 
 ## Permission Policies
 

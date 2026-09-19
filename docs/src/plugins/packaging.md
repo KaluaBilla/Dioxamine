@@ -39,6 +39,10 @@ Compress-Archive -Path "C:\path\to\com.example.myplugin\*" -DestinationPath "C:\
    Name the archive `<plugin-id>.zip` (for example, `com.example.deviceinfo.zip`).
 3. **Asset References**:
    Use relative paths in HTML (`<link rel="stylesheet" href="styles.css">`, `<script src="app.js"></script>`). Do not use absolute filesystem paths.
+4. **Package Limits**:
+   - Maximum total uncompressed archive size: **500 MB**.
+   - Maximum archive entry count: **5,000 files/folders**.
+   - Dioxamine automatically checks available disk space before and during extraction to safeguard system storage.
 
 ---
 

@@ -53,7 +53,7 @@ When installing or loading a plugin, Dioxamine strictly enforces the following v
    - `entry` and `icon` paths must point inside the plugin directory.
    - Any path containing `..` or leading slashes will be rejected.
 3. **Permission Whitelist**:
-   - Every entry in `permissions` must be one of the recognized permission strings: `shell`, `push`, `pull`, `install`, `forward`, `reverse`.
+   - Every entry in `permissions` must be one of the recognized permission strings: `shell`, `push`, `pull`, `install`, `forward`, `reverse`, `network` (or `internet`).
    - Unknown permissions will fail manifest validation with an explicit error.
 4. **App Version Compatibility**:
    - If `minAppVersionCode` exceeds the running Dioxamine application version, installation will be blocked with a compatibility notice.
