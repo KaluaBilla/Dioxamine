@@ -11,7 +11,10 @@ object FastbootFileUtils {
         FileUtils.resolveNameAndSize(context, uri, defaultName = "image")
 
     /** Strips a trailing extension, e.g. "boot.img" -> "boot", "vbmeta.tar.gz" -> "vbmeta.tar" (single strip only). */
-    fun stripExtension(fileName: String): String = fileName.substringBeforeLast('.', fileName)
+    fun stripExtension(fileName: String): String {
+        val dot = fileName.lastIndexOf('.')
+        return if (dot > 0) fileName.substring(0, dot) else fileName
+    }
 
     fun formatBytes(bytes: Long): String = FormatUtils.formatFileSize(bytes)
 }

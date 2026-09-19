@@ -255,7 +255,7 @@ fun PackageManagerScreen(
             try {
                 val copiedFiles = mutableListOf<File>()
                 for (uri in uris) {
-                    val displayName = FileUtils.resolveDisplayName(context, uri) ?: "temp_${copiedFiles.size}.apk"
+                    val displayName = FileUtils.resolveDisplayName(context, uri, fallbackToLastPathSegment = true) ?: "temp_${copiedFiles.size}.apk"
                     val targetFile = File(tempDir, displayName)
                     context.contentResolver.openInputStream(uri)?.use { input ->
                         FileOutputStream(targetFile).use { output ->
