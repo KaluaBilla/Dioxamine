@@ -497,7 +497,7 @@ fun SideloadFlashScreen(vm: AdbViewModel) {
         contract = androidx.activity.result.contract.ActivityResultContracts.OpenDocument()
     ) { uri ->
         pickedUri = uri
-        pickedFileName = uri?.let { resolveDisplayName(context.contentResolver, it) }
+        pickedFileName = uri?.let { FileUtils.resolveDisplayName(context.contentResolver, it) }
     }
 
     var isStartingFlash by remember { mutableStateOf(false) }
@@ -635,15 +635,4 @@ fun RescueScreen(vm: AdbViewModel) {
             dismissButton = { TextButton(onClick = { showWipeConfirm = false }) { Text(stringResource(R.string.btn_cancel)) } }
         )
     }
-}
-
-fun resolveDisplayName(resolver: android.content.ContentResolver, uri: android.net.Uri): String? {
-    return try {
-        resolver.query(uri, arrayOf(android.provider.OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
-            if (cursor.moveToFirst()) {
-                val idx = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
-                if (idx >= 0) cursor.getString(idx) else null
-            } else null
-        }
-    } catch (_: Exception) { null }
 }

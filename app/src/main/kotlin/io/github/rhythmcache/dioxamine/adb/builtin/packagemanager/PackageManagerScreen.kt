@@ -41,6 +41,7 @@ import io.github.rhythmcache.dioxamine.adb.AdbViewModel
 import io.github.rhythmcache.dioxamine.adb.readExactly
 import io.github.rhythmcache.dioxamine.core.AppLogger
 import io.github.rhythmcache.dioxamine.core.Constants
+import io.github.rhythmcache.dioxamine.core.FileUtils
 import io.github.rhythmcache.dioxamine.core.executeShell
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
@@ -254,7 +255,7 @@ fun PackageManagerScreen(
             try {
                 val copiedFiles = mutableListOf<File>()
                 for (uri in uris) {
-                    val displayName = getFileNameFromUri(context, uri) ?: "temp_${copiedFiles.size}.apk"
+                    val displayName = FileUtils.resolveDisplayName(context, uri) ?: "temp_${copiedFiles.size}.apk"
                     val targetFile = File(tempDir, displayName)
                     context.contentResolver.openInputStream(uri)?.use { input ->
                         FileOutputStream(targetFile).use { output ->
@@ -1019,20 +1020,6 @@ fun InfoRow(label: String, value: String) {
             fontWeight = FontWeight.Medium
         )
     }
-}
-
-private fun getFileNameFromUri(context: Context, uri: Uri): String? {
-    var name: String? = null
-    val cursor = context.contentResolver.query(uri, null, null, null, null)
-    cursor?.use {
-        if (it.moveToFirst()) {
-            val nameIndex = it.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
-            if (nameIndex != -1) {
-                name = it.getString(nameIndex)
-            }
-        }
-    }
-    return name ?: uri.lastPathSegment
 }
 
 @Composable

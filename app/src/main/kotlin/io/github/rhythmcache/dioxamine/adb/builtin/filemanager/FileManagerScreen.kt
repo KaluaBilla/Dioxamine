@@ -2,8 +2,8 @@ package io.github.rhythmcache.dioxamine.adb.builtin.filemanager
 
 import android.content.Context
 import android.net.Uri
-import android.provider.OpenableColumns
 import android.widget.Toast
+import io.github.rhythmcache.dioxamine.core.FileUtils
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -319,17 +319,11 @@ fun FileManagerScreen(
 
         coroutineScope.launch(Dispatchers.IO) {
             for (uri in uris) {
-                var fileName = "file_${System.currentTimeMillis()}"
-                var fileSize = 0L
-
-                context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-                    if (cursor.moveToFirst()) {
-                        val nameIdx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-                        val sizeIdx = cursor.getColumnIndex(OpenableColumns.SIZE)
-                        if (nameIdx != -1) fileName = cursor.getString(nameIdx)
-                        if (sizeIdx != -1) fileSize = cursor.getLong(sizeIdx)
-                    }
-                }
+                val (fileName, fileSize) = FileUtils.resolveNameAndSize(
+                    context,
+                    uri,
+                    defaultName = "file_${System.currentTimeMillis()}"
+                )
 
                 val remoteDest = if (currentPath == "/") "/$fileName" else "$currentPath/$fileName"
                 val pendingItem = RemoteFileItem(
