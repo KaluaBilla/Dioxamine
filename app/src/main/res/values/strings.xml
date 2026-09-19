@@ -224,6 +224,8 @@
     <string name="cd_rotate_device">Rotate Device</string>
     <string name="cd_toggle_fullscreen">Toggle Fullscreen</string>
     <string name="cd_stop_mirroring">Stop Mirroring</string>
+    <string name="cd_expand_controls">Show Controls</string>
+    <string name="cd_collapse_controls">Hide Controls</string>
     <string name="cd_nav_back">Back</string>
     <string name="cd_nav_home">Home</string>
     <string name="cd_nav_recents">Recents</string>
