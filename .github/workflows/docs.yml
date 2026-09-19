@@ -9,6 +9,10 @@ on:
       - '!docs/book/**'
   workflow_dispatch:
 
+concurrency:
+  group: docs-build
+  cancel-in-progress: false
+
 permissions:
   contents: write
 
@@ -19,6 +23,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup mdBook
         uses: peaceiris/actions-mdbook@v2
@@ -31,8 +37,15 @@ jobs:
           mdbook build
           touch book/.nojekyll
 
-      - name: Commit updated docs
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "docs: update compiled mdbook [skip ci]"
-          file_pattern: 'docs/book/**'
+      - name: Commit and push updated docs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/book/
+          if git diff --staged --quiet; then
+            echo "No changes to docs/book"
+            exit 0
+          fi
+          git commit -m "docs: update compiled mdbook [skip ci]"
+          git pull --rebase origin main
+          git push origin main
