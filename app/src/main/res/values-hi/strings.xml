@@ -723,6 +723,7 @@
     <string name="settings_about_version">संस्करण %1$s</string>
     <string name="settings_about_documentation">दस्तावेज़ीकरण (Documentation)</string>
     <string name="settings_about_source_code">सोर्स कोड</string>
+    <string name="settings_about_donate">डोनेट करें (Donate)</string>
     <string name="cd_github">GitHub</string>
     <string name="cd_telegram">Telegram</string>
 

@@ -731,6 +731,7 @@
     <string name="settings_about_version">Version %1$s</string>
     <string name="settings_about_documentation">Documentation</string>
     <string name="settings_about_source_code">Source Code</string>
+    <string name="settings_about_donate">Donate</string>
     <string name="cd_github">GitHub</string>
     <string name="cd_telegram">Telegram</string>
 

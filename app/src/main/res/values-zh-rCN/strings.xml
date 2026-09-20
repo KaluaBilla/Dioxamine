@@ -727,6 +727,7 @@
     <string name="settings_about_version">版本 %1$s</string>
     <string name="settings_about_documentation">文档</string>
     <string name="settings_about_source_code">源代码</string>
+    <string name="settings_about_donate">捐赠支持</string>
     <string name="cd_github">GitHub</string>
     <string name="cd_telegram">Telegram</string>
 

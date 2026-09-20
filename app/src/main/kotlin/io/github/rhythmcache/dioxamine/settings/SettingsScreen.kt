@@ -932,6 +932,18 @@ fun SettingsScreen(vm: AdbViewModel) {
                             color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.clickable { openUrl(BuildConfig.SOURCE_CODE_URL) }
                         )
+
+                        Spacer(Modifier.height(8.dp))
+
+                        Text(
+                            text = stringResource(R.string.settings_about_donate),
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                textDecoration = TextDecoration.Underline
+                            ),
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.clickable { openUrl(BuildConfig.DONATE_URL) }
+                        )
         }
     }
 

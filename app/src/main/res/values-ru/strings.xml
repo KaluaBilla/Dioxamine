@@ -729,6 +729,7 @@
     <string name="settings_about_version">Версия %1$s</string>
     <string name="settings_about_documentation">Документация</string>
     <string name="settings_about_source_code">Исходный код</string>
+    <string name="settings_about_donate">Пожертвовать</string>
     <string name="cd_github">GitHub</string>
     <string name="cd_telegram">Telegram</string>
 
