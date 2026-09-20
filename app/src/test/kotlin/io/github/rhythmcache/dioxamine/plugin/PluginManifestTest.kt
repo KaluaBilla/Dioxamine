@@ -7,6 +7,7 @@ class PluginManifestTest {
 
     private fun validJson(permissionsJson: String = "{}"): String = """
         {
+            "schemaVersion": 1,
             "id": "com.example.fastbootplugin",
             "name": "Fastboot Test Plugin",
             "version": "1.0.0",

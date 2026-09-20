@@ -209,11 +209,13 @@ fun PluginRunnerScreen(
                         webViewRef = this
                         @Suppress("DEPRECATION")
                         @SuppressLint("SetJavaScriptEnabled")
-                        settings.javaScriptEnabled = true
-                        settings.allowFileAccess = false
-                        settings.allowContentAccess = false
-                        settings.allowUniversalAccessFromFileURLs = false
-                        settings.allowFileAccessFromFileURLs = false
+                        with(settings) {
+                            javaScriptEnabled = true
+                            allowFileAccess = false
+                            allowContentAccess = false
+                            allowUniversalAccessFromFileURLs = false
+                            allowFileAccessFromFileURLs = false
+                        }
                         layoutParams = android.view.ViewGroup.LayoutParams(
                             android.view.ViewGroup.LayoutParams.MATCH_PARENT,
                             android.view.ViewGroup.LayoutParams.MATCH_PARENT,

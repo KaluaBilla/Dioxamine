@@ -1522,7 +1522,7 @@ private fun ScrcpyVideoPlayer(
     ) {
         val hasDimensions = videoWidth != null && videoHeight != null && videoWidth > 0 && videoHeight > 0
         val videoRatio = if (hasDimensions) {
-            (videoWidth!!.toFloat() / maxOf(videoHeight!!, 1).toFloat()).coerceIn(0.2f, 5.0f)
+            (videoWidth.toFloat() / maxOf(videoHeight, 1).toFloat()).coerceIn(0.2f, 5.0f)
         } else {
             16f / 9f
         }

@@ -20,10 +20,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalClipboardManager
+import android.content.ClipData
+import android.content.ClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -44,7 +44,7 @@ fun LogcatScreen(
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
-    val clipboardManager = LocalClipboardManager.current
+    val clipboardManager = remember(context) { context.getSystemService(ClipboardManager::class.java) }
     val coroutineScope = rememberCoroutineScope()
     val client = vm.activeClient()
 
@@ -237,7 +237,8 @@ fun LogcatScreen(
             IconButton(
                 onClick = {
                     val logsText = filteredEntries.joinToString("\n") { it.raw }
-                    clipboardManager.setText(AnnotatedString(logsText))
+                    val clip = ClipData.newPlainText("logcat", logsText)
+                    clipboardManager?.setPrimaryClip(clip)
                     Toast.makeText(
                         context,
                         context.getString(R.string.logcat_logs_copied, filteredEntries.size),
@@ -540,7 +541,8 @@ fun LogcatScreen(
             confirmButton = {
                 Button(
                     onClick = {
-                        clipboardManager.setText(AnnotatedString(entry.raw))
+                        val clip = ClipData.newPlainText("logcat_entry", entry.raw)
+                        clipboardManager?.setPrimaryClip(clip)
                         Toast.makeText(context, context.getString(R.string.logcat_logs_copied, 1), Toast.LENGTH_SHORT).show()
                         selectedEntry = null
                     },

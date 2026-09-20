@@ -748,7 +748,7 @@ class DioxaminePluginBridge(
                 val req = JSONObject(requestJson)
                 val urlString = req.getString("url").trim()
                 val method = req.optString("method", "GET").uppercase().trim()
-                val body = if (req.isNull("body")) null else req.optString("body", null)
+                val body = if (req.isNull("body")) null else req.optString("body")
                 val timeoutMs = req.optInt("timeoutMs", 15000).coerceIn(1000, 60000)
                 val headersObj = req.optJSONObject("headers")
 
