@@ -35,7 +35,7 @@
             const path_to_root = "../../";
             const default_light_theme = "coal";
             const default_dark_theme = "coal";
-            window.path_to_searchindex_js = "../../searchindex-ce8d8ad4.js";
+            window.path_to_searchindex_js = "../../searchindex-894b5955.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../../toc-78a1705c.js"></script>
@@ -265,6 +265,37 @@ document.getElementById('toggle-fullscreen-btn').addEventListener('click', () =&
 </code></pre>
 <h4 id="note-1"><a class="header" href="#note-1">Note</a></h4>
 <p><code>dioxamine.closePlugin()</code> is also supported as an alias.</p>
+<hr>
+<h2 id="opening-external-links"><a class="header" href="#opening-external-links">Opening External Links</a></h2>
+<h3 id="dioxamineopenbrowser--dioxamineopenurl"><a class="header" href="#dioxamineopenbrowser--dioxamineopenurl"><code>dioxamine.openBrowser()</code> / <code>dioxamine.openUrl()</code></a></h3>
+<p>Opens an external web URL directly in the default web browser of the host Android device running Dioxamine (not on the connected ADB device).</p>
+<p>To protect user safety and prevent unauthorized redirects or phishing attacks, Dioxamine presents a native confirmation dialog to the user displaying the target URL and origin plugin name before launching the browser.</p>
+<pre><code class="language-javascript">dioxamine.openBrowser(url: string): Promise&lt;{ success: boolean }&gt;
+</code></pre>
+<h4 id="parameters-3"><a class="header" href="#parameters-3">Parameters</a></h4>
+<ul>
+<li><code>url</code> (<code>string</code>): The web address to open. Must begin with <code>http://</code> or <code>https://</code> and have a valid host (maximum length: 2048 characters).</li>
+</ul>
+<h4 id="returns-1"><a class="header" href="#returns-1">Returns</a></h4>
+<p>A <code>Promise</code> resolving to <code>{ success: true }</code> when the user approves the prompt and the browser is launched. If the user dismisses or clicks <strong>Cancel</strong>, the promise rejects with <code>"User cancelled opening external link"</code>. If no browser application is available or the URL format is invalid, it rejects with a descriptive error.</p>
+<h4 id="example-4"><a class="header" href="#example-4">Example</a></h4>
+<pre><code class="language-javascript">// Open external documentation or repository in host device browser
+document.getElementById('docs-link').addEventListener('click', () =&gt; {
+    dioxamine.openBrowser("https://example.com/docs")
+        .then(() =&gt; {
+            console.log("Browser opened successfully");
+        })
+        .catch(err =&gt; {
+            if (err.message.includes("cancelled")) {
+                console.log("User cancelled browser launch");
+            } else {
+                dioxamine.showToast("Failed to open browser: " + err.message, "short");
+            }
+        });
+});
+</code></pre>
+<h4 id="note-2"><a class="header" href="#note-2">Note</a></h4>
+<p><code>dioxamine.openUrl(url)</code> is also supported as an alias.</p>
 
                     </main>
 

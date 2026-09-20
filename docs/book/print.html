@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "coal";
             const default_dark_theme = "coal";
-            window.path_to_searchindex_js = "searchindex-ce8d8ad4.js";
+            window.path_to_searchindex_js = "searchindex-894b5955.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-78a1705c.js"></script>
@@ -2039,6 +2039,8 @@ if (window.dioxamine &amp;&amp; window.__dioxamine_bridge_ready) {
 <li><code>dioxamine.showToast()</code></li>
 <li><code>dioxamine.showDialog()</code></li>
 <li><code>dioxamine.setFullScreen()</code> / <code>dioxamine.fullScreen()</code></li>
+<li><code>dioxamine.exitPlugin()</code> / <code>dioxamine.closePlugin()</code></li>
+<li><code>dioxamine.openBrowser()</code> / <code>dioxamine.openUrl()</code> (prompts user with a native confirmation dialog showing the target URL before launching)</li>
 <li><code>dioxamine.requestFilePicker()</code> (delegates to Android Storage Access Framework with user file picker)</li>
 <li><code>dioxamine.log.*</code> and <code>console.*</code> forwarding</li>
 <li><code>dioxamine.getTheme()</code> and <code>dioxamine.onThemeChange()</code></li>
@@ -2198,7 +2200,7 @@ if (window.dioxamine &amp;&amp; window.__dioxamine_bridge_ready) {
 <li><strong><a href="#interactive-shell-sessions-openinteractiveshell">ADB Interactive Shell Sessions</a></strong>: Open persistent bi-directional PTY streams via <code>dioxamine.adb.openInteractiveShell()</code>.</li>
 <li><strong><a href="#file-operations-and-storage-api">File Operations</a></strong>: Pull/push files via <code>dioxamine.adb.pull()</code> / <code>dioxamine.adb.push()</code>, and open system file pickers via <code>dioxamine.requestFilePicker()</code>.</li>
 <li><strong><a href="#port-forwarding-and-reverse-api">ADB Port Forwarding and Reverse</a></strong>: Manage TCP socket forwarding via <code>dioxamine.adb.forwardAdd()</code> / <code>reverseAdd()</code>.</li>
-<li><strong><a href="#ui-controls-dialogs-and-fullscreen">UI Controls, Dialogs and Fullscreen</a></strong>: Show native Material toasts, blocking dialogs, and toggle edge-to-edge full-screen mode.</li>
+<li><strong><a href="#ui-controls-dialogs-and-fullscreen">UI Controls, Dialogs and Fullscreen</a></strong>: Show native Material toasts, blocking dialogs, toggle edge-to-edge full-screen mode, and open external links in the host device browser.</li>
 <li><strong><a href="#native-logging-and-debugging">Native Logging and Debugging</a></strong>: Forward logs and console output directly to Android Logcat.</li>
 <li><strong><a href="#dynamic-theming-and-material-3">Dynamic Theming and Material 3</a></strong>: Integrate with Dioxamine’s dynamic color schemes and listen for theme changes.</li>
 <li><strong><a href="#network-http-client-httpfetch">Network HTTP Client (http.fetch)</a></strong>: Perform asynchronous HTTP/HTTPS network requests with native CORS-free execution and permission gating.</li>
@@ -2615,6 +2617,37 @@ document.getElementById('toggle-fullscreen-btn').addEventListener('click', () =&
 </code></pre>
 <h4 id="note-1"><a class="header" href="#note-1">Note</a></h4>
 <p><code>dioxamine.closePlugin()</code> is also supported as an alias.</p>
+<hr>
+<h2 id="opening-external-links"><a class="header" href="#opening-external-links">Opening External Links</a></h2>
+<h3 id="dioxamineopenbrowser--dioxamineopenurl"><a class="header" href="#dioxamineopenbrowser--dioxamineopenurl"><code>dioxamine.openBrowser()</code> / <code>dioxamine.openUrl()</code></a></h3>
+<p>Opens an external web URL directly in the default web browser of the host Android device running Dioxamine (not on the connected ADB device).</p>
+<p>To protect user safety and prevent unauthorized redirects or phishing attacks, Dioxamine presents a native confirmation dialog to the user displaying the target URL and origin plugin name before launching the browser.</p>
+<pre><code class="language-javascript">dioxamine.openBrowser(url: string): Promise&lt;{ success: boolean }&gt;
+</code></pre>
+<h4 id="parameters-3-1"><a class="header" href="#parameters-3-1">Parameters</a></h4>
+<ul>
+<li><code>url</code> (<code>string</code>): The web address to open. Must begin with <code>http://</code> or <code>https://</code> and have a valid host (maximum length: 2048 characters).</li>
+</ul>
+<h4 id="returns-1-1"><a class="header" href="#returns-1-1">Returns</a></h4>
+<p>A <code>Promise</code> resolving to <code>{ success: true }</code> when the user approves the prompt and the browser is launched. If the user dismisses or clicks <strong>Cancel</strong>, the promise rejects with <code>"User cancelled opening external link"</code>. If no browser application is available or the URL format is invalid, it rejects with a descriptive error.</p>
+<h4 id="example-4"><a class="header" href="#example-4">Example</a></h4>
+<pre><code class="language-javascript">// Open external documentation or repository in host device browser
+document.getElementById('docs-link').addEventListener('click', () =&gt; {
+    dioxamine.openBrowser("https://example.com/docs")
+        .then(() =&gt; {
+            console.log("Browser opened successfully");
+        })
+        .catch(err =&gt; {
+            if (err.message.includes("cancelled")) {
+                console.log("User cancelled browser launch");
+            } else {
+                dioxamine.showToast("Failed to open browser: " + err.message, "short");
+            }
+        });
+});
+</code></pre>
+<h4 id="note-2"><a class="header" href="#note-2">Note</a></h4>
+<p><code>dioxamine.openUrl(url)</code> is also supported as an alias.</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="native-logging-and-debugging"><a class="header" href="#native-logging-and-debugging">Native Logging and Debugging</a></h1>
 <p>Dioxamine provides integrated logging channels that bridge JavaScript console messages and explicit log calls directly into the native Android <code>Logcat</code> stream.</p>
@@ -2628,7 +2661,7 @@ dioxamine.log.i(tag: string, message: string): void  // Info
 dioxamine.log.w(tag: string, message: string): void  // Warn
 dioxamine.log.e(tag: string, message: string): void  // Error
 </code></pre>
-<h3 id="example-4"><a class="header" href="#example-4">Example</a></h3>
+<h3 id="example-5"><a class="header" href="#example-5">Example</a></h3>
 <pre><code class="language-javascript">dioxamine.log.i("Network", "Connecting to device socket at 127.0.0.1:8080");
 dioxamine.log.e("Sync", "File transfer aborted unexpectedly");
 </code></pre>
@@ -2871,7 +2904,7 @@ console.log("Device service status:", res.data);
     deviceName?: string; // USB sysfs path (e.g. "/dev/bus/usb/001/002")
 }
 </code></pre>
-<h4 id="example-5"><a class="header" href="#example-5">Example</a></h4>
+<h4 id="example-6"><a class="header" href="#example-6">Example</a></h4>
 <pre><code class="language-javascript">const device = await dioxamine.fastboot.getActiveDevice();
 if (!device || !device.connected) {
     console.error("No Fastboot device connected. Connect device via USB OTG in bootloader mode.");
@@ -2965,7 +2998,7 @@ console.log("Switched active slot to B");
     bytesTransferred: number;
 }&gt;
 </code></pre>
-<h4 id="example-6"><a class="header" href="#example-6">Example</a></h4>
+<h4 id="example-6-1"><a class="header" href="#example-6-1">Example</a></h4>
 <pre><code class="language-javascript">// 1. Prompt user to select image
 const file = await dioxamine.requestFilePicker("open");
 
