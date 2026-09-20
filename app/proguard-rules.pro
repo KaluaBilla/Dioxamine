@@ -2,3 +2,8 @@
 -keepclassmembers class io.github.rhythmcache.dioxamine.plugin.DioxaminePluginBridge {
     @android.webkit.JavascriptInterface <methods>;
 }
+
+# Bouncy Castle Provider reflection rules (required for adb-kt key generation & TLS)
+-keep class org.bouncycastle.jcajce.provider.** { *; }
+-keep class org.bouncycastle.jce.provider.** { *; }
+-dontwarn org.bouncycastle.**
