@@ -1,11 +1,14 @@
 package io.github.rhythmcache.dioxamine.plugin
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.util.Base64
 import android.webkit.JavascriptInterface
 import android.widget.Toast
+import io.github.rhythmcache.dioxamine.R
 import io.github.rhythmcache.adb.AdbClient
 import io.github.rhythmcache.adb.AdbInteractiveSession
 import io.github.rhythmcache.dioxamine.core.AppLogger
@@ -729,6 +732,69 @@ class DioxaminePluginBridge(
     @JavascriptInterface
     fun closePlugin() {
         exitPlugin()
+    }
+
+    @JavascriptInterface
+    fun openBrowser(
+        url: String,
+        callbackId: String,
+    ) {
+        scope.launch(Dispatchers.Main) {
+            try {
+                val trimmed = url.trim()
+                if (trimmed.isEmpty()) {
+                    reject(callbackId, "URL cannot be empty")
+                    return@launch
+                }
+                if (trimmed.length > 2048) {
+                    reject(callbackId, "URL exceeds maximum length of 2048 characters")
+                    return@launch
+                }
+                val uri = runCatching { Uri.parse(trimmed) }.getOrNull()
+                val scheme = uri?.scheme?.lowercase()
+                if (scheme != "http" && scheme != "https") {
+                    reject(callbackId, "Unsupported URL scheme: Only http:// and https:// URLs are allowed")
+                    return@launch
+                }
+                if (uri?.host.isNullOrBlank()) {
+                    reject(callbackId, "Invalid URL: Missing host")
+                    return@launch
+                }
+
+                val buttonIndex =
+                    dialogGate.showDialog(
+                        pluginId = pluginId,
+                        pluginName = pluginName,
+                        title = context.getString(R.string.plugin_open_browser_title),
+                        message = context.getString(R.string.plugin_open_browser_msg, trimmed),
+                        buttons = listOf(
+                            context.getString(R.string.btn_cancel),
+                            context.getString(R.string.plugin_open_browser_btn_open),
+                        ),
+                    )
+
+                if (buttonIndex != 1) {
+                    reject(callbackId, "User cancelled opening external link")
+                    return@launch
+                }
+
+                val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                context.startActivity(intent)
+                resolve(callbackId, buildJsonObject { put("success", true) })
+            } catch (e: Exception) {
+                reject(callbackId, e.message ?: "Failed to open browser")
+            }
+        }
+    }
+
+    @JavascriptInterface
+    fun openUrl(
+        url: String,
+        callbackId: String,
+    ) {
+        openBrowser(url, callbackId)
     }
 
     @JavascriptInterface

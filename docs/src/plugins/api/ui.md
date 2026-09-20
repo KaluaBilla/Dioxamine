@@ -117,3 +117,44 @@ document.getElementById('close-btn').addEventListener('click', () => {
 
 #### Note
 `dioxamine.closePlugin()` is also supported as an alias.
+
+---
+
+## Opening External Links
+
+### `dioxamine.openBrowser()` / `dioxamine.openUrl()`
+
+Opens an external web URL directly in the default web browser of the host Android device running Dioxamine (not on the connected ADB device).
+
+To protect user safety and prevent unauthorized redirects or phishing attacks, Dioxamine presents a native confirmation dialog to the user displaying the target URL and origin plugin name before launching the browser.
+
+```javascript
+dioxamine.openBrowser(url: string): Promise<{ success: boolean }>
+```
+
+#### Parameters
+- `url` (`string`): The web address to open. Must begin with `http://` or `https://` and have a valid host (maximum length: 2048 characters).
+
+#### Returns
+A `Promise` resolving to `{ success: true }` when the user approves the prompt and the browser is launched. If the user dismisses or clicks **Cancel**, the promise rejects with `"User cancelled opening external link"`. If no browser application is available or the URL format is invalid, it rejects with a descriptive error.
+
+#### Example
+```javascript
+// Open external documentation or repository in host device browser
+document.getElementById('docs-link').addEventListener('click', () => {
+    dioxamine.openBrowser("https://example.com/docs")
+        .then(() => {
+            console.log("Browser opened successfully");
+        })
+        .catch(err => {
+            if (err.message.includes("cancelled")) {
+                console.log("User cancelled browser launch");
+            } else {
+                dioxamine.showToast("Failed to open browser: " + err.message, "short");
+            }
+        });
+});
+```
+
+#### Note
+`dioxamine.openUrl(url)` is also supported as an alias.

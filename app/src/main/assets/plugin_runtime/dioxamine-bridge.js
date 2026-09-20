@@ -200,6 +200,23 @@
         closePlugin: function() {
             this.exitPlugin();
         },
+        openBrowser: function(url) {
+            if (!url || typeof url !== 'string') {
+                return Promise.reject(new Error("URL must be a non-empty string"));
+            }
+            var trimmed = url.trim();
+            if (trimmed.length > 2048) {
+                return Promise.reject(new Error("URL exceeds maximum length of 2048 characters"));
+            }
+            var lower = trimmed.toLowerCase();
+            if (!lower.startsWith('http://') && !lower.startsWith('https://')) {
+                return Promise.reject(new Error("Unsupported URL scheme: Only http:// and https:// URLs are allowed"));
+            }
+            return callNative('openBrowser', trimmed);
+        },
+        openUrl: function(url) {
+            return this.openBrowser(url);
+        },
         log: {
             v: function(tag, msg) { if (window.DioxamineNative && window.DioxamineNative.logMessage) window.DioxamineNative.logMessage('V', tag, String(msg)); },
             d: function(tag, msg) { if (window.DioxamineNative && window.DioxamineNative.logMessage) window.DioxamineNative.logMessage('D', tag, String(msg)); },
