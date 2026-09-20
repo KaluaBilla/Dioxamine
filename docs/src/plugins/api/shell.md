@@ -4,13 +4,13 @@ The `shellExec` API runs a non-interactive shell command on the connected ADB de
 
 **Required Permission**: `"shell"`
 
-## `dioxamine.shellExec()`
+## `dioxamine.adb.shellExec()`
 
 Executes a command string synchronously on the target device shell.
 
 ### Signature
 ```javascript
-dioxamine.shellExec(command: string): Promise<ShellExecResult>
+dioxamine.adb.shellExec(command: string): Promise<ShellExecResult>
 ```
 
 ### Parameters
@@ -37,7 +37,7 @@ interface ShellExecResult {
 ```javascript
 async function getBatteryLevel() {
     try {
-        const result = await dioxamine.shellExec("dumpsys battery | grep level");
+        const result = await dioxamine.adb.shellExec("dumpsys battery | grep level");
         if (result.exitCode === 0) {
             const match = result.stdout.match(/level:\s*(\d+)/);
             if (match) {

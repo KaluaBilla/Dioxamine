@@ -8,29 +8,22 @@ Forwarding redirects connections made to a socket on the host to a socket on the
 
 **Required Permission**: `"forward"`
 
-### `dioxamine.forwardPort()`
+### `dioxamine.adb.forwardAdd()`
 Binds a local host socket and routes incoming connections to a remote target socket.
 
 ```javascript
-dioxamine.forwardPort(local: string, remote: string): Promise<void>
+dioxamine.adb.forwardAdd(local: string, remote: string): Promise<void>
 ```
 
 **Parameters:**
 - `local` (`string`): Local host specification (for example, `"tcp:8080"`).
 - `remote` (`string`): Remote device specification (for example, `"tcp:8080"` or `"localabstract:scrcpy"`).
 
-### `dioxamine.forwardList()`
-Lists all active port forward rules created by the session.
-
-```javascript
-dioxamine.forwardList(): Promise<Array<{ local: string, remote: string }>>
-```
-
-### `dioxamine.forwardRemove()`
+### `dioxamine.adb.forwardRemove()`
 Removes an active port forward binding.
 
 ```javascript
-dioxamine.forwardRemove(local: string): Promise<void>
+dioxamine.adb.forwardRemove(local: string): Promise<void>
 ```
 
 ---
@@ -41,29 +34,22 @@ Reversing redirects connections made to a socket on the connected device back to
 
 **Required Permission**: `"reverse"`
 
-### `dioxamine.reversePort()`
+### `dioxamine.adb.reverseAdd()`
 Binds a remote device socket and routes connections back to a local host socket.
 
 ```javascript
-dioxamine.reversePort(remote: string, local: string): Promise<void>
+dioxamine.adb.reverseAdd(remote: string, local: string): Promise<void>
 ```
 
 **Parameters:**
 - `remote` (`string`): Remote device specification (for example, `"tcp:3000"`).
 - `local` (`string`): Local host specification (for example, `"tcp:3000"`).
 
-### `dioxamine.reverseList()`
-Lists all active reverse rules.
-
-```javascript
-dioxamine.reverseList(): Promise<Array<{ remote: string, local: string }>>
-```
-
-### `dioxamine.reverseRemove()`
+### `dioxamine.adb.reverseRemove()`
 Removes an active reverse socket binding.
 
 ```javascript
-dioxamine.reverseRemove(remote: string): Promise<void>
+dioxamine.adb.reverseRemove(remote: string): Promise<void>
 ```
 
 ---

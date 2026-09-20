@@ -4,13 +4,13 @@ The Interactive Shell API opens a persistent bi-directional ADB streaming sessio
 
 **Required Permission**: `"shell"`
 
-## `dioxamine.openInteractiveShell()`
+## `dioxamine.adb.openInteractiveShell()`
 
 Opens a live interactive PTY shell stream to the target device.
 
 ### Signature
 ```javascript
-dioxamine.openInteractiveShell(): Promise<InteractiveShellSession>
+dioxamine.adb.openInteractiveShell(): Promise<InteractiveShellSession>
 ```
 
 ### Parameters
@@ -101,7 +101,7 @@ term.open(document.getElementById('terminal-container'));
 fitAddon.fit();
 
 async function startTerminal() {
-    const session = await dioxamine.openInteractiveShell();
+    const session = await dioxamine.adb.openInteractiveShell();
 
     // Send initial dimensions
     session.resize(term.cols, term.rows);
@@ -138,7 +138,7 @@ async function startTerminal() {
 
 ```javascript
 async function startLiveLogcat(onLineReceived) {
-    const session = await dioxamine.openInteractiveShell();
+    const session = await dioxamine.adb.openInteractiveShell();
     let buffer = '';
 
     session.onData((b64) => {

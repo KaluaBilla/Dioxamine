@@ -45,7 +45,7 @@
 
     window.__dioxamine_theme_listener = null;
 
-    window.dioxamine = {
+    var adb = {
         getActiveDevice: function() { return callNative('getActiveDevice'); },
         shellExec: function(cmd) { return callNative('shellExec', cmd); },
         openInteractiveShell: function() {
@@ -62,13 +62,17 @@
                 };
             });
         },
-        requestFilePicker: function(mode) { return callNative('requestFilePicker', mode); },
         pull: function(remotePath, safRequestId) { return callNative('pull', remotePath, safRequestId); },
         push: function(localSafRequestId, remotePath) { return callNative('push', localSafRequestId, remotePath); },
         forwardAdd: function(local, remote) { return callNative('forwardAdd', local, remote); },
         reverseAdd: function(remote, local) { return callNative('reverseAdd', remote, local); },
         forwardRemove: function(local) { return callNative('forwardRemove', local); },
-        reverseRemove: function(remote) { return callNative('reverseRemove', remote); },
+        reverseRemove: function(remote) { return callNative('reverseRemove', remote); }
+    };
+
+    window.dioxamine = {
+        adb: adb,
+        requestFilePicker: function(mode) { return callNative('requestFilePicker', mode); },
         utf8ToBase64: function(str) { return btoa(unescape(encodeURIComponent(str))); },
         base64ToUtf8: function(b64) { return decodeURIComponent(escape(atob(b64))); },
         onThemeChange: function(fn) { window.__dioxamine_theme_listener = fn; },

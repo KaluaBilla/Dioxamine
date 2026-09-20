@@ -151,7 +151,7 @@ async function loadDeviceInfo() {
 
     try {
         // Verify bridge and active connection
-        const device = await dioxamine.getActiveDevice();
+        const device = await dioxamine.adb.getActiveDevice();
         if (!device) {
             modelEl.textContent = 'No connected ADB device';
             kernelEl.textContent = '-';
@@ -159,11 +159,11 @@ async function loadDeviceInfo() {
         }
 
         // Query model
-        const modelResult = await dioxamine.shellExec('getprop ro.product.model');
+        const modelResult = await dioxamine.adb.shellExec('getprop ro.product.model');
         modelEl.textContent = modelResult.stdout.trim() || 'Unknown';
 
         // Query kernel
-        const kernelResult = await dioxamine.shellExec('uname -r');
+        const kernelResult = await dioxamine.adb.shellExec('uname -r');
         kernelEl.textContent = kernelResult.stdout.trim() || 'Unknown';
 
         dioxamine.showToast('Device information updated', 'short');

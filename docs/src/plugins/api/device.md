@@ -4,13 +4,13 @@ The Device Management API allows plugins to verify the active ADB connection sta
 
 > **Multi-Device Behavior**: In Dioxamine, plugins run in the scope of the device currently selected in the UI chip (the "active" device). All ADB operations (`shellExec`, `pull`, `push`, `forwardAdd`, `openInteractiveShell`, etc.) automatically target this selected device.
 
-## `dioxamine.getActiveDevice()`
+## `dioxamine.adb.getActiveDevice()`
 
 Checks whether an active ADB device is currently connected and selected.
 
 ### Signature
 ```javascript
-dioxamine.getActiveDevice(): Promise<ActiveDeviceStatus | null>
+dioxamine.adb.getActiveDevice(): Promise<ActiveDeviceStatus | null>
 ```
 
 ### Parameters
@@ -29,20 +29,20 @@ interface ActiveDeviceStatus {
 
 ### Retrieving Device Details
 
-If your plugin needs specific device identifiers or properties (such as device model, Android release version, or serial number), query them using `dioxamine.shellExec()`:
+If your plugin needs specific device identifiers or properties (such as device model, Android release version, or serial number), query them using `dioxamine.adb.shellExec()`:
 
 ```javascript
 async function getDeviceInfo() {
-    const device = await dioxamine.getActiveDevice();
+    const device = await dioxamine.adb.getActiveDevice();
     if (!device) {
         console.warn("No active ADB device connected in Dioxamine");
         return null;
     }
 
     const [modelRes, versionRes, serialRes] = await Promise.all([
-        dioxamine.shellExec("getprop ro.product.model"),
-        dioxamine.shellExec("getprop ro.build.version.release"),
-        dioxamine.shellExec("getprop ro.serialno")
+        dioxamine.adb.shellExec("getprop ro.product.model"),
+        dioxamine.adb.shellExec("getprop ro.build.version.release"),
+        dioxamine.adb.shellExec("getprop ro.serialno")
     ]);
 
     return {
@@ -57,7 +57,7 @@ async function getDeviceInfo() {
 
 ```javascript
 async function checkDevice() {
-    const dev = await dioxamine.getActiveDevice();
+    const dev = await dioxamine.adb.getActiveDevice();
     if (!dev || !dev.connected) {
         console.warn("No active ADB device connected in Dioxamine");
         return;

@@ -1,6 +1,9 @@
 # JavaScript Bridge API Reference
 
-The global `dioxamine` object provides asynchronous methods for interacting with connected devices, native dialogs, file systems, and the Android host.
+The global `dioxamine` object provides asynchronous methods for interacting with connected devices, native dialogs, file systems, and the Android host. Device operations are organized into dedicated namespaces:
+- **`dioxamine.adb.*`**: ADB device operations (shell, sync, port forwarding).
+- **`dioxamine.fastboot.*`**: Fastboot bootloader operations (coming soon).
+- **`dioxamine.*`**: Common UI dialogs, file pickers, theming, logging, and HTTP client.
 
 ## Bridge Initialization
 
@@ -22,11 +25,11 @@ if (window.dioxamine && window.__dioxamine_bridge_ready) {
 
 The API is organized into the following specialized modules:
 
-1. **[Device Management](api/device.md)**: Query the active ADB connection and metadata.
-2. **[Single Command Execution (shellExec)](api/shell.md)**: Run non-interactive commands and receive exit code, stdout, and stderr.
-3. **[Interactive Shell Sessions (openInteractiveShell)](api/interactive-shell.md)**: Open persistent bi-directional PTY streams for terminals and live logcat.
-4. **[File Operations](api/files.md)**: Push and pull files, stream raw data, install APK packages, and launch Android SAF file pickers.
-5. **[Port Forwarding and Reverse](api/port-forwarding.md)**: Manage TCP socket forwarding and reversing.
+1. **[ADB Device Management](api/device.md)**: Query the active ADB connection status via `dioxamine.adb.getActiveDevice()`.
+2. **[ADB Single Command Execution](api/shell.md)**: Run non-interactive commands via `dioxamine.adb.shellExec()`.
+3. **[ADB Interactive Shell Sessions](api/interactive-shell.md)**: Open persistent bi-directional PTY streams via `dioxamine.adb.openInteractiveShell()`.
+4. **[File Operations](api/files.md)**: Pull/push files via `dioxamine.adb.pull()` / `dioxamine.adb.push()`, and open system file pickers via `dioxamine.requestFilePicker()`.
+5. **[ADB Port Forwarding and Reverse](api/port-forwarding.md)**: Manage TCP socket forwarding via `dioxamine.adb.forwardAdd()` / `reverseAdd()`.
 6. **[UI Controls, Dialogs and Fullscreen](api/ui.md)**: Show native Material toasts, blocking dialogs, and toggle edge-to-edge full-screen mode.
 7. **[Native Logging and Debugging](api/logging.md)**: Forward logs and console output directly to Android Logcat.
 8. **[Dynamic Theming and Material 3](api/theming.md)**: Integrate with Dioxamine's dynamic color schemes and listen for theme changes.

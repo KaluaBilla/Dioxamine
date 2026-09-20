@@ -35,9 +35,9 @@ A standard windowed page plugin demonstrating non-interactive `shellExec()`, Mat
 ```javascript
 async function refreshSpecs() {
     try {
-        const model = await dioxamine.shellExec("getprop ro.product.model");
-        const androidVer = await dioxamine.shellExec("getprop ro.build.version.release");
-        const kernel = await dioxamine.shellExec("uname -r");
+        const model = await dioxamine.adb.shellExec("getprop ro.product.model");
+        const androidVer = await dioxamine.adb.shellExec("getprop ro.build.version.release");
+        const kernel = await dioxamine.adb.shellExec("uname -r");
 
         document.getElementById('val-model').textContent = model.stdout.trim() || '-';
         document.getElementById('val-version').textContent = androidVer.stdout.trim() || '-';
@@ -88,7 +88,7 @@ term.open(document.getElementById('terminal-container'));
 
 async function connectTerminal() {
     try {
-        const session = await dioxamine.openInteractiveShell();
+        const session = await dioxamine.adb.openInteractiveShell();
 
         // Target device stdout -> xterm.js
         session.onData((b64Chunk) => {
@@ -144,7 +144,7 @@ let session = null;
 let logBuffer = '';
 
 async function startLogcat() {
-    session = await dioxamine.openInteractiveShell();
+    session = await dioxamine.adb.openInteractiveShell();
 
     session.onData((b64Chunk) => {
         const text = dioxamine.base64ToUtf8(b64Chunk);

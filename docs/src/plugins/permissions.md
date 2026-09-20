@@ -44,11 +44,11 @@ Users can view, grant, or revoke permissions at any time:
 ## Safe Native APIs (No Permission Required)
 
 The following bridge methods are safe UI/context utilities and do not require declared permissions:
-- `dioxamine.getActiveDevice()`
+- `dioxamine.adb.getActiveDevice()`
 - `dioxamine.showToast()`
 - `dioxamine.showDialog()`
 - `dioxamine.setFullScreen()` / `dioxamine.fullScreen()`
-- `dioxamine.pickFile()` / `dioxamine.saveFile()` (delegates to Android Storage Access Framework with user file picker)
+- `dioxamine.requestFilePicker()` (delegates to Android Storage Access Framework with user file picker)
 - `dioxamine.log.*` and `console.*` forwarding
 - `dioxamine.getTheme()` and `dioxamine.onThemeChange()`
 - Base64 / UTF-8 conversion helpers
