@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "coal";
             const default_dark_theme = "coal";
-            window.path_to_searchindex_js = "searchindex-390ef998.js";
+            window.path_to_searchindex_js = "searchindex-b1676fa4.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-1f612337.js"></script>
@@ -1834,7 +1834,7 @@ button:active {
 
     try {
         // Verify bridge and active connection
-        const device = await dioxamine.getActiveDevice();
+        const device = await dioxamine.adb.getActiveDevice();
         if (!device) {
             modelEl.textContent = 'No connected ADB device';
             kernelEl.textContent = '-';
@@ -1842,11 +1842,11 @@ button:active {
         }
 
         // Query model
-        const modelResult = await dioxamine.shellExec('getprop ro.product.model');
+        const modelResult = await dioxamine.adb.shellExec('getprop ro.product.model');
         modelEl.textContent = modelResult.stdout.trim() || 'Unknown';
 
         // Query kernel
-        const kernelResult = await dioxamine.shellExec('uname -r');
+        const kernelResult = await dioxamine.adb.shellExec('uname -r');
         kernelEl.textContent = kernelResult.stdout.trim() || 'Unknown';
 
         dioxamine.showToast('Device information updated', 'short');
@@ -2005,11 +2005,11 @@ if (window.dioxamine &amp;&amp; window.__dioxamine_bridge_ready) {
 <h2 id="safe-native-apis-no-permission-required"><a class="header" href="#safe-native-apis-no-permission-required">Safe Native APIs (No Permission Required)</a></h2>
 <p>The following bridge methods are safe UI/context utilities and do not require declared permissions:</p>
 <ul>
-<li><code>dioxamine.getActiveDevice()</code></li>
+<li><code>dioxamine.adb.getActiveDevice()</code></li>
 <li><code>dioxamine.showToast()</code></li>
 <li><code>dioxamine.showDialog()</code></li>
 <li><code>dioxamine.setFullScreen()</code> / <code>dioxamine.fullScreen()</code></li>
-<li><code>dioxamine.pickFile()</code> / <code>dioxamine.saveFile()</code> (delegates to Android Storage Access Framework with user file picker)</li>
+<li><code>dioxamine.requestFilePicker()</code> (delegates to Android Storage Access Framework with user file picker)</li>
 <li><code>dioxamine.log.*</code> and <code>console.*</code> forwarding</li>
 <li><code>dioxamine.getTheme()</code> and <code>dioxamine.onThemeChange()</code></li>
 <li>Base64 / UTF-8 conversion helpers</li>
@@ -2142,7 +2142,12 @@ function flushBatch() {
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="javascript-bridge-api-reference"><a class="header" href="#javascript-bridge-api-reference">JavaScript Bridge API Reference</a></h1>
-<p>The global <code>dioxamine</code> object provides asynchronous methods for interacting with connected devices, native dialogs, file systems, and the Android host.</p>
+<p>The global <code>dioxamine</code> object provides asynchronous methods for interacting with connected devices, native dialogs, file systems, and the Android host. Device operations are organized into dedicated namespaces:</p>
+<ul>
+<li><strong><code>dioxamine.adb.*</code></strong>: ADB device operations (shell, sync, port forwarding).</li>
+<li><strong><code>dioxamine.fastboot.*</code></strong>: Fastboot bootloader operations (coming soon).</li>
+<li><strong><code>dioxamine.*</code></strong>: Common UI dialogs, file pickers, theming, logging, and HTTP client.</li>
+</ul>
 <h2 id="bridge-initialization"><a class="header" href="#bridge-initialization">Bridge Initialization</a></h2>
 <p>The native bridge is loaded automatically before any plugin scripts execute. To guarantee readiness across all initialization states, listen for the <code>dioxamine-bridge-ready</code> event:</p>
 <pre><code class="language-javascript">function initPlugin() {
@@ -2158,11 +2163,11 @@ if (window.dioxamine &amp;&amp; window.__dioxamine_bridge_ready) {
 <h2 id="api-modules"><a class="header" href="#api-modules">API Modules</a></h2>
 <p>The API is organized into the following specialized modules:</p>
 <ol>
-<li><strong><a href="#device-management-api">Device Management</a></strong>: Query the active ADB connection and metadata.</li>
-<li><strong><a href="#single-command-execution-shellexec">Single Command Execution (shellExec)</a></strong>: Run non-interactive commands and receive exit code, stdout, and stderr.</li>
-<li><strong><a href="#interactive-shell-sessions-openinteractiveshell">Interactive Shell Sessions (openInteractiveShell)</a></strong>: Open persistent bi-directional PTY streams for terminals and live logcat.</li>
-<li><strong><a href="#file-operations-and-storage-api">File Operations</a></strong>: Push and pull files, stream raw data, install APK packages, and launch Android SAF file pickers.</li>
-<li><strong><a href="#port-forwarding-and-reverse-api">Port Forwarding and Reverse</a></strong>: Manage TCP socket forwarding and reversing.</li>
+<li><strong><a href="#device-management-api">ADB Device Management</a></strong>: Query the active ADB connection status via <code>dioxamine.adb.getActiveDevice()</code>.</li>
+<li><strong><a href="#single-command-execution-shellexec">ADB Single Command Execution</a></strong>: Run non-interactive commands via <code>dioxamine.adb.shellExec()</code>.</li>
+<li><strong><a href="#interactive-shell-sessions-openinteractiveshell">ADB Interactive Shell Sessions</a></strong>: Open persistent bi-directional PTY streams via <code>dioxamine.adb.openInteractiveShell()</code>.</li>
+<li><strong><a href="#file-operations-and-storage-api">File Operations</a></strong>: Pull/push files via <code>dioxamine.adb.pull()</code> / <code>dioxamine.adb.push()</code>, and open system file pickers via <code>dioxamine.requestFilePicker()</code>.</li>
+<li><strong><a href="#port-forwarding-and-reverse-api">ADB Port Forwarding and Reverse</a></strong>: Manage TCP socket forwarding via <code>dioxamine.adb.forwardAdd()</code> / <code>reverseAdd()</code>.</li>
 <li><strong><a href="#ui-controls-dialogs-and-fullscreen">UI Controls, Dialogs and Fullscreen</a></strong>: Show native Material toasts, blocking dialogs, and toggle edge-to-edge full-screen mode.</li>
 <li><strong><a href="#native-logging-and-debugging">Native Logging and Debugging</a></strong>: Forward logs and console output directly to Android Logcat.</li>
 <li><strong><a href="#dynamic-theming-and-material-3">Dynamic Theming and Material 3</a></strong>: Integrate with Dioxamine’s dynamic color schemes and listen for theme changes.</li>
@@ -2174,10 +2179,10 @@ if (window.dioxamine &amp;&amp; window.__dioxamine_bridge_ready) {
 <blockquote>
 <p><strong>Multi-Device Behavior</strong>: In Dioxamine, plugins run in the scope of the device currently selected in the UI chip (the “active” device). All ADB operations (<code>shellExec</code>, <code>pull</code>, <code>push</code>, <code>forwardAdd</code>, <code>openInteractiveShell</code>, etc.) automatically target this selected device.</p>
 </blockquote>
-<h2 id="dioxaminegetactivedevice"><a class="header" href="#dioxaminegetactivedevice"><code>dioxamine.getActiveDevice()</code></a></h2>
+<h2 id="dioxamineadbgetactivedevice"><a class="header" href="#dioxamineadbgetactivedevice"><code>dioxamine.adb.getActiveDevice()</code></a></h2>
 <p>Checks whether an active ADB device is currently connected and selected.</p>
 <h3 id="signature"><a class="header" href="#signature">Signature</a></h3>
-<pre><code class="language-javascript">dioxamine.getActiveDevice(): Promise&lt;ActiveDeviceStatus | null&gt;
+<pre><code class="language-javascript">dioxamine.adb.getActiveDevice(): Promise&lt;ActiveDeviceStatus | null&gt;
 </code></pre>
 <h3 id="parameters"><a class="header" href="#parameters">Parameters</a></h3>
 <p>None.</p>
@@ -2189,18 +2194,18 @@ if (window.dioxamine &amp;&amp; window.__dioxamine_bridge_ready) {
 }
 </code></pre>
 <h3 id="retrieving-device-details"><a class="header" href="#retrieving-device-details">Retrieving Device Details</a></h3>
-<p>If your plugin needs specific device identifiers or properties (such as device model, Android release version, or serial number), query them using <code>dioxamine.shellExec()</code>:</p>
+<p>If your plugin needs specific device identifiers or properties (such as device model, Android release version, or serial number), query them using <code>dioxamine.adb.shellExec()</code>:</p>
 <pre><code class="language-javascript">async function getDeviceInfo() {
-    const device = await dioxamine.getActiveDevice();
+    const device = await dioxamine.adb.getActiveDevice();
     if (!device) {
         console.warn("No active ADB device connected in Dioxamine");
         return null;
     }
 
     const [modelRes, versionRes, serialRes] = await Promise.all([
-        dioxamine.shellExec("getprop ro.product.model"),
-        dioxamine.shellExec("getprop ro.build.version.release"),
-        dioxamine.shellExec("getprop ro.serialno")
+        dioxamine.adb.shellExec("getprop ro.product.model"),
+        dioxamine.adb.shellExec("getprop ro.build.version.release"),
+        dioxamine.adb.shellExec("getprop ro.serialno")
     ]);
 
     return {
@@ -2212,7 +2217,7 @@ if (window.dioxamine &amp;&amp; window.__dioxamine_bridge_ready) {
 </code></pre>
 <h3 id="example"><a class="header" href="#example">Example</a></h3>
 <pre><code class="language-javascript">async function checkDevice() {
-    const dev = await dioxamine.getActiveDevice();
+    const dev = await dioxamine.adb.getActiveDevice();
     if (!dev || !dev.connected) {
         console.warn("No active ADB device connected in Dioxamine");
         return;
@@ -2224,10 +2229,10 @@ if (window.dioxamine &amp;&amp; window.__dioxamine_bridge_ready) {
 <h1 id="single-command-execution-shellexec"><a class="header" href="#single-command-execution-shellexec">Single Command Execution (shellExec)</a></h1>
 <p>The <code>shellExec</code> API runs a non-interactive shell command on the connected ADB device, captures the full output stream, and returns the exit code, standard output, and standard error.</p>
 <p><strong>Required Permission</strong>: <code>"shell"</code></p>
-<h2 id="dioxamineshellexec"><a class="header" href="#dioxamineshellexec"><code>dioxamine.shellExec()</code></a></h2>
+<h2 id="dioxamineadbshellexec"><a class="header" href="#dioxamineadbshellexec"><code>dioxamine.adb.shellExec()</code></a></h2>
 <p>Executes a command string synchronously on the target device shell.</p>
 <h3 id="signature-1"><a class="header" href="#signature-1">Signature</a></h3>
-<pre><code class="language-javascript">dioxamine.shellExec(command: string): Promise&lt;ShellExecResult&gt;
+<pre><code class="language-javascript">dioxamine.adb.shellExec(command: string): Promise&lt;ShellExecResult&gt;
 </code></pre>
 <h3 id="parameters-1"><a class="header" href="#parameters-1">Parameters</a></h3>
 <ul>
@@ -2250,7 +2255,7 @@ if (window.dioxamine &amp;&amp; window.__dioxamine_bridge_ready) {
 <h3 id="example-1"><a class="header" href="#example-1">Example</a></h3>
 <pre><code class="language-javascript">async function getBatteryLevel() {
     try {
-        const result = await dioxamine.shellExec("dumpsys battery | grep level");
+        const result = await dioxamine.adb.shellExec("dumpsys battery | grep level");
         if (result.exitCode === 0) {
             const match = result.stdout.match(/level:\s*(\d+)/);
             if (match) {
@@ -2268,10 +2273,10 @@ if (window.dioxamine &amp;&amp; window.__dioxamine_bridge_ready) {
 <h1 id="interactive-shell-sessions-openinteractiveshell"><a class="header" href="#interactive-shell-sessions-openinteractiveshell">Interactive Shell Sessions (openInteractiveShell)</a></h1>
 <p>The Interactive Shell API opens a persistent bi-directional ADB streaming session. This is designed for terminal emulators (such as <code>xterm.js</code>), interactive command prompts (<code>sh</code>), and continuous background log streamers (<code>logcat -v time -T 25</code>).</p>
 <p><strong>Required Permission</strong>: <code>"shell"</code></p>
-<h2 id="dioxamineopeninteractiveshell"><a class="header" href="#dioxamineopeninteractiveshell"><code>dioxamine.openInteractiveShell()</code></a></h2>
+<h2 id="dioxamineadbopeninteractiveshell"><a class="header" href="#dioxamineadbopeninteractiveshell"><code>dioxamine.adb.openInteractiveShell()</code></a></h2>
 <p>Opens a live interactive PTY shell stream to the target device.</p>
 <h3 id="signature-2"><a class="header" href="#signature-2">Signature</a></h3>
-<pre><code class="language-javascript">dioxamine.openInteractiveShell(): Promise&lt;InteractiveShellSession&gt;
+<pre><code class="language-javascript">dioxamine.adb.openInteractiveShell(): Promise&lt;InteractiveShellSession&gt;
 </code></pre>
 <h3 id="parameters-2"><a class="header" href="#parameters-2">Parameters</a></h3>
 <p>None.</p>
@@ -2342,7 +2347,7 @@ term.open(document.getElementById('terminal-container'));
 fitAddon.fit();
 
 async function startTerminal() {
-    const session = await dioxamine.openInteractiveShell();
+    const session = await dioxamine.adb.openInteractiveShell();
 
     // Send initial dimensions
     session.resize(term.cols, term.rows);
@@ -2375,7 +2380,7 @@ async function startTerminal() {
 <hr>
 <h2 id="example-2-continuous-logcat-stream"><a class="header" href="#example-2-continuous-logcat-stream">Example 2: Continuous Logcat Stream</a></h2>
 <pre><code class="language-javascript">async function startLiveLogcat(onLineReceived) {
-    const session = await dioxamine.openInteractiveShell();
+    const session = await dioxamine.adb.openInteractiveShell();
     let buffer = '';
 
     session.onData((b64) =&gt; {
@@ -2397,68 +2402,62 @@ async function startTerminal() {
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="file-operations-and-storage-api"><a class="header" href="#file-operations-and-storage-api">File Operations and Storage API</a></h1>
-<p>Dioxamine provides methods to push and pull files between the host and connected device, stream APKs to the Android package manager, and access local device storage via Android Storage Access Framework (SAF).</p>
-<h2 id="dioxaminepushfile"><a class="header" href="#dioxaminepushfile"><code>dioxamine.pushFile()</code></a></h2>
-<p>Uploads a base64-encoded file directly to a remote path on the connected device.</p>
-<p><strong>Required Permission</strong>: <code>"push"</code></p>
-<h3 id="signature-3"><a class="header" href="#signature-3">Signature</a></h3>
-<pre><code class="language-javascript">dioxamine.pushFile(remotePath: string, base64Data: string, mode?: number): Promise&lt;void&gt;
-</code></pre>
-<h3 id="parameters-3"><a class="header" href="#parameters-3">Parameters</a></h3>
-<ul>
-<li><code>remotePath</code> (<code>string</code>): Target path on the connected device (for example, <code>"/sdcard/Download/script.sh"</code>).</li>
-<li><code>base64Data</code> (<code>string</code>): File contents encoded in base64.</li>
-<li><code>mode</code> (<code>number</code>, optional): POSIX file permission mode (for example, <code>0o755</code> for executables). Default: <code>0o644</code>.</li>
-</ul>
-<hr>
-<h2 id="dioxaminepullfile"><a class="header" href="#dioxaminepullfile"><code>dioxamine.pullFile()</code></a></h2>
-<p>Downloads a file from the connected device and returns its contents as base64.</p>
-<p><strong>Required Permission</strong>: <code>"pull"</code></p>
-<h3 id="signature-1-1"><a class="header" href="#signature-1-1">Signature</a></h3>
-<pre><code class="language-javascript">dioxamine.pullFile(remotePath: string): Promise&lt;string&gt;
-</code></pre>
-<h3 id="parameters-1-1"><a class="header" href="#parameters-1-1">Parameters</a></h3>
-<ul>
-<li><code>remotePath</code> (<code>string</code>): Source file path on the connected device (for example, <code>"/sdcard/Download/screencap.png"</code>).</li>
-</ul>
-<h3 id="returns-3"><a class="header" href="#returns-3">Returns</a></h3>
-<p>A <code>Promise</code> resolving to the base64-encoded string of the file contents.</p>
-<hr>
-<h2 id="dioxamineinstallapk"><a class="header" href="#dioxamineinstallapk"><code>dioxamine.installApk()</code></a></h2>
-<p>Streams an APK package to the target device and invokes <code>pm install</code>.</p>
-<p><strong>Required Permission</strong>: <code>"install"</code></p>
-<h3 id="signature-2-1"><a class="header" href="#signature-2-1">Signature</a></h3>
-<pre><code class="language-javascript">dioxamine.installApk(base64ApkData: string, flags?: string[]): Promise&lt;string&gt;
-</code></pre>
-<h3 id="parameters-2-1"><a class="header" href="#parameters-2-1">Parameters</a></h3>
-<ul>
-<li><code>base64ApkData</code> (<code>string</code>): Binary APK file encoded in base64.</li>
-<li><code>flags</code> (<code>string[]</code>, optional): Array of installation arguments (for example, <code>["-r", "-d", "-g"]</code>).</li>
-</ul>
-<h3 id="returns-1-1"><a class="header" href="#returns-1-1">Returns</a></h3>
-<p>A <code>Promise</code> resolving to the package manager installation output (for example, <code>"Success"</code>).</p>
-<hr>
+<p>Dioxamine provides methods to push and pull files between the host and connected ADB device using Android’s Storage Access Framework (SAF). This allows streaming large files (such as backups, ROMs, or APKs) directly without loading entire payloads into JavaScript memory.</p>
 <h2 id="storage-access-framework-saf-file-pickers"><a class="header" href="#storage-access-framework-saf-file-pickers">Storage Access Framework (SAF) File Pickers</a></h2>
-<p>Because plugins run in a sandboxed WebView, they cannot directly read the host phone filesystem. Dioxamine bridges Android’s native system file picker dialogs.</p>
+<p>Because plugins run in a sandboxed WebView, they cannot directly access arbitrary paths on the host filesystem. Instead, Dioxamine bridges Android’s native system file picker dialogs.</p>
 <p><strong>No special manifest permission is required for SAF pickers.</strong></p>
-<h3 id="dioxaminepickfile"><a class="header" href="#dioxaminepickfile"><code>dioxamine.pickFile()</code></a></h3>
-<p>Opens the system document picker for the user to select a file from host phone storage.</p>
-<pre><code class="language-javascript">dioxamine.pickFile(options?: { mimeType?: string }): Promise&lt;SelectedFile | null&gt;
+<h3 id="dioxaminerequestfilepicker"><a class="header" href="#dioxaminerequestfilepicker"><code>dioxamine.requestFilePicker()</code></a></h3>
+<p>Prompts the user to pick a file to open or select a destination to save/create.</p>
+<pre><code class="language-javascript">dioxamine.requestFilePicker(mode: "open" | "create"): Promise&lt;{ requestId: string }&gt;
 </code></pre>
-<pre><code class="language-typescript">interface SelectedFile {
-    name: string;        // File name (e.g. "update.zip")
-    size: number;        // Size in bytes
-    mimeType: string;    // MIME type
-    base64Data: string;  // File content in base64
+<p><strong>Modes:</strong></p>
+<ul>
+<li><code>"open"</code>: Opens the Android document picker for the user to choose an existing file on the host. Returns a <code>requestId</code> to use with <code>dioxamine.adb.push()</code>.</li>
+<li><code>"create"</code>: Opens the Android document creator for the user to choose where to save a file. Returns a <code>requestId</code> to use with <code>dioxamine.adb.pull()</code>.</li>
+</ul>
+<hr>
+<h2 id="file-pull-adb-pull"><a class="header" href="#file-pull-adb-pull">File Pull (<code>adb pull</code>)</a></h2>
+<p>Downloads a file from the connected ADB device and writes it directly into the selected SAF destination.</p>
+<p><strong>Required Permission</strong>: <code>"pull"</code></p>
+<h3 id="dioxamineadbpull"><a class="header" href="#dioxamineadbpull"><code>dioxamine.adb.pull()</code></a></h3>
+<pre><code class="language-javascript">dioxamine.adb.pull(remotePath: string, safRequestId: string): Promise&lt;{ bytesTransferred: number }&gt;
+</code></pre>
+<h3 id="parameters-3"><a class="header" href="#parameters-3">Parameters:</a></h3>
+<ul>
+<li><code>remotePath</code> (<code>string</code>): Source file path on the connected device (e.g. <code>"/sdcard/Download/screencap.png"</code>).</li>
+<li><code>safRequestId</code> (<code>string</code>): The request ID obtained from <code>dioxamine.requestFilePicker("create")</code>.</li>
+</ul>
+<h3 id="example-2"><a class="header" href="#example-2">Example:</a></h3>
+<pre><code class="language-javascript">async function downloadFileFromDevice(remotePath) {
+    // 1. Prompt user to select save location on Android host
+    const picker = await dioxamine.requestFilePicker("create");
+    
+    // 2. Stream directly from device to chosen SAF destination
+    const result = await dioxamine.adb.pull(remotePath, picker.requestId);
+    console.log(`Transferred ${result.bytesTransferred} bytes`);
 }
 </code></pre>
-<h3 id="dioxaminesavefile"><a class="header" href="#dioxaminesavefile"><code>dioxamine.saveFile()</code></a></h3>
-<p>Opens the system save-file dialog for the user to export a file to host phone storage.</p>
-<pre><code class="language-javascript">dioxamine.saveFile(options: {
-    fileName: string;
-    mimeType?: string;
-    base64Data: string;
-}): Promise&lt;boolean&gt;
+<hr>
+<h2 id="file-push-adb-push"><a class="header" href="#file-push-adb-push">File Push (<code>adb push</code>)</a></h2>
+<p>Uploads a file chosen via SAF from the host directly to the target path on the connected ADB device.</p>
+<p><strong>Required Permission</strong>: <code>"push"</code></p>
+<h3 id="dioxamineadbpush"><a class="header" href="#dioxamineadbpush"><code>dioxamine.adb.push()</code></a></h3>
+<pre><code class="language-javascript">dioxamine.adb.push(localSafRequestId: string, remotePath: string): Promise&lt;{ bytesTransferred: number }&gt;
+</code></pre>
+<h3 id="parameters-1-1"><a class="header" href="#parameters-1-1">Parameters:</a></h3>
+<ul>
+<li><code>localSafRequestId</code> (<code>string</code>): The request ID obtained from <code>dioxamine.requestFilePicker("open")</code>.</li>
+<li><code>remotePath</code> (<code>string</code>): Destination path on the target device (e.g. <code>"/sdcard/Download/archive.zip"</code>).</li>
+</ul>
+<h3 id="example-1-1"><a class="header" href="#example-1-1">Example:</a></h3>
+<pre><code class="language-javascript">async function uploadFileToDevice(remotePath) {
+    // 1. Prompt user to pick file from Android host
+    const picker = await dioxamine.requestFilePicker("open");
+    
+    // 2. Stream directly from SAF file to target device
+    const result = await dioxamine.adb.push(picker.requestId, remotePath);
+    console.log(`Uploaded ${result.bytesTransferred} bytes`);
+}
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="port-forwarding-and-reverse-api"><a class="header" href="#port-forwarding-and-reverse-api">Port Forwarding and Reverse API</a></h1>
@@ -2466,43 +2465,35 @@ async function startTerminal() {
 <h2 id="port-forwarding-adb-forward"><a class="header" href="#port-forwarding-adb-forward">Port Forwarding (<code>adb forward</code>)</a></h2>
 <p>Forwarding redirects connections made to a socket on the host to a socket on the connected device.</p>
 <p><strong>Required Permission</strong>: <code>"forward"</code></p>
-<h3 id="dioxamineforwardport"><a class="header" href="#dioxamineforwardport"><code>dioxamine.forwardPort()</code></a></h3>
+<h3 id="dioxamineadbforwardadd"><a class="header" href="#dioxamineadbforwardadd"><code>dioxamine.adb.forwardAdd()</code></a></h3>
 <p>Binds a local host socket and routes incoming connections to a remote target socket.</p>
-<pre><code class="language-javascript">dioxamine.forwardPort(local: string, remote: string): Promise&lt;void&gt;
+<pre><code class="language-javascript">dioxamine.adb.forwardAdd(local: string, remote: string): Promise&lt;void&gt;
 </code></pre>
 <p><strong>Parameters:</strong></p>
 <ul>
 <li><code>local</code> (<code>string</code>): Local host specification (for example, <code>"tcp:8080"</code>).</li>
 <li><code>remote</code> (<code>string</code>): Remote device specification (for example, <code>"tcp:8080"</code> or <code>"localabstract:scrcpy"</code>).</li>
 </ul>
-<h3 id="dioxamineforwardlist"><a class="header" href="#dioxamineforwardlist"><code>dioxamine.forwardList()</code></a></h3>
-<p>Lists all active port forward rules created by the session.</p>
-<pre><code class="language-javascript">dioxamine.forwardList(): Promise&lt;Array&lt;{ local: string, remote: string }&gt;&gt;
-</code></pre>
-<h3 id="dioxamineforwardremove"><a class="header" href="#dioxamineforwardremove"><code>dioxamine.forwardRemove()</code></a></h3>
+<h3 id="dioxamineadbforwardremove"><a class="header" href="#dioxamineadbforwardremove"><code>dioxamine.adb.forwardRemove()</code></a></h3>
 <p>Removes an active port forward binding.</p>
-<pre><code class="language-javascript">dioxamine.forwardRemove(local: string): Promise&lt;void&gt;
+<pre><code class="language-javascript">dioxamine.adb.forwardRemove(local: string): Promise&lt;void&gt;
 </code></pre>
 <hr>
 <h2 id="port-reverse-adb-reverse"><a class="header" href="#port-reverse-adb-reverse">Port Reverse (<code>adb reverse</code>)</a></h2>
 <p>Reversing redirects connections made to a socket on the connected device back to a socket on the host device.</p>
 <p><strong>Required Permission</strong>: <code>"reverse"</code></p>
-<h3 id="dioxaminereverseport"><a class="header" href="#dioxaminereverseport"><code>dioxamine.reversePort()</code></a></h3>
+<h3 id="dioxamineadbreverseadd"><a class="header" href="#dioxamineadbreverseadd"><code>dioxamine.adb.reverseAdd()</code></a></h3>
 <p>Binds a remote device socket and routes connections back to a local host socket.</p>
-<pre><code class="language-javascript">dioxamine.reversePort(remote: string, local: string): Promise&lt;void&gt;
+<pre><code class="language-javascript">dioxamine.adb.reverseAdd(remote: string, local: string): Promise&lt;void&gt;
 </code></pre>
 <p><strong>Parameters:</strong></p>
 <ul>
 <li><code>remote</code> (<code>string</code>): Remote device specification (for example, <code>"tcp:3000"</code>).</li>
 <li><code>local</code> (<code>string</code>): Local host specification (for example, <code>"tcp:3000"</code>).</li>
 </ul>
-<h3 id="dioxaminereverselist"><a class="header" href="#dioxaminereverselist"><code>dioxamine.reverseList()</code></a></h3>
-<p>Lists all active reverse rules.</p>
-<pre><code class="language-javascript">dioxamine.reverseList(): Promise&lt;Array&lt;{ remote: string, local: string }&gt;&gt;
-</code></pre>
-<h3 id="dioxaminereverseremove"><a class="header" href="#dioxaminereverseremove"><code>dioxamine.reverseRemove()</code></a></h3>
+<h3 id="dioxamineadbreverseremove"><a class="header" href="#dioxamineadbreverseremove"><code>dioxamine.adb.reverseRemove()</code></a></h3>
 <p>Removes an active reverse socket binding.</p>
-<pre><code class="language-javascript">dioxamine.reverseRemove(remote: string): Promise&lt;void&gt;
+<pre><code class="language-javascript">dioxamine.adb.reverseRemove(remote: string): Promise&lt;void&gt;
 </code></pre>
 <hr>
 <h2 id="automatic-session-cleanup"><a class="header" href="#automatic-session-cleanup">Automatic Session Cleanup</a></h2>
@@ -2522,7 +2513,7 @@ async function startTerminal() {
 <li><code>message</code> (<code>string</code>): The text to display.</li>
 <li><code>duration</code> (<code>string</code>, optional): Either <code>'short'</code> (2 seconds) or <code>'long'</code> (3.5 seconds). Default: <code>'short'</code>.</li>
 </ul>
-<h4 id="example-2"><a class="header" href="#example-2">Example</a></h4>
+<h4 id="example-3"><a class="header" href="#example-3">Example</a></h4>
 <pre><code class="language-javascript">dioxamine.showToast("Settings saved successfully", "short");
 </code></pre>
 <hr>
@@ -2541,9 +2532,9 @@ async function startTerminal() {
 <li><code>message</code> (<code>string</code>): Descriptive dialog body text.</li>
 <li><code>buttons</code> (<code>string[]</code>, optional): Array of button labels in order. Default: <code>['OK']</code>.</li>
 </ul>
-<h4 id="returns-4"><a class="header" href="#returns-4">Returns</a></h4>
+<h4 id="returns-3"><a class="header" href="#returns-3">Returns</a></h4>
 <p>A <code>Promise</code> resolving to <code>{ buttonIndex: number }</code>, where <code>buttonIndex</code> corresponds to the clicked button index (0-based). If dismissed without clicking a button, returns <code>-1</code>.</p>
-<h4 id="example-1-1"><a class="header" href="#example-1-1">Example</a></h4>
+<h4 id="example-1-2"><a class="header" href="#example-1-2">Example</a></h4>
 <pre><code class="language-javascript">async function confirmReboot() {
     const res = await dioxamine.showDialog({
         title: "Reboot Device",
@@ -2563,7 +2554,7 @@ async function startTerminal() {
 <p>Dynamically toggles whether Dioxamine’s top bar is visible or hidden, giving the plugin the entire screen.</p>
 <pre><code class="language-javascript">dioxamine.setFullScreen(enable: boolean): void
 </code></pre>
-<h4 id="parameters-2-2"><a class="header" href="#parameters-2-2">Parameters</a></h4>
+<h4 id="parameters-2-1"><a class="header" href="#parameters-2-1">Parameters</a></h4>
 <ul>
 <li><code>enable</code> (<code>boolean</code>): Pass <code>true</code> to enter full-screen mode (hide top bar) or <code>false</code> to restore the windowed top bar.</li>
 </ul>
@@ -2586,7 +2577,7 @@ document.getElementById('toggle-fullscreen-btn').addEventListener('click', () =&
 <p>Plugins can also provide an in-app “Exit” or “Close” button in their web UI:</p>
 <pre><code class="language-javascript">dioxamine.exitPlugin(): void
 </code></pre>
-<h4 id="example-3"><a class="header" href="#example-3">Example</a></h4>
+<h4 id="example-3-1"><a class="header" href="#example-3-1">Example</a></h4>
 <pre><code class="language-javascript">document.getElementById('close-btn').addEventListener('click', () =&gt; {
     dioxamine.exitPlugin();
 });
@@ -2742,7 +2733,7 @@ console.log("Is dark theme active?", theme.isDark);
 </ul>
 </li>
 </ul>
-<h3 id="returns-5"><a class="header" href="#returns-5">Returns</a></h3>
+<h3 id="returns-4"><a class="header" href="#returns-4">Returns</a></h3>
 <p>A <code>Promise</code> resolving to an <code>HttpResponse</code> object:</p>
 <ul>
 <li><code>status</code> (<code>number</code>): The HTTP response status code (e.g. <code>200</code>, <code>201</code>, <code>404</code>, <code>500</code>).</li>
@@ -2895,9 +2886,9 @@ Use relative paths in HTML (<code>&lt;link rel="stylesheet" href="styles.css"&gt
 <h3 id="appjs"><a class="header" href="#appjs"><code>app.js</code></a></h3>
 <pre><code class="language-javascript">async function refreshSpecs() {
     try {
-        const model = await dioxamine.shellExec("getprop ro.product.model");
-        const androidVer = await dioxamine.shellExec("getprop ro.build.version.release");
-        const kernel = await dioxamine.shellExec("uname -r");
+        const model = await dioxamine.adb.shellExec("getprop ro.product.model");
+        const androidVer = await dioxamine.adb.shellExec("getprop ro.build.version.release");
+        const kernel = await dioxamine.adb.shellExec("uname -r");
 
         document.getElementById('val-model').textContent = model.stdout.trim() || '-';
         document.getElementById('val-version').textContent = androidVer.stdout.trim() || '-';
@@ -2941,7 +2932,7 @@ term.open(document.getElementById('terminal-container'));
 
 async function connectTerminal() {
     try {
-        const session = await dioxamine.openInteractiveShell();
+        const session = await dioxamine.adb.openInteractiveShell();
 
         // Target device stdout -&gt; xterm.js
         session.onData((b64Chunk) =&gt; {
@@ -2990,7 +2981,7 @@ connectTerminal();
 let logBuffer = '';
 
 async function startLogcat() {
-    session = await dioxamine.openInteractiveShell();
+    session = await dioxamine.adb.openInteractiveShell();
 
     session.onData((b64Chunk) =&gt; {
         const text = dioxamine.base64ToUtf8(b64Chunk);

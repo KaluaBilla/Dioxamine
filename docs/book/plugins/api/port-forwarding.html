@@ -35,7 +35,7 @@
             const path_to_root = "../../";
             const default_light_theme = "coal";
             const default_dark_theme = "coal";
-            window.path_to_searchindex_js = "../../searchindex-390ef998.js";
+            window.path_to_searchindex_js = "../../searchindex-b1676fa4.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../../toc-1f612337.js"></script>
@@ -185,43 +185,35 @@
 <h2 id="port-forwarding-adb-forward"><a class="header" href="#port-forwarding-adb-forward">Port Forwarding (<code>adb forward</code>)</a></h2>
 <p>Forwarding redirects connections made to a socket on the host to a socket on the connected device.</p>
 <p><strong>Required Permission</strong>: <code>"forward"</code></p>
-<h3 id="dioxamineforwardport"><a class="header" href="#dioxamineforwardport"><code>dioxamine.forwardPort()</code></a></h3>
+<h3 id="dioxamineadbforwardadd"><a class="header" href="#dioxamineadbforwardadd"><code>dioxamine.adb.forwardAdd()</code></a></h3>
 <p>Binds a local host socket and routes incoming connections to a remote target socket.</p>
-<pre><code class="language-javascript">dioxamine.forwardPort(local: string, remote: string): Promise&lt;void&gt;
+<pre><code class="language-javascript">dioxamine.adb.forwardAdd(local: string, remote: string): Promise&lt;void&gt;
 </code></pre>
 <p><strong>Parameters:</strong></p>
 <ul>
 <li><code>local</code> (<code>string</code>): Local host specification (for example, <code>"tcp:8080"</code>).</li>
 <li><code>remote</code> (<code>string</code>): Remote device specification (for example, <code>"tcp:8080"</code> or <code>"localabstract:scrcpy"</code>).</li>
 </ul>
-<h3 id="dioxamineforwardlist"><a class="header" href="#dioxamineforwardlist"><code>dioxamine.forwardList()</code></a></h3>
-<p>Lists all active port forward rules created by the session.</p>
-<pre><code class="language-javascript">dioxamine.forwardList(): Promise&lt;Array&lt;{ local: string, remote: string }&gt;&gt;
-</code></pre>
-<h3 id="dioxamineforwardremove"><a class="header" href="#dioxamineforwardremove"><code>dioxamine.forwardRemove()</code></a></h3>
+<h3 id="dioxamineadbforwardremove"><a class="header" href="#dioxamineadbforwardremove"><code>dioxamine.adb.forwardRemove()</code></a></h3>
 <p>Removes an active port forward binding.</p>
-<pre><code class="language-javascript">dioxamine.forwardRemove(local: string): Promise&lt;void&gt;
+<pre><code class="language-javascript">dioxamine.adb.forwardRemove(local: string): Promise&lt;void&gt;
 </code></pre>
 <hr>
 <h2 id="port-reverse-adb-reverse"><a class="header" href="#port-reverse-adb-reverse">Port Reverse (<code>adb reverse</code>)</a></h2>
 <p>Reversing redirects connections made to a socket on the connected device back to a socket on the host device.</p>
 <p><strong>Required Permission</strong>: <code>"reverse"</code></p>
-<h3 id="dioxaminereverseport"><a class="header" href="#dioxaminereverseport"><code>dioxamine.reversePort()</code></a></h3>
+<h3 id="dioxamineadbreverseadd"><a class="header" href="#dioxamineadbreverseadd"><code>dioxamine.adb.reverseAdd()</code></a></h3>
 <p>Binds a remote device socket and routes connections back to a local host socket.</p>
-<pre><code class="language-javascript">dioxamine.reversePort(remote: string, local: string): Promise&lt;void&gt;
+<pre><code class="language-javascript">dioxamine.adb.reverseAdd(remote: string, local: string): Promise&lt;void&gt;
 </code></pre>
 <p><strong>Parameters:</strong></p>
 <ul>
 <li><code>remote</code> (<code>string</code>): Remote device specification (for example, <code>"tcp:3000"</code>).</li>
 <li><code>local</code> (<code>string</code>): Local host specification (for example, <code>"tcp:3000"</code>).</li>
 </ul>
-<h3 id="dioxaminereverselist"><a class="header" href="#dioxaminereverselist"><code>dioxamine.reverseList()</code></a></h3>
-<p>Lists all active reverse rules.</p>
-<pre><code class="language-javascript">dioxamine.reverseList(): Promise&lt;Array&lt;{ remote: string, local: string }&gt;&gt;
-</code></pre>
-<h3 id="dioxaminereverseremove"><a class="header" href="#dioxaminereverseremove"><code>dioxamine.reverseRemove()</code></a></h3>
+<h3 id="dioxamineadbreverseremove"><a class="header" href="#dioxamineadbreverseremove"><code>dioxamine.adb.reverseRemove()</code></a></h3>
 <p>Removes an active reverse socket binding.</p>
-<pre><code class="language-javascript">dioxamine.reverseRemove(remote: string): Promise&lt;void&gt;
+<pre><code class="language-javascript">dioxamine.adb.reverseRemove(remote: string): Promise&lt;void&gt;
 </code></pre>
 <hr>
 <h2 id="automatic-session-cleanup"><a class="header" href="#automatic-session-cleanup">Automatic Session Cleanup</a></h2>

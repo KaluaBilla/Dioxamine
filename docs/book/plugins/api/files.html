@@ -35,7 +35,7 @@
             const path_to_root = "../../";
             const default_light_theme = "coal";
             const default_dark_theme = "coal";
-            window.path_to_searchindex_js = "../../searchindex-390ef998.js";
+            window.path_to_searchindex_js = "../../searchindex-b1676fa4.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../../toc-1f612337.js"></script>
@@ -181,68 +181,62 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="file-operations-and-storage-api"><a class="header" href="#file-operations-and-storage-api">File Operations and Storage API</a></h1>
-<p>Dioxamine provides methods to push and pull files between the host and connected device, stream APKs to the Android package manager, and access local device storage via Android Storage Access Framework (SAF).</p>
-<h2 id="dioxaminepushfile"><a class="header" href="#dioxaminepushfile"><code>dioxamine.pushFile()</code></a></h2>
-<p>Uploads a base64-encoded file directly to a remote path on the connected device.</p>
-<p><strong>Required Permission</strong>: <code>"push"</code></p>
-<h3 id="signature"><a class="header" href="#signature">Signature</a></h3>
-<pre><code class="language-javascript">dioxamine.pushFile(remotePath: string, base64Data: string, mode?: number): Promise&lt;void&gt;
-</code></pre>
-<h3 id="parameters"><a class="header" href="#parameters">Parameters</a></h3>
-<ul>
-<li><code>remotePath</code> (<code>string</code>): Target path on the connected device (for example, <code>"/sdcard/Download/script.sh"</code>).</li>
-<li><code>base64Data</code> (<code>string</code>): File contents encoded in base64.</li>
-<li><code>mode</code> (<code>number</code>, optional): POSIX file permission mode (for example, <code>0o755</code> for executables). Default: <code>0o644</code>.</li>
-</ul>
-<hr>
-<h2 id="dioxaminepullfile"><a class="header" href="#dioxaminepullfile"><code>dioxamine.pullFile()</code></a></h2>
-<p>Downloads a file from the connected device and returns its contents as base64.</p>
-<p><strong>Required Permission</strong>: <code>"pull"</code></p>
-<h3 id="signature-1"><a class="header" href="#signature-1">Signature</a></h3>
-<pre><code class="language-javascript">dioxamine.pullFile(remotePath: string): Promise&lt;string&gt;
-</code></pre>
-<h3 id="parameters-1"><a class="header" href="#parameters-1">Parameters</a></h3>
-<ul>
-<li><code>remotePath</code> (<code>string</code>): Source file path on the connected device (for example, <code>"/sdcard/Download/screencap.png"</code>).</li>
-</ul>
-<h3 id="returns"><a class="header" href="#returns">Returns</a></h3>
-<p>A <code>Promise</code> resolving to the base64-encoded string of the file contents.</p>
-<hr>
-<h2 id="dioxamineinstallapk"><a class="header" href="#dioxamineinstallapk"><code>dioxamine.installApk()</code></a></h2>
-<p>Streams an APK package to the target device and invokes <code>pm install</code>.</p>
-<p><strong>Required Permission</strong>: <code>"install"</code></p>
-<h3 id="signature-2"><a class="header" href="#signature-2">Signature</a></h3>
-<pre><code class="language-javascript">dioxamine.installApk(base64ApkData: string, flags?: string[]): Promise&lt;string&gt;
-</code></pre>
-<h3 id="parameters-2"><a class="header" href="#parameters-2">Parameters</a></h3>
-<ul>
-<li><code>base64ApkData</code> (<code>string</code>): Binary APK file encoded in base64.</li>
-<li><code>flags</code> (<code>string[]</code>, optional): Array of installation arguments (for example, <code>["-r", "-d", "-g"]</code>).</li>
-</ul>
-<h3 id="returns-1"><a class="header" href="#returns-1">Returns</a></h3>
-<p>A <code>Promise</code> resolving to the package manager installation output (for example, <code>"Success"</code>).</p>
-<hr>
+<p>Dioxamine provides methods to push and pull files between the host and connected ADB device using Android’s Storage Access Framework (SAF). This allows streaming large files (such as backups, ROMs, or APKs) directly without loading entire payloads into JavaScript memory.</p>
 <h2 id="storage-access-framework-saf-file-pickers"><a class="header" href="#storage-access-framework-saf-file-pickers">Storage Access Framework (SAF) File Pickers</a></h2>
-<p>Because plugins run in a sandboxed WebView, they cannot directly read the host phone filesystem. Dioxamine bridges Android’s native system file picker dialogs.</p>
+<p>Because plugins run in a sandboxed WebView, they cannot directly access arbitrary paths on the host filesystem. Instead, Dioxamine bridges Android’s native system file picker dialogs.</p>
 <p><strong>No special manifest permission is required for SAF pickers.</strong></p>
-<h3 id="dioxaminepickfile"><a class="header" href="#dioxaminepickfile"><code>dioxamine.pickFile()</code></a></h3>
-<p>Opens the system document picker for the user to select a file from host phone storage.</p>
-<pre><code class="language-javascript">dioxamine.pickFile(options?: { mimeType?: string }): Promise&lt;SelectedFile | null&gt;
+<h3 id="dioxaminerequestfilepicker"><a class="header" href="#dioxaminerequestfilepicker"><code>dioxamine.requestFilePicker()</code></a></h3>
+<p>Prompts the user to pick a file to open or select a destination to save/create.</p>
+<pre><code class="language-javascript">dioxamine.requestFilePicker(mode: "open" | "create"): Promise&lt;{ requestId: string }&gt;
 </code></pre>
-<pre><code class="language-typescript">interface SelectedFile {
-    name: string;        // File name (e.g. "update.zip")
-    size: number;        // Size in bytes
-    mimeType: string;    // MIME type
-    base64Data: string;  // File content in base64
+<p><strong>Modes:</strong></p>
+<ul>
+<li><code>"open"</code>: Opens the Android document picker for the user to choose an existing file on the host. Returns a <code>requestId</code> to use with <code>dioxamine.adb.push()</code>.</li>
+<li><code>"create"</code>: Opens the Android document creator for the user to choose where to save a file. Returns a <code>requestId</code> to use with <code>dioxamine.adb.pull()</code>.</li>
+</ul>
+<hr>
+<h2 id="file-pull-adb-pull"><a class="header" href="#file-pull-adb-pull">File Pull (<code>adb pull</code>)</a></h2>
+<p>Downloads a file from the connected ADB device and writes it directly into the selected SAF destination.</p>
+<p><strong>Required Permission</strong>: <code>"pull"</code></p>
+<h3 id="dioxamineadbpull"><a class="header" href="#dioxamineadbpull"><code>dioxamine.adb.pull()</code></a></h3>
+<pre><code class="language-javascript">dioxamine.adb.pull(remotePath: string, safRequestId: string): Promise&lt;{ bytesTransferred: number }&gt;
+</code></pre>
+<h3 id="parameters"><a class="header" href="#parameters">Parameters:</a></h3>
+<ul>
+<li><code>remotePath</code> (<code>string</code>): Source file path on the connected device (e.g. <code>"/sdcard/Download/screencap.png"</code>).</li>
+<li><code>safRequestId</code> (<code>string</code>): The request ID obtained from <code>dioxamine.requestFilePicker("create")</code>.</li>
+</ul>
+<h3 id="example"><a class="header" href="#example">Example:</a></h3>
+<pre><code class="language-javascript">async function downloadFileFromDevice(remotePath) {
+    // 1. Prompt user to select save location on Android host
+    const picker = await dioxamine.requestFilePicker("create");
+    
+    // 2. Stream directly from device to chosen SAF destination
+    const result = await dioxamine.adb.pull(remotePath, picker.requestId);
+    console.log(`Transferred ${result.bytesTransferred} bytes`);
 }
 </code></pre>
-<h3 id="dioxaminesavefile"><a class="header" href="#dioxaminesavefile"><code>dioxamine.saveFile()</code></a></h3>
-<p>Opens the system save-file dialog for the user to export a file to host phone storage.</p>
-<pre><code class="language-javascript">dioxamine.saveFile(options: {
-    fileName: string;
-    mimeType?: string;
-    base64Data: string;
-}): Promise&lt;boolean&gt;
+<hr>
+<h2 id="file-push-adb-push"><a class="header" href="#file-push-adb-push">File Push (<code>adb push</code>)</a></h2>
+<p>Uploads a file chosen via SAF from the host directly to the target path on the connected ADB device.</p>
+<p><strong>Required Permission</strong>: <code>"push"</code></p>
+<h3 id="dioxamineadbpush"><a class="header" href="#dioxamineadbpush"><code>dioxamine.adb.push()</code></a></h3>
+<pre><code class="language-javascript">dioxamine.adb.push(localSafRequestId: string, remotePath: string): Promise&lt;{ bytesTransferred: number }&gt;
+</code></pre>
+<h3 id="parameters-1"><a class="header" href="#parameters-1">Parameters:</a></h3>
+<ul>
+<li><code>localSafRequestId</code> (<code>string</code>): The request ID obtained from <code>dioxamine.requestFilePicker("open")</code>.</li>
+<li><code>remotePath</code> (<code>string</code>): Destination path on the target device (e.g. <code>"/sdcard/Download/archive.zip"</code>).</li>
+</ul>
+<h3 id="example-1"><a class="header" href="#example-1">Example:</a></h3>
+<pre><code class="language-javascript">async function uploadFileToDevice(remotePath) {
+    // 1. Prompt user to pick file from Android host
+    const picker = await dioxamine.requestFilePicker("open");
+    
+    // 2. Stream directly from SAF file to target device
+    const result = await dioxamine.adb.push(picker.requestId, remotePath);
+    console.log(`Uploaded ${result.bytesTransferred} bytes`);
+}
 </code></pre>
 
                     </main>

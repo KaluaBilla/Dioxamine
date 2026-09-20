@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "coal";
             const default_dark_theme = "coal";
-            window.path_to_searchindex_js = "../searchindex-390ef998.js";
+            window.path_to_searchindex_js = "../searchindex-b1676fa4.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-1f612337.js"></script>
@@ -181,7 +181,12 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="javascript-bridge-api-reference"><a class="header" href="#javascript-bridge-api-reference">JavaScript Bridge API Reference</a></h1>
-<p>The global <code>dioxamine</code> object provides asynchronous methods for interacting with connected devices, native dialogs, file systems, and the Android host.</p>
+<p>The global <code>dioxamine</code> object provides asynchronous methods for interacting with connected devices, native dialogs, file systems, and the Android host. Device operations are organized into dedicated namespaces:</p>
+<ul>
+<li><strong><code>dioxamine.adb.*</code></strong>: ADB device operations (shell, sync, port forwarding).</li>
+<li><strong><code>dioxamine.fastboot.*</code></strong>: Fastboot bootloader operations (coming soon).</li>
+<li><strong><code>dioxamine.*</code></strong>: Common UI dialogs, file pickers, theming, logging, and HTTP client.</li>
+</ul>
 <h2 id="bridge-initialization"><a class="header" href="#bridge-initialization">Bridge Initialization</a></h2>
 <p>The native bridge is loaded automatically before any plugin scripts execute. To guarantee readiness across all initialization states, listen for the <code>dioxamine-bridge-ready</code> event:</p>
 <pre><code class="language-javascript">function initPlugin() {
@@ -197,11 +202,11 @@ if (window.dioxamine &amp;&amp; window.__dioxamine_bridge_ready) {
 <h2 id="api-modules"><a class="header" href="#api-modules">API Modules</a></h2>
 <p>The API is organized into the following specialized modules:</p>
 <ol>
-<li><strong><a href="api/device.html">Device Management</a></strong>: Query the active ADB connection and metadata.</li>
-<li><strong><a href="api/shell.html">Single Command Execution (shellExec)</a></strong>: Run non-interactive commands and receive exit code, stdout, and stderr.</li>
-<li><strong><a href="api/interactive-shell.html">Interactive Shell Sessions (openInteractiveShell)</a></strong>: Open persistent bi-directional PTY streams for terminals and live logcat.</li>
-<li><strong><a href="api/files.html">File Operations</a></strong>: Push and pull files, stream raw data, install APK packages, and launch Android SAF file pickers.</li>
-<li><strong><a href="api/port-forwarding.html">Port Forwarding and Reverse</a></strong>: Manage TCP socket forwarding and reversing.</li>
+<li><strong><a href="api/device.html">ADB Device Management</a></strong>: Query the active ADB connection status via <code>dioxamine.adb.getActiveDevice()</code>.</li>
+<li><strong><a href="api/shell.html">ADB Single Command Execution</a></strong>: Run non-interactive commands via <code>dioxamine.adb.shellExec()</code>.</li>
+<li><strong><a href="api/interactive-shell.html">ADB Interactive Shell Sessions</a></strong>: Open persistent bi-directional PTY streams via <code>dioxamine.adb.openInteractiveShell()</code>.</li>
+<li><strong><a href="api/files.html">File Operations</a></strong>: Pull/push files via <code>dioxamine.adb.pull()</code> / <code>dioxamine.adb.push()</code>, and open system file pickers via <code>dioxamine.requestFilePicker()</code>.</li>
+<li><strong><a href="api/port-forwarding.html">ADB Port Forwarding and Reverse</a></strong>: Manage TCP socket forwarding via <code>dioxamine.adb.forwardAdd()</code> / <code>reverseAdd()</code>.</li>
 <li><strong><a href="api/ui.html">UI Controls, Dialogs and Fullscreen</a></strong>: Show native Material toasts, blocking dialogs, and toggle edge-to-edge full-screen mode.</li>
 <li><strong><a href="api/logging.html">Native Logging and Debugging</a></strong>: Forward logs and console output directly to Android Logcat.</li>
 <li><strong><a href="api/theming.html">Dynamic Theming and Material 3</a></strong>: Integrate with Dioxamine’s dynamic color schemes and listen for theme changes.</li>

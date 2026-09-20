@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "coal";
             const default_dark_theme = "coal";
-            window.path_to_searchindex_js = "../searchindex-390ef998.js";
+            window.path_to_searchindex_js = "../searchindex-b1676fa4.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-1f612337.js"></script>
@@ -239,11 +239,11 @@
 <h2 id="safe-native-apis-no-permission-required"><a class="header" href="#safe-native-apis-no-permission-required">Safe Native APIs (No Permission Required)</a></h2>
 <p>The following bridge methods are safe UI/context utilities and do not require declared permissions:</p>
 <ul>
-<li><code>dioxamine.getActiveDevice()</code></li>
+<li><code>dioxamine.adb.getActiveDevice()</code></li>
 <li><code>dioxamine.showToast()</code></li>
 <li><code>dioxamine.showDialog()</code></li>
 <li><code>dioxamine.setFullScreen()</code> / <code>dioxamine.fullScreen()</code></li>
-<li><code>dioxamine.pickFile()</code> / <code>dioxamine.saveFile()</code> (delegates to Android Storage Access Framework with user file picker)</li>
+<li><code>dioxamine.requestFilePicker()</code> (delegates to Android Storage Access Framework with user file picker)</li>
 <li><code>dioxamine.log.*</code> and <code>console.*</code> forwarding</li>
 <li><code>dioxamine.getTheme()</code> and <code>dioxamine.onThemeChange()</code></li>
 <li>Base64 / UTF-8 conversion helpers</li>

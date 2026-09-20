@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "coal";
             const default_dark_theme = "coal";
-            window.path_to_searchindex_js = "../searchindex-390ef998.js";
+            window.path_to_searchindex_js = "../searchindex-b1676fa4.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-1f612337.js"></script>
@@ -211,9 +211,9 @@
 <h3 id="appjs"><a class="header" href="#appjs"><code>app.js</code></a></h3>
 <pre><code class="language-javascript">async function refreshSpecs() {
     try {
-        const model = await dioxamine.shellExec("getprop ro.product.model");
-        const androidVer = await dioxamine.shellExec("getprop ro.build.version.release");
-        const kernel = await dioxamine.shellExec("uname -r");
+        const model = await dioxamine.adb.shellExec("getprop ro.product.model");
+        const androidVer = await dioxamine.adb.shellExec("getprop ro.build.version.release");
+        const kernel = await dioxamine.adb.shellExec("uname -r");
 
         document.getElementById('val-model').textContent = model.stdout.trim() || '-';
         document.getElementById('val-version').textContent = androidVer.stdout.trim() || '-';
@@ -257,7 +257,7 @@ term.open(document.getElementById('terminal-container'));
 
 async function connectTerminal() {
     try {
-        const session = await dioxamine.openInteractiveShell();
+        const session = await dioxamine.adb.openInteractiveShell();
 
         // Target device stdout -&gt; xterm.js
         session.onData((b64Chunk) =&gt; {
@@ -306,7 +306,7 @@ connectTerminal();
 let logBuffer = '';
 
 async function startLogcat() {
-    session = await dioxamine.openInteractiveShell();
+    session = await dioxamine.adb.openInteractiveShell();
 
     session.onData((b64Chunk) =&gt; {
         const text = dioxamine.base64ToUtf8(b64Chunk);
