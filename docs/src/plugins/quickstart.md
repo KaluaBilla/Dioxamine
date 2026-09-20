@@ -190,5 +190,5 @@ if (window.dioxamine && window.__dioxamine_bridge_ready) {
 
 1. Create a 512x512 PNG image named `icon.png`.
 2. Select all files inside the directory (`plugin.json`, `index.html`, `styles.css`, `app.js`, `icon.png`) and create a ZIP archive named `com.example.deviceinfo.zip`.
-3. In Dioxamine, navigate to the **ADB** tab, click **Plugins**, click **Install Plugin**, and select your ZIP file.
+3. In Dioxamine, navigate to the **Plugins** tab, click **Install Plugin** (+ button), and select your ZIP file.
 4. Grant the requested `shell` permission when prompted, and your plugin will run.

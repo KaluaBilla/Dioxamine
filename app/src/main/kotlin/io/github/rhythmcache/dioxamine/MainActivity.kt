@@ -29,6 +29,7 @@ import io.github.rhythmcache.dioxamine.fastboot.FastbootViewModel
 import io.github.rhythmcache.dioxamine.fastboot.ListenForFastbootDevices
 import io.github.rhythmcache.dioxamine.scrcpy.ScrcpyScreen
 import io.github.rhythmcache.dioxamine.settings.SettingsScreen
+import io.github.rhythmcache.dioxamine.plugin.PluginsScreen
 import io.github.rhythmcache.adb.AdbDeviceMode
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -43,6 +44,7 @@ enum class Tab(@StringRes val labelRes: Int, val icon: androidx.compose.ui.graph
     ADB(R.string.tab_adb, Icons.Filled.PhoneAndroid),
     SCRCPY(R.string.tab_scrcpy, Icons.AutoMirrored.Filled.ScreenShare),
     FASTBOOT(R.string.tab_fastboot, Icons.Filled.Bolt),
+    PLUGINS(R.string.tab_plugins, Icons.Filled.Extension),
     SETTINGS(R.string.tab_settings, Icons.Filled.Settings)
 }
 
@@ -182,9 +184,18 @@ fun DioxamineApp(keyDir: File) {
                        else Modifier.padding(padding).fillMaxSize()
         ) {
             when (selectedTab) {
-                Tab.ADB -> AdbScreen(vm, fastbootVm, pluginRepo, permissionGate, dialogGate, safBridge, onPluginActiveChange = { isPluginActive = it })
+                Tab.ADB -> AdbScreen(vm)
                 Tab.SCRCPY -> ScrcpyScreen(vm, onFullScreenChange = { isScrcpyFullScreen = it })
                 Tab.FASTBOOT -> FastbootScreen(fastbootVm)
+                Tab.PLUGINS -> PluginsScreen(
+                    vm = vm,
+                    fastbootVm = fastbootVm,
+                    pluginRepo = pluginRepo,
+                    permissionGate = permissionGate,
+                    dialogGate = dialogGate,
+                    safBridge = safBridge,
+                    onPluginActiveChange = { isPluginActive = it }
+                )
                 Tab.SETTINGS -> SettingsScreen(vm)
             }
         }

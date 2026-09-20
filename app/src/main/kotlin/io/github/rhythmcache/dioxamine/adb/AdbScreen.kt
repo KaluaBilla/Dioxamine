@@ -29,42 +29,18 @@ import io.github.rhythmcache.dioxamine.adb.discovery.QrPairingScreen
 import io.github.rhythmcache.dioxamine.adb.shell.ShellScreen
 import io.github.rhythmcache.dioxamine.core.*
 import io.github.rhythmcache.adb.AdbDeviceMode
-import io.github.rhythmcache.dioxamine.fastboot.FastbootViewModel
-import io.github.rhythmcache.dioxamine.plugin.PluginDialogGate
-import io.github.rhythmcache.dioxamine.plugin.PluginPermissionGate
-import io.github.rhythmcache.dioxamine.plugin.PluginRepository
-import io.github.rhythmcache.dioxamine.plugin.PluginRunnerScreen
-import io.github.rhythmcache.dioxamine.plugin.PluginSafBridge
-import io.github.rhythmcache.dioxamine.plugin.PluginsTab
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdbScreen(
     vm: AdbViewModel,
-    fastbootVm: FastbootViewModel? = null,
-    pluginRepo: PluginRepository,
-    permissionGate: PluginPermissionGate,
-    dialogGate: PluginDialogGate,
-    safBridge: PluginSafBridge,
-    onPluginActiveChange: (Boolean) -> Unit = {},
 ) {
     var subTab by remember { mutableStateOf(0) }
-    var activePluginId by remember { mutableStateOf<String?>(null) }
     val activeConn = vm.devices[vm.activeDeviceId]
     val mode = activeConn?.mode ?: AdbDeviceMode.UNKNOWN
 
-    LaunchedEffect(activePluginId) {
-        onPluginActiveChange(activePluginId != null)
-    }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            onPluginActiveChange(false)
-        }
-    }
-
-    // Return to Built-in sub-tab when on Shell or Plugins tab
-    BackHandler(enabled = activePluginId == null && subTab != 0) {
+    // Return to Built-in sub-tab when on Shell tab
+    BackHandler(enabled = subTab != 0) {
         subTab = 0
     }
 
@@ -81,45 +57,25 @@ fun AdbScreen(
         )
     }
 
-    if (activePluginId != null) {
-        PluginRunnerScreen(
-            pluginId = activePluginId!!,
-            vm = vm,
-            fastbootVm = fastbootVm,
-            repo = pluginRepo,
-            permissionGate = permissionGate,
-            dialogGate = dialogGate,
-            safBridge = safBridge,
-            onBack = { activePluginId = null }
-        )
-    } else {
-        Column(modifier = Modifier.fillMaxSize()) {
-            DeviceConnectorCard(vm)
+    Column(modifier = Modifier.fillMaxSize()) {
+        DeviceConnectorCard(vm)
 
-            when (mode) {
-                AdbDeviceMode.SIDELOAD -> {
-                    SideloadFlashScreen(vm)
+        when (mode) {
+            AdbDeviceMode.SIDELOAD -> {
+                SideloadFlashScreen(vm)
+            }
+            AdbDeviceMode.RESCUE -> {
+                RescueScreen(vm)
+            }
+            else -> {
+                PrimaryTabRow(selectedTabIndex = subTab) {
+                    Tab(selected = subTab == 0, onClick = { subTab = 0 }, text = { Text(stringResource(R.string.adb_subtab_builtin)) })
+                    Tab(selected = subTab == 1, onClick = { subTab = 1 }, text = { Text(stringResource(R.string.adb_subtab_adb_shell)) })
                 }
-                AdbDeviceMode.RESCUE -> {
-                    RescueScreen(vm)
-                }
-                else -> {
-                    PrimaryTabRow(selectedTabIndex = subTab) {
-                        Tab(selected = subTab == 0, onClick = { subTab = 0 }, text = { Text(stringResource(R.string.adb_subtab_builtin)) })
-                        Tab(selected = subTab == 1, onClick = { subTab = 1 }, text = { Text(stringResource(R.string.adb_subtab_adb_shell)) })
-                        Tab(selected = subTab == 2, onClick = { subTab = 2 }, text = { Text(stringResource(R.string.adb_subtab_plugins)) })
-                    }
 
-                    when (subTab) {
-                        0 -> BuiltInActionsTab(vm)
-                        1 -> ShellScreen(vm)
-                        2 -> PluginsTab(
-                            repo = pluginRepo,
-                            onOpenPlugin = { pluginId ->
-                                activePluginId = pluginId
-                            }
-                        )
-                    }
+                when (subTab) {
+                    0 -> BuiltInActionsTab(vm)
+                    1 -> ShellScreen(vm)
                 }
             }
         }

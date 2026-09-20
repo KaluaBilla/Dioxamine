@@ -6,6 +6,7 @@
     <string name="tab_adb">ADB</string>
     <string name="tab_scrcpy">scrcpy</string>
     <string name="tab_fastboot">Fastboot</string>
+    <string name="tab_plugins">插件</string>
     <string name="tab_settings">设置</string>
 
     <!-- ADB 标签页 -->

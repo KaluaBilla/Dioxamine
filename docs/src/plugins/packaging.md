@@ -49,7 +49,7 @@ Compress-Archive -Path "C:\path\to\com.example.myplugin\*" -DestinationPath "C:\
 ## Installing Plugins in Dioxamine
 
 1. Transfer your `.zip` package to your Android device (or download it directly).
-2. Open Dioxamine and go to the **ADB** tab.
-3. Switch to the **Plugins** sub-tab and tap **Install Plugin**.
+2. Open Dioxamine and go to the **Plugins** tab at the bottom.
+3. Tap the **+** (Install Plugin) button.
 4. Select your `.zip` archive using the system document picker.
 5. Dioxamine will validate the manifest, extract the files into its secure sandbox, and add the plugin to your installed list immediately.
