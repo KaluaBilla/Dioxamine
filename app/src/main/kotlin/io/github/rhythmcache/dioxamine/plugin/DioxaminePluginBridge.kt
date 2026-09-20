@@ -756,7 +756,7 @@ class DioxaminePluginBridge(
                     reject(callbackId, "Unsupported URL scheme: Only http:// and https:// URLs are allowed")
                     return@launch
                 }
-                if (uri?.host.isNullOrBlank()) {
+                if (uri.host.isNullOrBlank()) {
                     reject(callbackId, "Invalid URL: Missing host")
                     return@launch
                 }
