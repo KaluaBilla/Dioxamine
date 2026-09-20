@@ -163,13 +163,10 @@ fun SettingsScreen(vm: AdbViewModel) {
     ) { uri ->
         if (uri != null) {
             runCatching {
+                val pemText = vm.getPrivateKeyPem()
+                    ?: throw Exception(context.getString(R.string.err_no_adb_key_file))
                 context.contentResolver.openOutputStream(uri)?.use { out ->
-                    val keyFile = java.io.File(context.filesDir, "adbkey")
-                    if (keyFile.exists() && keyFile.length() > 0) {
-                        out.write(keyFile.readBytes())
-                    } else {
-                        throw Exception(context.getString(R.string.err_no_adb_key_file))
-                    }
+                    out.write(pemText.toByteArray(Charsets.US_ASCII))
                 }
             }.onSuccess {
                 Toast.makeText(context, context.getString(R.string.msg_key_exported), Toast.LENGTH_SHORT).show()

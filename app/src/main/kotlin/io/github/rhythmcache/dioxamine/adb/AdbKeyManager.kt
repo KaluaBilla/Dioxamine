@@ -127,6 +127,17 @@ class AdbKeyManager(private val keyDir: File) {
         keyFile.exists() && keyFile.length() > 0 &&
         pubKeyFile.exists() && pubKeyFile.length() > 0
 
+    /**
+     * Reads the private key stored on disk and returns it formatted as standard
+     * PKCS#8 PEM text (matching ~/.android/adbkey), or null if no valid key is present.
+     *
+     * Used when exporting the key to user storage or sharing it with desktop/CLI ADB.
+     */
+    fun getPrivateKeyPem(): String? {
+        val kp = readKeyPairFromDisk() ?: return null
+        return AdbAuth.privateKeyToPem(kp.private)
+    }
+
     // -----------------------------------------------------------------
     // Internal: writing
     // -----------------------------------------------------------------
