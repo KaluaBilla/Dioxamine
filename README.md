@@ -29,7 +29,6 @@ It focuses on:
 - **Flashing & recovery** — flash images, live-boot recoveries/kernels, and unlock bootloaders over USB OTG
 - **Non-intrusiveness** — no root or client app needed on the connected device
 - **Extensibility** — build and install custom tools with the HTML/JS plugin engine
-- ~6MB app size
 
 ## Features
 
