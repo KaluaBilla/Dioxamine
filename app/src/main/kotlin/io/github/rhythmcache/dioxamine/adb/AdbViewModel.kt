@@ -605,6 +605,9 @@ class AdbViewModel(
         }
     }
 
+    /** Returns standard PKCS#8 PEM formatted private key for exporting (~/.android/adbkey). */
+    fun getPrivateKeyPem(): String? = keyManager.getPrivateKeyPem()
+
     fun dismissDaemonDialog() {
         daemonDialogMessage = null
     }
