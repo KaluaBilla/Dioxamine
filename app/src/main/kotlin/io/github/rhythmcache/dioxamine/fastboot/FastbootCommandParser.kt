@@ -68,6 +68,17 @@ object FastbootCommandParser {
             return ParsedShellInput.NeedsFile(PendingFileCommand.Boot, input)
         }
 
+        STAGE_WITH_PATH.find(normalized)?.let { m ->
+            return ParsedShellInput.NeedsFileRawPathDetected(
+                pending = PendingFileCommand.Stage,
+                detectedPath = m.groupValues[1],
+                raw = input,
+            )
+        }
+        if (STAGE_BARE.matches(normalized)) {
+            return ParsedShellInput.NeedsFile(PendingFileCommand.Stage, input)
+        }
+
         // fetch PARTITION [OUT_FILE] — the out-file token, if typed, is always ignored;
         // a SAF "save as" dialog decides where the file actually goes. So there is no
         // "raw path" warning case for fetch, only "needs a save location".
@@ -99,6 +110,8 @@ object FastbootCommandParser {
     private val FLASH_WITH_PATH = Regex("""^flash(?::\s*|\s+)(\S+)\s+(\S+)$""")
     private val BOOT_BARE = Regex("""^boot$""")
     private val BOOT_WITH_PATH = Regex("""^boot\s+(\S+)""")
+    private val STAGE_BARE = Regex("""^stage$""")
+    private val STAGE_WITH_PATH = Regex("""^stage\s+(\S+)""")
     private val FETCH_PATTERN = Regex("""^fetch\s+(\S+)(?:\s+\S+)?$""")
 
     // ---- Everything else ----
@@ -180,6 +193,7 @@ object FastbootCommandParser {
         appendLine("  getvar NAME | getvar all")
         appendLine("  flash PARTITION            (Attach button picks the image)")
         appendLine("  boot                       (Attach button picks the image)")
+        appendLine("  stage                      (Attach button picks the file)")
         appendLine("  fetch PARTITION            (prompts where to save)")
         appendLine("  reboot [bootloader|recovery|fastboot]")
         appendLine("  continue")

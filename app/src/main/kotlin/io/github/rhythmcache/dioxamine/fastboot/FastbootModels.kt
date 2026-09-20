@@ -41,5 +41,6 @@ sealed class FastbootSubScreen {
 sealed class PendingFileCommand {
     data class Flash(val partition: String) : PendingFileCommand()
     object Boot : PendingFileCommand()
+    object Stage : PendingFileCommand()
     data class Fetch(val partition: String) : PendingFileCommand()
 }

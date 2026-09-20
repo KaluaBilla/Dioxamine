@@ -1170,6 +1170,143 @@ class DioxaminePluginBridge(
     }
 
     @JavascriptInterface
+    fun fastbootStage(
+        safRequestId: String,
+        opId: String,
+        callbackId: String,
+    ) {
+        scope.launch(Dispatchers.IO) {
+            try {
+                val granted =
+                    permissionGate.checkPermission(
+                        pluginId = pluginId,
+                        pluginName = pluginName,
+                        declaredPermissions = declaredPermissions,
+                        required = PluginPermission.FASTBOOT,
+                    )
+                if (!granted) {
+                    reject(callbackId, "Permission denied: fastboot")
+                    return@launch
+                }
+
+                val client = getActiveFastbootClient()
+                if (client == null) {
+                    reject(callbackId, "No active fastboot device")
+                    return@launch
+                }
+
+                val (pfd, size) = safBridge.resolveFileDescriptorAndSize(safRequestId)
+                    ?: run {
+                        reject(callbackId, "Invalid or expired safRequestId")
+                        return@launch
+                    }
+
+                try {
+                    if (size <= 0L) {
+                        reject(callbackId, "Cannot stage empty file (0 bytes)")
+                        return@launch
+                    }
+                    val encodedOpId = Json.encodeToString(String.serializer(), opId)
+                    val result = client.stage(
+                        fd = pfd.fileDescriptor,
+                        size = size,
+                        onProgress = { progress ->
+                            val percentage = if (progress.total > 0) (progress.current.toDouble() / progress.total * 100).toInt() else 0
+                            evaluateJs("window.__dioxamine_on_fastboot_progress($encodedOpId, ${progress.current}, ${progress.total}, $percentage, '')")
+                        },
+                    )
+                    resolve(
+                        callbackId,
+                        buildJsonObject {
+                            put("success", true)
+                            put("bytesTransferred", size)
+                            put("response", result.response)
+                            put(
+                                "info",
+                                buildJsonArray {
+                                    result.info.forEach { add(it) }
+                                },
+                            )
+                        },
+                    )
+                } finally {
+                    runCatching { pfd.close() }
+                }
+            } catch (e: Exception) {
+                AppLogger.e("PluginBridge", "fastbootStage failed", e)
+                reject(callbackId, e.message ?: e.toString())
+            }
+        }
+    }
+
+    @JavascriptInterface
+    fun fastbootStageData(
+        dataBase64: String,
+        opId: String,
+        callbackId: String,
+    ) {
+        scope.launch(Dispatchers.IO) {
+            try {
+                val granted =
+                    permissionGate.checkPermission(
+                        pluginId = pluginId,
+                        pluginName = pluginName,
+                        declaredPermissions = declaredPermissions,
+                        required = PluginPermission.FASTBOOT,
+                    )
+                if (!granted) {
+                    reject(callbackId, "Permission denied: fastboot")
+                    return@launch
+                }
+
+                val client = getActiveFastbootClient()
+                if (client == null) {
+                    reject(callbackId, "No active fastboot device")
+                    return@launch
+                }
+
+                val bytes = try {
+                    Base64.decode(dataBase64, Base64.DEFAULT)
+                } catch (e: Exception) {
+                    reject(callbackId, "Invalid base64 payload: ${e.message}")
+                    return@launch
+                }
+
+                if (bytes.isEmpty()) {
+                    reject(callbackId, "Cannot stage empty data (0 bytes)")
+                    return@launch
+                }
+
+                val encodedOpId = Json.encodeToString(String.serializer(), opId)
+                val result = client.stage(
+                    image = bytes,
+                    onProgress = { progress ->
+                        val percentage = if (progress.total > 0) (progress.current.toDouble() / progress.total * 100).toInt() else 0
+                        evaluateJs("window.__dioxamine_on_fastboot_progress($encodedOpId, ${progress.current}, ${progress.total}, $percentage, '')")
+                    },
+                )
+                resolve(
+                    callbackId,
+                    buildJsonObject {
+                        put("success", true)
+                        put("bytesTransferred", bytes.size.toLong())
+                        put("response", result.response)
+                        put(
+                            "info",
+                            buildJsonArray {
+                                result.info.forEach { add(it) }
+                            },
+                        )
+                    },
+                )
+            } catch (e: Exception) {
+                AppLogger.e("PluginBridge", "fastbootStageData failed", e)
+                reject(callbackId, e.message ?: e.toString())
+            }
+        }
+    }
+
+    @JavascriptInterface
     fun fastbootReboot(
         target: String,
         callbackId: String,

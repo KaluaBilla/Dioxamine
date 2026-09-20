@@ -138,6 +138,24 @@
             return callNative('fastbootBoot', safRequestId, opId).finally(function() {
                 delete window.__dioxamine_fastboot_progress[opId];
             });
+        },
+        stage: function(safRequestId, onProgress) {
+            var opId = 'fb_' + Math.random().toString(36).slice(2) + Date.now();
+            if (typeof onProgress === 'function') {
+                window.__dioxamine_fastboot_progress[opId] = onProgress;
+            }
+            return callNative('fastbootStage', safRequestId, opId).finally(function() {
+                delete window.__dioxamine_fastboot_progress[opId];
+            });
+        },
+        stageData: function(dataBase64, onProgress) {
+            var opId = 'fb_' + Math.random().toString(36).slice(2) + Date.now();
+            if (typeof onProgress === 'function') {
+                window.__dioxamine_fastboot_progress[opId] = onProgress;
+            }
+            return callNative('fastbootStageData', dataBase64, opId).finally(function() {
+                delete window.__dioxamine_fastboot_progress[opId];
+            });
         }
     };
 

@@ -62,6 +62,24 @@ class FastbootCommandParserTest {
     }
 
     @Test
+    fun testStageBare() {
+        val parsed = FastbootCommandParser.parse("stage")
+        assertTrue(parsed is ParsedShellInput.NeedsFile)
+        val needsFile = parsed as ParsedShellInput.NeedsFile
+        assertEquals(PendingFileCommand.Stage, needsFile.pending)
+        assertEquals("stage", needsFile.raw)
+    }
+
+    @Test
+    fun testStageWithPath() {
+        val parsed = FastbootCommandParser.parse("fastboot stage /sdcard/token.bin")
+        assertTrue(parsed is ParsedShellInput.NeedsFileRawPathDetected)
+        val rawPath = parsed as ParsedShellInput.NeedsFileRawPathDetected
+        assertEquals(PendingFileCommand.Stage, rawPath.pending)
+        assertEquals("/sdcard/token.bin", rawPath.detectedPath)
+    }
+
+    @Test
     fun testFetch() {
         val parsed = FastbootCommandParser.parse("fetch boot /local/save.img")
         assertTrue(parsed is ParsedShellInput.NeedsFile)

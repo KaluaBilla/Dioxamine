@@ -39,6 +39,7 @@ fun ShellInputBar(vm: FastbootViewModel, modifier: Modifier = Modifier) {
         val job = when (pending) {
             is PendingFileCommand.Flash -> vm.flashImage(pending.partition, pfd.fileDescriptor, size, name)
             is PendingFileCommand.Boot -> vm.bootImage(pfd.fileDescriptor, size, name)
+            is PendingFileCommand.Stage -> vm.stageImage(pfd.fileDescriptor, size, name)
             is PendingFileCommand.Fetch -> null // never routed here
         }
         job?.invokeOnCompletion { runCatching { pfd.close() } }

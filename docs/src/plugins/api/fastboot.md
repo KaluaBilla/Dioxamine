@@ -223,6 +223,60 @@ await dioxamine.fastboot.boot(file.requestId, (p) => {
 console.log("Device is booting image...");
 ```
 
+### `dioxamine.fastboot.stage(safRequestId, onProgress?)`
+
+Stages an image picked by the user into the bootloader memory buffer (via Fastboot `stage` command) without immediately flashing or booting it. This is commonly required for OEM unlock token staging or staging auxiliary payloads.
+
+#### Signature
+```typescript
+dioxamine.fastboot.stage(
+    safRequestId: string,
+    onProgress?: (progress: { current: number; total: number; percentage: number }) => void
+): Promise<{
+    success: boolean;
+    bytesTransferred: number;
+    response: string;
+    info: string[];
+}>
+```
+
+#### Example
+```javascript
+const file = await dioxamine.requestFilePicker("open");
+
+const res = await dioxamine.fastboot.stage(file.requestId, (p) => {
+    console.log(`Staging payload: ${p.percentage}%`);
+});
+
+console.log(`Staged ${res.bytesTransferred} bytes: ${res.response}`);
+```
+
+### `dioxamine.fastboot.stageData(dataBase64, onProgress?)`
+
+Stages in-memory raw binary data (encoded as a base64 string) directly into the bootloader memory buffer. Useful for staging dynamically received payloads, OEM unlock signatures, or tokens directly from network APIs without creating a temporary SAF file.
+
+#### Signature
+```typescript
+dioxamine.fastboot.stageData(
+    dataBase64: string,
+    onProgress?: (progress: { current: number; total: number; percentage: number }) => void
+): Promise<{
+    success: boolean;
+    bytesTransferred: number;
+    response: string;
+    info: string[];
+}>
+```
+
+#### Example
+```javascript
+// Stage raw token signature received from unlock server
+const stageResult = await dioxamine.fastboot.stageData(tokenBase64);
+if (stageResult.success) {
+    await dioxamine.fastboot.rawCommand("oem unlock");
+}
+```
+
 ---
 
 ## 6. Power & Lifecycle Controls

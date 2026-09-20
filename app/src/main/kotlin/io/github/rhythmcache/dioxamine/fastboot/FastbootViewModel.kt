@@ -226,6 +226,14 @@ class FastbootViewModel : ViewModel() {
         client.boot(fd, size, onInfo = onInfo, onProgress = onProgress); null
     }
 
+    fun stageImage(fd: FileDescriptor, size: Long, displayName: String) = run(
+        commandLabel = "stage ($displayName, $size bytes)",
+        opLabel = "Staging image",
+    ) { client, _, onProgress ->
+        val result = client.stage(fd, size, onProgress = onProgress)
+        result.response.ifBlank { null }
+    }
+
     // -----------------------------------------------------------------
     // Actions — Fetch (device -> local file, via SAF "create document")
     // -----------------------------------------------------------------

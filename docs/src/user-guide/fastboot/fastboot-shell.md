@@ -19,6 +19,7 @@ Type any Fastboot subcommand into the bottom input bar (without typing the word 
 - `oem device-info`: Check OEM-specific bootloader lock details on older devices.
 - `set_active a` / `set_active b`: Switch active A/B boot slots.
 - `erase userdata`: Wipe the user data partition.
+- `stage`: Prompt with the Attach button to pick a file and stage it into bootloader memory buffer.
 - `reboot`: Reboot into the Android system.
 - `reboot-bootloader`: Restart back into Fastboot mode.
 - `reboot-fastboot`: Reboot into userspace `fastbootd` mode.
