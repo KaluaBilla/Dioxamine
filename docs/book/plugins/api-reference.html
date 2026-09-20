@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "coal";
             const default_dark_theme = "coal";
-            window.path_to_searchindex_js = "../searchindex-7d6438b7.js";
+            window.path_to_searchindex_js = "../searchindex-ad122626.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-1f612337.js"></script>
+        <script src="../toc-78a1705c.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -184,7 +184,7 @@
 <p>The global <code>dioxamine</code> object provides asynchronous methods for interacting with connected devices, native dialogs, file systems, and the Android host. Device operations are organized into dedicated namespaces:</p>
 <ul>
 <li><strong><code>dioxamine.adb.*</code></strong>: ADB device operations (shell, sync, port forwarding).</li>
-<li><strong><code>dioxamine.fastboot.*</code></strong>: Fastboot bootloader operations (coming soon).</li>
+<li><strong><code>dioxamine.fastboot.*</code></strong>: Fastboot bootloader operations (variables, raw commands, flash, boot, reboot).</li>
 <li><strong><code>dioxamine.*</code></strong>: Common UI dialogs, file pickers, theming, logging, and HTTP client.</li>
 </ul>
 <h2 id="bridge-initialization"><a class="header" href="#bridge-initialization">Bridge Initialization</a></h2>
@@ -211,6 +211,7 @@ if (window.dioxamine &amp;&amp; window.__dioxamine_bridge_ready) {
 <li><strong><a href="api/logging.html">Native Logging and Debugging</a></strong>: Forward logs and console output directly to Android Logcat.</li>
 <li><strong><a href="api/theming.html">Dynamic Theming and Material 3</a></strong>: Integrate with Dioxamine’s dynamic color schemes and listen for theme changes.</li>
 <li><strong><a href="api/network.html">Network HTTP Client (http.fetch)</a></strong>: Perform asynchronous HTTP/HTTPS network requests with native CORS-free execution and permission gating.</li>
+<li><strong><a href="api/fastboot.html">Fastboot Protocol Operations</a></strong>: Inspect bootloader variables, execute raw commands, flash partitions, live boot images, switch slots, and reboot devices via <code>dioxamine.fastboot.*</code>.</li>
 </ol>
 
                     </main>

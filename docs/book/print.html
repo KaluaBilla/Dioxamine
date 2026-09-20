@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "coal";
             const default_dark_theme = "coal";
-            window.path_to_searchindex_js = "searchindex-7d6438b7.js";
+            window.path_to_searchindex_js = "searchindex-ad122626.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-1f612337.js"></script>
+        <script src="toc-78a1705c.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -1942,6 +1942,7 @@ if (window.dioxamine &amp;&amp; window.__dioxamine_bridge_ready) {
 <li><code>permissions</code> must be an object with subkeys (legacy flat arrays are rejected).</li>
 <li>ADB permissions in <code>permissions.adb</code> must only be: <code>shell</code>, <code>push</code>, <code>pull</code>, <code>install</code>, <code>forward</code>, <code>reverse</code>.</li>
 <li>Common host permissions in <code>permissions.common</code> must only be: <code>network</code> (or <code>internet</code>).</li>
+<li>Fastboot permissions in <code>permissions.fastboot</code> must only be: <code>fastboot</code> (or <code>access</code>).</li>
 <li>Unknown permissions or permissions placed in the wrong subkey will fail manifest validation with an explicit error.</li>
 </ul>
 </li>
@@ -1958,6 +1959,7 @@ if (window.dioxamine &amp;&amp; window.__dioxamine_bridge_ready) {
 <p>Permissions must be grouped under their respective subkeys:</p>
 <ul>
 <li><code>"adb"</code>: Capabilities targeting the connected ADB device.</li>
+<li><code>"fastboot"</code>: Capabilities targeting connected Fastboot devices in bootloader mode.</li>
 <li><code>"common"</code>: Host capabilities applicable across modes (such as network access).</li>
 </ul>
 <pre><code class="language-json">{
@@ -1965,6 +1967,9 @@ if (window.dioxamine &amp;&amp; window.__dioxamine_bridge_ready) {
     "adb": [
       "shell",
       "push"
+    ],
+    "fastboot": [
+      "fastboot"
     ],
     "common": [
       "network"
@@ -1985,6 +1990,7 @@ if (window.dioxamine &amp;&amp; window.__dioxamine_bridge_ready) {
 <tr><td style="text-align: left"><code>adb</code></td><td style="text-align: left"><strong>Package Install</strong></td><td style="text-align: left"><code>"install"</code></td><td style="text-align: left">Allows streaming APK files to the device package manager (<code>pm install</code>).</td><td style="text-align: left">Package install APIs</td></tr>
 <tr><td style="text-align: left"><code>adb</code></td><td style="text-align: left"><strong>Port Forward</strong></td><td style="text-align: left"><code>"forward"</code></td><td style="text-align: left">Allows binding local host ports and forwarding traffic to target device sockets.</td><td style="text-align: left"><code>dioxamine.adb.forwardAdd()</code>, <code>dioxamine.adb.forwardRemove()</code></td></tr>
 <tr><td style="text-align: left"><code>adb</code></td><td style="text-align: left"><strong>Port Reverse</strong></td><td style="text-align: left"><code>"reverse"</code></td><td style="text-align: left">Allows binding target device ports and reversing traffic back to the host system.</td><td style="text-align: left"><code>dioxamine.adb.reverseAdd()</code>, <code>dioxamine.adb.reverseRemove()</code></td></tr>
+<tr><td style="text-align: left"><code>fastboot</code></td><td style="text-align: left"><strong>Fastboot Access</strong></td><td style="text-align: left"><code>"fastboot"</code></td><td style="text-align: left">Full access to USB Fastboot bootloader interface (variables, raw commands, flash, boot, reboot).</td><td style="text-align: left"><code>dioxamine.fastboot.*</code></td></tr>
 <tr><td style="text-align: left"><code>common</code></td><td style="text-align: left"><strong>Network Access</strong></td><td style="text-align: left"><code>"network"</code></td><td style="text-align: left">Allows sending HTTP/HTTPS requests to the internet, local networks, and localhost services.</td><td style="text-align: left"><code>dioxamine.http.fetch()</code></td></tr>
 </tbody>
 </table>
@@ -2168,7 +2174,7 @@ function flushBatch() {
 <p>The global <code>dioxamine</code> object provides asynchronous methods for interacting with connected devices, native dialogs, file systems, and the Android host. Device operations are organized into dedicated namespaces:</p>
 <ul>
 <li><strong><code>dioxamine.adb.*</code></strong>: ADB device operations (shell, sync, port forwarding).</li>
-<li><strong><code>dioxamine.fastboot.*</code></strong>: Fastboot bootloader operations (coming soon).</li>
+<li><strong><code>dioxamine.fastboot.*</code></strong>: Fastboot bootloader operations (variables, raw commands, flash, boot, reboot).</li>
 <li><strong><code>dioxamine.*</code></strong>: Common UI dialogs, file pickers, theming, logging, and HTTP client.</li>
 </ul>
 <h2 id="bridge-initialization"><a class="header" href="#bridge-initialization">Bridge Initialization</a></h2>
@@ -2195,6 +2201,7 @@ if (window.dioxamine &amp;&amp; window.__dioxamine_bridge_ready) {
 <li><strong><a href="#native-logging-and-debugging">Native Logging and Debugging</a></strong>: Forward logs and console output directly to Android Logcat.</li>
 <li><strong><a href="#dynamic-theming-and-material-3">Dynamic Theming and Material 3</a></strong>: Integrate with Dioxamine’s dynamic color schemes and listen for theme changes.</li>
 <li><strong><a href="#network-http-client-httpfetch">Network HTTP Client (http.fetch)</a></strong>: Perform asynchronous HTTP/HTTPS network requests with native CORS-free execution and permission gating.</li>
+<li><strong><a href="#fastboot-protocol-api">Fastboot Protocol Operations</a></strong>: Inspect bootloader variables, execute raw commands, flash partitions, live boot images, switch slots, and reboot devices via <code>dioxamine.fastboot.*</code>.</li>
 </ol>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="device-management-api"><a class="header" href="#device-management-api">Device Management API</a></h1>
@@ -2830,6 +2837,200 @@ console.log("Device service status:", res.data);
 <li><strong>Cloud Metadata Protection</strong>: Requests directed to link-local cloud metadata endpoints (<code>169.254.169.254</code> and <code>metadata.google.internal</code>) are blocked to safeguard cloud-hosted testing environments.</li>
 <li><strong>Streaming Transmission</strong>: Request payloads are streamed using fixed-length encoding to prevent memory bloat during large transfers.</li>
 </ol>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="fastboot-protocol-api"><a class="header" href="#fastboot-protocol-api">Fastboot Protocol API</a></h1>
+<p>The Fastboot API provides direct communication with Android devices in bootloader / Fastboot mode over USB.</p>
+<p>Plugins can inspect device variables, run raw wire-format commands, flash partitions from SAF-picked images with real-time progress callbacks, live boot images directly into RAM, switch active slots, and reboot.</p>
+<h2 id="permission-requirement"><a class="header" href="#permission-requirement">Permission Requirement</a></h2>
+<p>All methods under <code>dioxamine.fastboot.*</code> require the <code>"fastboot"</code> permission declared in <code>plugin.json</code>:</p>
+<pre><code class="language-json">{
+  "permissions": {
+    "fastboot": [
+      "fastboot"
+    ],
+    "common": [
+      "saf"
+    ]
+  }
+}
+</code></pre>
+<p>When invoked, Dioxamine prompts the user once to authorize Fastboot USB access. Once authorized, the plugin has direct, unrestricted bootloader access.</p>
+<hr>
+<h2 id="1-device-presence"><a class="header" href="#1-device-presence">1. Device Presence</a></h2>
+<h3 id="dioxaminefastbootgetactivedevice"><a class="header" href="#dioxaminefastbootgetactivedevice"><code>dioxamine.fastboot.getActiveDevice()</code></a></h3>
+<p>Checks whether a device is connected in Fastboot mode over USB.</p>
+<h4 id="signature-3"><a class="header" href="#signature-3">Signature</a></h4>
+<pre><code class="language-typescript">dioxamine.fastboot.getActiveDevice(): Promise&lt;FastbootDeviceStatus | null&gt;
+</code></pre>
+<h4 id="return-type"><a class="header" href="#return-type">Return Type</a></h4>
+<pre><code class="language-typescript">interface FastbootDeviceStatus {
+    connected: boolean;
+    id?: string;         // e.g. "fastboot:XXXXXXXX"
+    label?: string;      // Device product name or serial
+    deviceName?: string; // USB sysfs path (e.g. "/dev/bus/usb/001/002")
+}
+</code></pre>
+<h4 id="example-5"><a class="header" href="#example-5">Example</a></h4>
+<pre><code class="language-javascript">const device = await dioxamine.fastboot.getActiveDevice();
+if (!device || !device.connected) {
+    console.error("No Fastboot device connected. Connect device via USB OTG in bootloader mode.");
+    return;
+}
+console.log(`Connected to ${device.label} (${device.id})`);
+</code></pre>
+<hr>
+<h2 id="2-bootloader-variables"><a class="header" href="#2-bootloader-variables">2. Bootloader Variables</a></h2>
+<h3 id="dioxaminefastbootgetvariablename-alias-getvar"><a class="header" href="#dioxaminefastbootgetvariablename-alias-getvar"><code>dioxamine.fastboot.getVariable(name)</code> (alias: <code>getVar</code>)</a></h3>
+<p>Queries a single bootloader variable (sends <code>getvar:&lt;name&gt;</code>).</p>
+<h4 id="signature-1-1"><a class="header" href="#signature-1-1">Signature</a></h4>
+<pre><code class="language-typescript">dioxamine.fastboot.getVariable(name: string): Promise&lt;string&gt;
+</code></pre>
+<h4 id="example-1-3"><a class="header" href="#example-1-3">Example</a></h4>
+<pre><code class="language-javascript">const product = await dioxamine.fastboot.getVariable("product");
+const currentSlot = await dioxamine.fastboot.getVariable("current-slot");
+const unlocked = await dioxamine.fastboot.getVariable("unlocked");
+
+console.log(`Device: ${product}, Current Slot: ${currentSlot}, Unlocked: ${unlocked}`);
+</code></pre>
+<h3 id="dioxaminefastbootgetallvariables-alias-getallvars"><a class="header" href="#dioxaminefastbootgetallvariables-alias-getallvars"><code>dioxamine.fastboot.getAllVariables()</code> (alias: <code>getAllVars</code>)</a></h3>
+<p>Queries all variables reported by the bootloader (sends <code>getvar:all</code>).</p>
+<h4 id="signature-2-1"><a class="header" href="#signature-2-1">Signature</a></h4>
+<pre><code class="language-typescript">dioxamine.fastboot.getAllVariables(): Promise&lt;Record&lt;string, string&gt;&gt;
+</code></pre>
+<h4 id="example-2-2"><a class="header" href="#example-2-2">Example</a></h4>
+<pre><code class="language-javascript">const vars = await dioxamine.fastboot.getAllVariables();
+for (const [key, value] of Object.entries(vars)) {
+    console.log(`${key}: ${value}`);
+}
+</code></pre>
+<hr>
+<h2 id="3-raw-protocol-commands"><a class="header" href="#3-raw-protocol-commands">3. Raw Protocol Commands</a></h2>
+<h3 id="dioxaminefastbootrawcommandcommand"><a class="header" href="#dioxaminefastbootrawcommandcommand"><code>dioxamine.fastboot.rawCommand(command)</code></a></h3>
+<p>Executes any raw wire-protocol Fastboot command. Useful for OEM-specific commands (<code>oem ...</code>), partition management, or any wire command not wrapped by helper methods.</p>
+<h4 id="signature-3-1"><a class="header" href="#signature-3-1">Signature</a></h4>
+<pre><code class="language-typescript">dioxamine.fastboot.rawCommand(command: string): Promise&lt;{
+    response: string;
+    info: string[];
+}&gt;
+</code></pre>
+<ul>
+<li><code>response</code>: Final response string sent by the device (e.g. status or output).</li>
+<li><code>info</code>: Array of intermediate <code>INFO</code> lines returned by the device during execution.</li>
+</ul>
+<h4 id="example-3-2"><a class="header" href="#example-3-2">Example</a></h4>
+<pre><code class="language-javascript">// Run OEM device info command
+const result = await dioxamine.fastboot.rawCommand("oem device-info");
+console.log("Device info response:", result.response);
+result.info.forEach(line =&gt; console.log("INFO:", line));
+</code></pre>
+<hr>
+<h2 id="4-partition-operations"><a class="header" href="#4-partition-operations">4. Partition Operations</a></h2>
+<h3 id="dioxaminefastbooterasepartition"><a class="header" href="#dioxaminefastbooterasepartition"><code>dioxamine.fastboot.erase(partition)</code></a></h3>
+<p>Erases a partition on the device (sends <code>erase:&lt;partition&gt;</code>).</p>
+<h4 id="signature-4"><a class="header" href="#signature-4">Signature</a></h4>
+<pre><code class="language-typescript">dioxamine.fastboot.erase(partition: string): Promise&lt;{
+    response: string;
+    info: string[];
+}&gt;
+</code></pre>
+<h4 id="example-4-1"><a class="header" href="#example-4-1">Example</a></h4>
+<pre><code class="language-javascript">await dioxamine.fastboot.erase("cache");
+console.log("Cache partition erased");
+</code></pre>
+<h3 id="dioxaminefastbootsetactiveslotslot"><a class="header" href="#dioxaminefastbootsetactiveslotslot"><code>dioxamine.fastboot.setActiveSlot(slot)</code></a></h3>
+<p>Switches the active boot slot on A/B devices (sends <code>set_active:&lt;slot&gt;</code>).</p>
+<h4 id="signature-5"><a class="header" href="#signature-5">Signature</a></h4>
+<pre><code class="language-typescript">dioxamine.fastboot.setActiveSlot(slot: string): Promise&lt;{
+    response: string;
+    info: string[];
+}&gt;
+</code></pre>
+<h4 id="example-5-1"><a class="header" href="#example-5-1">Example</a></h4>
+<pre><code class="language-javascript">await dioxamine.fastboot.setActiveSlot("b");
+console.log("Switched active slot to B");
+</code></pre>
+<hr>
+<h2 id="5-flashing--booting-images-saf-integration"><a class="header" href="#5-flashing--booting-images-saf-integration">5. Flashing &amp; Booting Images (SAF Integration)</a></h2>
+<p>Both <code>flash</code> and <code>boot</code> accept a <code>safRequestId</code> obtained from <code>dioxamine.requestFilePicker("open")</code>. The file stream is passed directly to the device over USB bulk endpoints with zero intermediate buffering.</p>
+<h3 id="dioxaminefastbootflashpartition-safrequestid-onprogress"><a class="header" href="#dioxaminefastbootflashpartition-safrequestid-onprogress"><code>dioxamine.fastboot.flash(partition, safRequestId, onProgress?)</code></a></h3>
+<p>Flashes an image picked by the user into the specified partition.</p>
+<h4 id="signature-6"><a class="header" href="#signature-6">Signature</a></h4>
+<pre><code class="language-typescript">dioxamine.fastboot.flash(
+    partition: string,
+    safRequestId: string,
+    onProgress?: (progress: { current: number; total: number; percentage: number }) =&gt; void
+): Promise&lt;{
+    success: boolean;
+    bytesTransferred: number;
+}&gt;
+</code></pre>
+<h4 id="example-6"><a class="header" href="#example-6">Example</a></h4>
+<pre><code class="language-javascript">// 1. Prompt user to select image
+const file = await dioxamine.requestFilePicker("open");
+
+// 2. Flash with progress tracking
+await dioxamine.fastboot.flash("boot", file.requestId, (p) =&gt; {
+    console.log(`Flashing boot: ${p.percentage}% (${p.current} / ${p.total} bytes)`);
+});
+
+console.log("Flashing complete!");
+</code></pre>
+<h3 id="dioxaminefastbootbootsafrequestid-onprogress"><a class="header" href="#dioxaminefastbootbootsafrequestid-onprogress"><code>dioxamine.fastboot.boot(safRequestId, onProgress?)</code></a></h3>
+<p>Downloads an image picked by the user into device RAM and boots it immediately without writing to flash memory.</p>
+<h4 id="signature-7"><a class="header" href="#signature-7">Signature</a></h4>
+<pre><code class="language-typescript">dioxamine.fastboot.boot(
+    safRequestId: string,
+    onProgress?: (progress: { current: number; total: number; percentage: number }) =&gt; void
+): Promise&lt;{
+    success: boolean;
+    bytesTransferred: number;
+}&gt;
+</code></pre>
+<h4 id="example-7"><a class="header" href="#example-7">Example</a></h4>
+<pre><code class="language-javascript">const file = await dioxamine.requestFilePicker("open");
+
+await dioxamine.fastboot.boot(file.requestId, (p) =&gt; {
+    console.log(`Uploading kernel image: ${p.percentage}%`);
+});
+
+console.log("Device is booting image...");
+</code></pre>
+<hr>
+<h2 id="6-power--lifecycle-controls"><a class="header" href="#6-power--lifecycle-controls">6. Power &amp; Lifecycle Controls</a></h2>
+<h3 id="dioxaminefastbootreboottarget"><a class="header" href="#dioxaminefastbootreboottarget"><code>dioxamine.fastboot.reboot(target?)</code></a></h3>
+<p>Reboots the device.</p>
+<h4 id="signature-8"><a class="header" href="#signature-8">Signature</a></h4>
+<pre><code class="language-typescript">dioxamine.fastboot.reboot(target?: "system" | "bootloader" | "recovery" | "fastboot" | string): Promise&lt;{ success: boolean }&gt;
+</code></pre>
+<ul>
+<li>Default: <code>"system"</code> (normal device boot).</li>
+<li>Targets: <code>"bootloader"</code>, <code>"recovery"</code>, <code>"fastboot"</code>, or custom hardware targets (e.g. <code>"edl"</code>).</li>
+</ul>
+<h4 id="example-8"><a class="header" href="#example-8">Example</a></h4>
+<pre><code class="language-javascript">// Reboot to recovery
+await dioxamine.fastboot.reboot("recovery");
+
+// Normal reboot to system
+await dioxamine.fastboot.reboot();
+</code></pre>
+<h3 id="dioxaminefastbootcontinueboot"><a class="header" href="#dioxaminefastbootcontinueboot"><code>dioxamine.fastboot.continueBoot()</code></a></h3>
+<p>Resumes normal boot sequence without resetting (sends <code>continue</code>).</p>
+<pre><code class="language-javascript">await dioxamine.fastboot.continueBoot();
+</code></pre>
+<h3 id="dioxaminefastbootshutdown"><a class="header" href="#dioxaminefastbootshutdown"><code>dioxamine.fastboot.shutdown()</code></a></h3>
+<p>Powers down the connected device (sends <code>shutdown</code>).</p>
+<pre><code class="language-javascript">await dioxamine.fastboot.shutdown();
+</code></pre>
+<h3 id="dioxaminefastbootsetlockmodemode"><a class="header" href="#dioxaminefastbootsetlockmodemode"><code>dioxamine.fastboot.setLockMode(mode)</code></a></h3>
+<p>Changes bootloader lock state (sends <code>flashing &lt;mode&gt;</code>).</p>
+<h4 id="signature-9"><a class="header" href="#signature-9">Signature</a></h4>
+<pre><code class="language-typescript">dioxamine.fastboot.setLockMode(mode: "lock" | "unlock" | "lock_critical" | "unlock_critical"): Promise&lt;{
+    response: string;
+    info: string[];
+}&gt;
+</code></pre>
+<pre><code class="language-javascript">await dioxamine.fastboot.setLockMode("unlock");
+</code></pre>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="packaging-and-distribution"><a class="header" href="#packaging-and-distribution">Packaging and Distribution</a></h1>
 <p>Dioxamine plugins are distributed as standard ZIP archives containing the manifest and web assets.</p>

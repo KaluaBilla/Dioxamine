@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Interactive Shell Sessions (openInteractiveShell) - Dioxamine Documentation</title>
+        <title>Fastboot Protocol Operations (dioxamine.fastboot) - Dioxamine Documentation</title>
 
 
         <!-- Custom HTML head -->
@@ -146,7 +146,7 @@
                         <a href="https://github.com/rhythmcache/dioxamine" title="Git repository" aria-label="Git repository">
                             <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
                         </a>
-                        <a href="https://github.com/rhythmcache/dioxamine/edit/main/docs/src/plugins/api/interactive-shell.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                        <a href="https://github.com/rhythmcache/dioxamine/edit/main/docs/src/plugins/api/fastboot.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
                             <span class=fa-svg id="git-edit-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M421.7 220.3l-11.3 11.3-22.6 22.6-205 205c-6.6 6.6-14.8 11.5-23.8 14.1L30.8 511c-8.4 2.5-17.5 .2-23.7-6.1S-1.5 489.7 1 481.2L38.7 353.1c2.6-9 7.5-17.2 14.1-23.8l205-205 22.6-22.6 11.3-11.3 33.9 33.9 62.1 62.1 33.9 33.9zM96 353.9l-9.3 9.3c-.9 .9-1.6 2.1-2 3.4l-25.3 86 86-25.3c1.3-.4 2.5-1.1 3.4-2l9.3-9.3H112c-8.8 0-16-7.2-16-16V353.9zM453.3 19.3l39.4 39.4c25 25 25 65.5 0 90.5l-14.5 14.5-22.6 22.6-11.3 11.3-33.9-33.9-62.1-62.1L314.3 67.7l11.3-11.3 22.6-22.6 14.5-14.5c25-25 65.5-25 90.5 0z"/></svg></span>
                         </a>
 
@@ -180,146 +180,209 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="interactive-shell-sessions-openinteractiveshell"><a class="header" href="#interactive-shell-sessions-openinteractiveshell">Interactive Shell Sessions (openInteractiveShell)</a></h1>
-<p>The Interactive Shell API opens a persistent bi-directional ADB streaming session. This is designed for terminal emulators (such as <code>xterm.js</code>), interactive command prompts (<code>sh</code>), and continuous background log streamers (<code>logcat -v time -T 25</code>).</p>
-<p><strong>Required Permission</strong>: <code>"shell"</code></p>
-<h2 id="dioxamineadbopeninteractiveshell"><a class="header" href="#dioxamineadbopeninteractiveshell"><code>dioxamine.adb.openInteractiveShell()</code></a></h2>
-<p>Opens a live interactive PTY shell stream to the target device.</p>
-<h3 id="signature"><a class="header" href="#signature">Signature</a></h3>
-<pre><code class="language-javascript">dioxamine.adb.openInteractiveShell(): Promise&lt;InteractiveShellSession&gt;
-</code></pre>
-<h3 id="parameters"><a class="header" href="#parameters">Parameters</a></h3>
-<p>None.</p>
-<h3 id="returns"><a class="header" href="#returns">Returns</a></h3>
-<p>A <code>Promise</code> resolving to an <code>InteractiveShellSession</code> controller object.</p>
-<hr>
-<h2 id="interactiveshellsession-interface"><a class="header" href="#interactiveshellsession-interface"><code>InteractiveShellSession</code> Interface</a></h2>
-<pre><code class="language-typescript">interface InteractiveShellSession {
-    sessionId: string;
-    
-    // Register incoming binary data callback (data is base64 encoded)
-    onData(callback: (base64Chunk: string) =&gt; void): void;
-    
-    // Register stream termination callback
-    onClose(callback: (error?: string) =&gt; void): void;
-    
-    // Send binary data into the shell stream (data must be base64 encoded)
-    write(base64Data: string): Promise&lt;void&gt;;
-    
-    // Dynamically resize target device PTY dimensions (triggers SIGWINCH on device)
-    resize(cols: number, rows: number): Promise&lt;void&gt;;
-    
-    // Terminate the shell session and close native socket
-    close(): Promise&lt;void&gt;;
+                        <h1 id="fastboot-protocol-api"><a class="header" href="#fastboot-protocol-api">Fastboot Protocol API</a></h1>
+<p>The Fastboot API provides direct communication with Android devices in bootloader / Fastboot mode over USB.</p>
+<p>Plugins can inspect device variables, run raw wire-format commands, flash partitions from SAF-picked images with real-time progress callbacks, live boot images directly into RAM, switch active slots, and reboot.</p>
+<h2 id="permission-requirement"><a class="header" href="#permission-requirement">Permission Requirement</a></h2>
+<p>All methods under <code>dioxamine.fastboot.*</code> require the <code>"fastboot"</code> permission declared in <code>plugin.json</code>:</p>
+<pre><code class="language-json">{
+  "permissions": {
+    "fastboot": [
+      "fastboot"
+    ],
+    "common": [
+      "saf"
+    ]
+  }
 }
 </code></pre>
+<p>When invoked, Dioxamine prompts the user once to authorize Fastboot USB access. Once authorized, the plugin has direct, unrestricted bootloader access.</p>
 <hr>
-<h2 id="dynamic-window-sizing-sessionresize"><a class="header" href="#dynamic-window-sizing-sessionresize">Dynamic Window Sizing (<code>session.resize</code>)</a></h2>
-<p>Interactive full-screen CLI apps (like <code>nano</code>, <code>htop</code>, <code>vim</code>, and <code>top</code>) rely on the Linux kernel PTY dimensions (<code>struct winsize</code>) to layout their interface correctly.</p>
-<p>When running inside a responsive WebView, whenever the terminal size changes (such as on screen rotation, split-screen, or when the virtual keyboard appears), call <code>session.resize(cols, rows)</code>.</p>
-<ul>
-<li><strong><code>cols</code></strong>: Number of columns (positive integer, 1..65535).</li>
-<li><strong><code>rows</code></strong>: Number of rows (positive integer, 1..65535).</li>
-</ul>
-<p>This sends an official ADB Shell v2 <code>WINDOW_SIZE_CHANGE</code> packet to the Android daemon, which executes <code>ioctl(pty_fd, TIOCSWINSZ)</code> and broadcasts <code>SIGWINCH</code> to the running command.</p>
-<hr>
-<h2 id="encoding-and-decoding-data"><a class="header" href="#encoding-and-decoding-data">Encoding and Decoding Data</a></h2>
-<p>Data transmitted over <code>onData</code> and <code>write</code> is encoded in Base64 to support arbitrary binary streams, ANSI escape codes, and UTF-8 multibyte characters safely.</p>
-<p>You can use the built-in helper functions <code>dioxamine.utf8ToBase64()</code> and <code>dioxamine.base64ToUtf8()</code> or standard Web APIs (<code>TextEncoder</code>/<code>TextDecoder</code>):</p>
-<pre><code class="language-javascript">// Converting String -&gt; Base64 for session.write()
-function stringToBase64(str) {
-    const bytes = new TextEncoder().encode(str);
-    let bin = '';
-    for (let i = 0; i &lt; bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-    return btoa(bin);
+<h2 id="1-device-presence"><a class="header" href="#1-device-presence">1. Device Presence</a></h2>
+<h3 id="dioxaminefastbootgetactivedevice"><a class="header" href="#dioxaminefastbootgetactivedevice"><code>dioxamine.fastboot.getActiveDevice()</code></a></h3>
+<p>Checks whether a device is connected in Fastboot mode over USB.</p>
+<h4 id="signature"><a class="header" href="#signature">Signature</a></h4>
+<pre><code class="language-typescript">dioxamine.fastboot.getActiveDevice(): Promise&lt;FastbootDeviceStatus | null&gt;
+</code></pre>
+<h4 id="return-type"><a class="header" href="#return-type">Return Type</a></h4>
+<pre><code class="language-typescript">interface FastbootDeviceStatus {
+    connected: boolean;
+    id?: string;         // e.g. "fastboot:XXXXXXXX"
+    label?: string;      // Device product name or serial
+    deviceName?: string; // USB sysfs path (e.g. "/dev/bus/usb/001/002")
 }
+</code></pre>
+<h4 id="example"><a class="header" href="#example">Example</a></h4>
+<pre><code class="language-javascript">const device = await dioxamine.fastboot.getActiveDevice();
+if (!device || !device.connected) {
+    console.error("No Fastboot device connected. Connect device via USB OTG in bootloader mode.");
+    return;
+}
+console.log(`Connected to ${device.label} (${device.id})`);
+</code></pre>
+<hr>
+<h2 id="2-bootloader-variables"><a class="header" href="#2-bootloader-variables">2. Bootloader Variables</a></h2>
+<h3 id="dioxaminefastbootgetvariablename-alias-getvar"><a class="header" href="#dioxaminefastbootgetvariablename-alias-getvar"><code>dioxamine.fastboot.getVariable(name)</code> (alias: <code>getVar</code>)</a></h3>
+<p>Queries a single bootloader variable (sends <code>getvar:&lt;name&gt;</code>).</p>
+<h4 id="signature-1"><a class="header" href="#signature-1">Signature</a></h4>
+<pre><code class="language-typescript">dioxamine.fastboot.getVariable(name: string): Promise&lt;string&gt;
+</code></pre>
+<h4 id="example-1"><a class="header" href="#example-1">Example</a></h4>
+<pre><code class="language-javascript">const product = await dioxamine.fastboot.getVariable("product");
+const currentSlot = await dioxamine.fastboot.getVariable("current-slot");
+const unlocked = await dioxamine.fastboot.getVariable("unlocked");
 
-// Converting Base64 -&gt; String from session.onData()
-function base64ToString(b64) {
-    const bin = atob(b64);
-    const bytes = new Uint8Array(bin.length);
-    for (let i = 0; i &lt; bin.length; i++) bytes[i] = bin.charCodeAt(i);
-    return new TextDecoder('utf-8', { fatal: false }).decode(bytes);
+console.log(`Device: ${product}, Current Slot: ${currentSlot}, Unlocked: ${unlocked}`);
+</code></pre>
+<h3 id="dioxaminefastbootgetallvariables-alias-getallvars"><a class="header" href="#dioxaminefastbootgetallvariables-alias-getallvars"><code>dioxamine.fastboot.getAllVariables()</code> (alias: <code>getAllVars</code>)</a></h3>
+<p>Queries all variables reported by the bootloader (sends <code>getvar:all</code>).</p>
+<h4 id="signature-2"><a class="header" href="#signature-2">Signature</a></h4>
+<pre><code class="language-typescript">dioxamine.fastboot.getAllVariables(): Promise&lt;Record&lt;string, string&gt;&gt;
+</code></pre>
+<h4 id="example-2"><a class="header" href="#example-2">Example</a></h4>
+<pre><code class="language-javascript">const vars = await dioxamine.fastboot.getAllVariables();
+for (const [key, value] of Object.entries(vars)) {
+    console.log(`${key}: ${value}`);
 }
 </code></pre>
 <hr>
-<h2 id="example-1-integrating-with-xtermjs--fitaddon"><a class="header" href="#example-1-integrating-with-xtermjs--fitaddon">Example 1: Integrating with xterm.js &amp; FitAddon</a></h2>
-<pre><code class="language-javascript">const term = new Terminal({
-    cursorBlink: true,
-    fontFamily: 'monospace',
-    theme: { background: '#121212', foreground: '#ffffff' }
+<h2 id="3-raw-protocol-commands"><a class="header" href="#3-raw-protocol-commands">3. Raw Protocol Commands</a></h2>
+<h3 id="dioxaminefastbootrawcommandcommand"><a class="header" href="#dioxaminefastbootrawcommandcommand"><code>dioxamine.fastboot.rawCommand(command)</code></a></h3>
+<p>Executes any raw wire-protocol Fastboot command. Useful for OEM-specific commands (<code>oem ...</code>), partition management, or any wire command not wrapped by helper methods.</p>
+<h4 id="signature-3"><a class="header" href="#signature-3">Signature</a></h4>
+<pre><code class="language-typescript">dioxamine.fastboot.rawCommand(command: string): Promise&lt;{
+    response: string;
+    info: string[];
+}&gt;
+</code></pre>
+<ul>
+<li><code>response</code>: Final response string sent by the device (e.g. status or output).</li>
+<li><code>info</code>: Array of intermediate <code>INFO</code> lines returned by the device during execution.</li>
+</ul>
+<h4 id="example-3"><a class="header" href="#example-3">Example</a></h4>
+<pre><code class="language-javascript">// Run OEM device info command
+const result = await dioxamine.fastboot.rawCommand("oem device-info");
+console.log("Device info response:", result.response);
+result.info.forEach(line =&gt; console.log("INFO:", line));
+</code></pre>
+<hr>
+<h2 id="4-partition-operations"><a class="header" href="#4-partition-operations">4. Partition Operations</a></h2>
+<h3 id="dioxaminefastbooterasepartition"><a class="header" href="#dioxaminefastbooterasepartition"><code>dioxamine.fastboot.erase(partition)</code></a></h3>
+<p>Erases a partition on the device (sends <code>erase:&lt;partition&gt;</code>).</p>
+<h4 id="signature-4"><a class="header" href="#signature-4">Signature</a></h4>
+<pre><code class="language-typescript">dioxamine.fastboot.erase(partition: string): Promise&lt;{
+    response: string;
+    info: string[];
+}&gt;
+</code></pre>
+<h4 id="example-4"><a class="header" href="#example-4">Example</a></h4>
+<pre><code class="language-javascript">await dioxamine.fastboot.erase("cache");
+console.log("Cache partition erased");
+</code></pre>
+<h3 id="dioxaminefastbootsetactiveslotslot"><a class="header" href="#dioxaminefastbootsetactiveslotslot"><code>dioxamine.fastboot.setActiveSlot(slot)</code></a></h3>
+<p>Switches the active boot slot on A/B devices (sends <code>set_active:&lt;slot&gt;</code>).</p>
+<h4 id="signature-5"><a class="header" href="#signature-5">Signature</a></h4>
+<pre><code class="language-typescript">dioxamine.fastboot.setActiveSlot(slot: string): Promise&lt;{
+    response: string;
+    info: string[];
+}&gt;
+</code></pre>
+<h4 id="example-5"><a class="header" href="#example-5">Example</a></h4>
+<pre><code class="language-javascript">await dioxamine.fastboot.setActiveSlot("b");
+console.log("Switched active slot to B");
+</code></pre>
+<hr>
+<h2 id="5-flashing--booting-images-saf-integration"><a class="header" href="#5-flashing--booting-images-saf-integration">5. Flashing &amp; Booting Images (SAF Integration)</a></h2>
+<p>Both <code>flash</code> and <code>boot</code> accept a <code>safRequestId</code> obtained from <code>dioxamine.requestFilePicker("open")</code>. The file stream is passed directly to the device over USB bulk endpoints with zero intermediate buffering.</p>
+<h3 id="dioxaminefastbootflashpartition-safrequestid-onprogress"><a class="header" href="#dioxaminefastbootflashpartition-safrequestid-onprogress"><code>dioxamine.fastboot.flash(partition, safRequestId, onProgress?)</code></a></h3>
+<p>Flashes an image picked by the user into the specified partition.</p>
+<h4 id="signature-6"><a class="header" href="#signature-6">Signature</a></h4>
+<pre><code class="language-typescript">dioxamine.fastboot.flash(
+    partition: string,
+    safRequestId: string,
+    onProgress?: (progress: { current: number; total: number; percentage: number }) =&gt; void
+): Promise&lt;{
+    success: boolean;
+    bytesTransferred: number;
+}&gt;
+</code></pre>
+<h4 id="example-6"><a class="header" href="#example-6">Example</a></h4>
+<pre><code class="language-javascript">// 1. Prompt user to select image
+const file = await dioxamine.requestFilePicker("open");
+
+// 2. Flash with progress tracking
+await dioxamine.fastboot.flash("boot", file.requestId, (p) =&gt; {
+    console.log(`Flashing boot: ${p.percentage}% (${p.current} / ${p.total} bytes)`);
 });
 
-const fitAddon = new FitAddon.FitAddon();
-term.loadAddon(fitAddon);
+console.log("Flashing complete!");
+</code></pre>
+<h3 id="dioxaminefastbootbootsafrequestid-onprogress"><a class="header" href="#dioxaminefastbootbootsafrequestid-onprogress"><code>dioxamine.fastboot.boot(safRequestId, onProgress?)</code></a></h3>
+<p>Downloads an image picked by the user into device RAM and boots it immediately without writing to flash memory.</p>
+<h4 id="signature-7"><a class="header" href="#signature-7">Signature</a></h4>
+<pre><code class="language-typescript">dioxamine.fastboot.boot(
+    safRequestId: string,
+    onProgress?: (progress: { current: number; total: number; percentage: number }) =&gt; void
+): Promise&lt;{
+    success: boolean;
+    bytesTransferred: number;
+}&gt;
+</code></pre>
+<h4 id="example-7"><a class="header" href="#example-7">Example</a></h4>
+<pre><code class="language-javascript">const file = await dioxamine.requestFilePicker("open");
 
-term.open(document.getElementById('terminal-container'));
-fitAddon.fit();
+await dioxamine.fastboot.boot(file.requestId, (p) =&gt; {
+    console.log(`Uploading kernel image: ${p.percentage}%`);
+});
 
-async function startTerminal() {
-    const session = await dioxamine.adb.openInteractiveShell();
-
-    // Send initial dimensions
-    session.resize(term.cols, term.rows);
-
-    // Device stdout -&gt; xterm.js
-    session.onData((b64) =&gt; {
-        const text = dioxamine.base64ToUtf8(b64);
-        term.write(text);
-    });
-
-    // Keyboard input -&gt; Device stdin
-    term.onData((data) =&gt; {
-        session.write(dioxamine.utf8ToBase64(data));
-    });
-
-    // Dynamic resizing (device rotation / soft keyboard toggling)
-    term.onResize(({ cols, rows }) =&gt; {
-        session.resize(cols, rows);
-    });
-
-    window.addEventListener('resize', () =&gt; {
-        fitAddon.fit();
-    });
-
-    session.onClose((err) =&gt; {
-        term.writeln("\r\n[Session Terminated: " + (err || "OK") + "]");
-    });
-}
+console.log("Device is booting image...");
 </code></pre>
 <hr>
-<h2 id="example-2-continuous-logcat-stream"><a class="header" href="#example-2-continuous-logcat-stream">Example 2: Continuous Logcat Stream</a></h2>
-<pre><code class="language-javascript">async function startLiveLogcat(onLineReceived) {
-    const session = await dioxamine.adb.openInteractiveShell();
-    let buffer = '';
+<h2 id="6-power--lifecycle-controls"><a class="header" href="#6-power--lifecycle-controls">6. Power &amp; Lifecycle Controls</a></h2>
+<h3 id="dioxaminefastbootreboottarget"><a class="header" href="#dioxaminefastbootreboottarget"><code>dioxamine.fastboot.reboot(target?)</code></a></h3>
+<p>Reboots the device.</p>
+<h4 id="signature-8"><a class="header" href="#signature-8">Signature</a></h4>
+<pre><code class="language-typescript">dioxamine.fastboot.reboot(target?: "system" | "bootloader" | "recovery" | "fastboot" | string): Promise&lt;{ success: boolean }&gt;
+</code></pre>
+<ul>
+<li>Default: <code>"system"</code> (normal device boot).</li>
+<li>Targets: <code>"bootloader"</code>, <code>"recovery"</code>, <code>"fastboot"</code>, or custom hardware targets (e.g. <code>"edl"</code>).</li>
+</ul>
+<h4 id="example-8"><a class="header" href="#example-8">Example</a></h4>
+<pre><code class="language-javascript">// Reboot to recovery
+await dioxamine.fastboot.reboot("recovery");
 
-    session.onData((b64) =&gt; {
-        buffer += dioxamine.base64ToUtf8(b64);
-        const lines = buffer.split('\n');
-        buffer = lines.pop(); // keep trailing partial line
-
-        for (let i = 0; i &lt; lines.length; i++) {
-            const line = lines[i].trimEnd();
-            if (line) onLineReceived(line);
-        }
-    });
-
-    // Send command to follow the last 25 lines continuously (-T)
-    const cmd = "logcat -v time -T 25\n";
-    await session.write(dioxamine.utf8ToBase64(cmd));
-    return session;
-}
+// Normal reboot to system
+await dioxamine.fastboot.reboot();
+</code></pre>
+<h3 id="dioxaminefastbootcontinueboot"><a class="header" href="#dioxaminefastbootcontinueboot"><code>dioxamine.fastboot.continueBoot()</code></a></h3>
+<p>Resumes normal boot sequence without resetting (sends <code>continue</code>).</p>
+<pre><code class="language-javascript">await dioxamine.fastboot.continueBoot();
+</code></pre>
+<h3 id="dioxaminefastbootshutdown"><a class="header" href="#dioxaminefastbootshutdown"><code>dioxamine.fastboot.shutdown()</code></a></h3>
+<p>Powers down the connected device (sends <code>shutdown</code>).</p>
+<pre><code class="language-javascript">await dioxamine.fastboot.shutdown();
+</code></pre>
+<h3 id="dioxaminefastbootsetlockmodemode"><a class="header" href="#dioxaminefastbootsetlockmodemode"><code>dioxamine.fastboot.setLockMode(mode)</code></a></h3>
+<p>Changes bootloader lock state (sends <code>flashing &lt;mode&gt;</code>).</p>
+<h4 id="signature-9"><a class="header" href="#signature-9">Signature</a></h4>
+<pre><code class="language-typescript">dioxamine.fastboot.setLockMode(mode: "lock" | "unlock" | "lock_critical" | "unlock_critical"): Promise&lt;{
+    response: string;
+    info: string[];
+}&gt;
+</code></pre>
+<pre><code class="language-javascript">await dioxamine.fastboot.setLockMode("unlock");
 </code></pre>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../plugins/api/shell.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../plugins/api/network.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../plugins/api/files.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../plugins/packaging.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -329,11 +392,11 @@ async function startTerminal() {
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../plugins/api/shell.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../plugins/api/network.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../plugins/api/files.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../plugins/packaging.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>

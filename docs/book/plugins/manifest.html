@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "coal";
             const default_dark_theme = "coal";
-            window.path_to_searchindex_js = "../searchindex-7d6438b7.js";
+            window.path_to_searchindex_js = "../searchindex-ad122626.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-1f612337.js"></script>
+        <script src="../toc-78a1705c.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -246,6 +246,7 @@
 <li><code>permissions</code> must be an object with subkeys (legacy flat arrays are rejected).</li>
 <li>ADB permissions in <code>permissions.adb</code> must only be: <code>shell</code>, <code>push</code>, <code>pull</code>, <code>install</code>, <code>forward</code>, <code>reverse</code>.</li>
 <li>Common host permissions in <code>permissions.common</code> must only be: <code>network</code> (or <code>internet</code>).</li>
+<li>Fastboot permissions in <code>permissions.fastboot</code> must only be: <code>fastboot</code> (or <code>access</code>).</li>
 <li>Unknown permissions or permissions placed in the wrong subkey will fail manifest validation with an explicit error.</li>
 </ul>
 </li>
