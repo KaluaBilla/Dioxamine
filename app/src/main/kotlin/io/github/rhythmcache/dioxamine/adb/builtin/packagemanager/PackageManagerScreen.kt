@@ -43,7 +43,9 @@ import io.github.rhythmcache.dioxamine.core.AppLogger
 import io.github.rhythmcache.dioxamine.core.Constants
 import io.github.rhythmcache.dioxamine.core.FileUtils
 import io.github.rhythmcache.dioxamine.core.executeShell
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -352,26 +354,33 @@ fun PackageManagerScreen(
         }
     }
 
+    var loadJob by remember { mutableStateOf<Job?>(null) }
+
     fun loadPackages() {
-        if (client == null) return
+        val activeClient = client ?: return
+        loadJob?.cancel()
         isLoading = true
         appList.clear()
 
-        coroutineScope.launch(Dispatchers.IO) {
-            runCatching {
-                runCatching {
-                    val killStream = client.open("shell:pkill -f DioxAgent || killall DioxAgent || pkill -f PkgDump")
+        loadJob = coroutineScope.launch(Dispatchers.IO) {
+            val currentJob = coroutineContext[Job]
+            try {
+                try {
+                    val killStream = activeClient.open("shell:pkill -f DioxAgent || killall DioxAgent || pkill -f PkgDump")
                     val buf = ByteArray(256)
                     while (killStream.read(buf) > 0) { /* drain */ }
                     killStream.close()
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (_: Exception) {
                 }
 
                 context.assets.open("diox-agent.jar").use { input ->
-                    client.sync.push(input, "${Constants.DEVICE_TMP_DIR}/diox-agent.jar")
+                    activeClient.sync.push(input, "${Constants.DEVICE_TMP_DIR}/diox-agent.jar")
                 }
 
                 val cmd = "CLASSPATH=${Constants.DEVICE_TMP_DIR}/diox-agent.jar app_process / DioxAgent --icons"
-                val stream = client.open("exec:$cmd")
+                val stream = activeClient.open("exec:$cmd")
                 val stdoutStream = RawStdoutStream(stream)
 
                 if (!stdoutStream.findMagic()) {
@@ -385,22 +394,36 @@ fun PackageManagerScreen(
                     val item = stdoutStream.readNextAppPackageItem() ?: break
                     recordCount++
                     withContext(Dispatchers.Main) {
-                        appList.add(item)
+                        if (loadJob === currentJob) {
+                            appList.add(item)
+                        }
                     }
                 }
                 AppLogger.i("PKGDUMP_DIAGNOSTIC", ">>> [PKGDUMP_DIAGNOSTIC] STREAM_FINISHED total_records=$recordCount")
                 stream.close()
-            }.onSuccess {
                 withContext(Dispatchers.Main) {
-                    isLoading = false
+                    if (loadJob === currentJob) {
+                        isLoading = false
+                    }
                 }
-            }.onFailure { err ->
+            } catch (e: CancellationException) {
+                // Normal cancellation when navigating away or reloading
+                throw e
+            } catch (err: Exception) {
                 AppLogger.e("PKGDUMP_DIAGNOSTIC", ">>> [PKGDUMP_DIAGNOSTIC] STREAM_FAILED: ${err.message}", err)
                 withContext(Dispatchers.Main) {
-                    isLoading = false
-                    Toast.makeText(context, context.getString(R.string.pkg_manager_dump_failed, err.message ?: ""), Toast.LENGTH_LONG).show()
+                    if (loadJob === currentJob) {
+                        isLoading = false
+                        Toast.makeText(context, context.getString(R.string.pkg_manager_dump_failed, err.message ?: ""), Toast.LENGTH_LONG).show()
+                    }
                 }
             }
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            loadJob?.cancel()
         }
     }
 

@@ -2,6 +2,7 @@ package io.github.rhythmcache.dioxamine.adb.builtin.packagemanager
 
 import io.github.rhythmcache.adb.AdbStream
 import io.github.rhythmcache.dioxamine.core.AppLogger
+import kotlinx.coroutines.CancellationException
 import okio.Buffer
 
 data class AppPackageItem(
@@ -179,6 +180,8 @@ class RawStdoutStream(private val stream: AdbStream) {
                 installer = installer,
                 iconBytes = iconBytes
             )
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             AppLogger.e("PKGDUMP_DIAGNOSTIC", ">>> [PKGDUMP_DIAGNOSTIC] PARSE_FAILURE: ${e.javaClass.simpleName}: ${e.message}", e)
             null

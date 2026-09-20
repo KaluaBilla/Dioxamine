@@ -31,7 +31,9 @@ import androidx.compose.ui.unit.sp
 import io.github.rhythmcache.dioxamine.R
 import io.github.rhythmcache.dioxamine.adb.AdbViewModel
 import io.github.rhythmcache.dioxamine.core.AppLogger
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -69,53 +71,72 @@ fun ProcessManagerScreen(
     var targetAppForForceStop by remember { mutableStateOf<ProcessItem?>(null) }
     var targetProcessForKill by remember { mutableStateOf<ProcessItem?>(null) }
 
+    var refreshJob by remember { mutableStateOf<Job?>(null) }
+    var iconJob by remember { mutableStateOf<Job?>(null) }
+
     fun refreshProcesses(silent: Boolean = false) {
         val pClient = processClient ?: return
-        coroutineScope.launch {
+        refreshJob?.cancel()
+        refreshJob = coroutineScope.launch {
+            val currentJob = coroutineContext[Job]
             if (!silent) {
                 if (processList.isEmpty()) isLoading = true else isRefreshing = true
             }
             errorMessage = null
 
-            runCatching {
-                pClient.fetchProcesses()
-            }.onSuccess { (mem, procs) ->
+            try {
+                val (mem, procs) = pClient.fetchProcesses()
+                if (refreshJob !== currentJob) return@launch
                 memoryStats = mem
                 processList = procs
                 isLoading = false
                 isRefreshing = false
 
-                // Lazy load icons for apps
-                launch(Dispatchers.IO) {
+                // Lazy load icons for apps, cancelling any prior icon job
+                iconJob?.cancel()
+                iconJob = launch(Dispatchers.IO) {
                     val appsNeedingIcons = procs.filter {
                         it.packageName.isNotBlank() && !iconCache.containsKey(it.packageName)
                     }.distinctBy { it.packageName }
 
                     for (app in appsNeedingIcons) {
                         if (!isActive) break
-                        val iconBytes = pClient.fetchIcon(app.packageName)
+                        val iconBytes = runCatching { pClient.fetchIcon(app.packageName) }.getOrNull()
+                        if (!isActive) break
                         if (iconBytes != null && iconBytes.isNotEmpty()) {
                             val bitmap = runCatching {
                                 BitmapFactory.decodeByteArray(iconBytes, 0, iconBytes.size)?.asImageBitmap()
                             }.getOrNull()
-                            if (bitmap != null) {
+                            if (bitmap != null && isActive) {
                                 withContext(Dispatchers.Main) {
                                     iconCache[app.packageName] = bitmap
                                 }
                             }
-                        } else {
+                        } else if (isActive) {
                             withContext(Dispatchers.Main) {
                                 iconCache[app.packageName] = null
                             }
                         }
                     }
                 }
-            }.onFailure { err ->
-                isLoading = false
-                isRefreshing = false
-                errorMessage = err.message
-                AppLogger.e("ProcessManagerScreen", "Failed to fetch processes: ${err.message}", err)
+            } catch (e: CancellationException) {
+                // Cooperative cancellation when navigating away or when superseded
+                throw e
+            } catch (err: Exception) {
+                if (refreshJob === currentJob) {
+                    isLoading = false
+                    isRefreshing = false
+                    errorMessage = err.message
+                    AppLogger.e("ProcessManagerScreen", "Failed to fetch processes: ${err.message}", err)
+                }
             }
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            refreshJob?.cancel()
+            iconJob?.cancel()
         }
     }
 

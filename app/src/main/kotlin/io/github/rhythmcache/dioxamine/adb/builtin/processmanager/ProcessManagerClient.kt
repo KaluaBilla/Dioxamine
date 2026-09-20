@@ -5,6 +5,7 @@ import io.github.rhythmcache.adb.AdbClient
 import io.github.rhythmcache.adb.AdbStream
 import io.github.rhythmcache.dioxamine.core.AppLogger
 import io.github.rhythmcache.dioxamine.core.Constants
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -33,11 +34,13 @@ class ProcessManagerClient(
             val testStream = client.open(SOCKET_NAME)
             testStream.close()
             return@withContext true
+        } catch (e: CancellationException) {
+            throw e
         } catch (_: Exception) {
             // Not running yet, proceed with launch
         }
 
-        runCatching {
+        try {
             context.assets.open("diox-agent.jar").use { input ->
                 client.sync.push(input, "${Constants.DEVICE_TMP_DIR}/diox-agent.jar")
             }
@@ -52,11 +55,17 @@ class ProcessManagerClient(
                     val testStream = client.open(SOCKET_NAME)
                     testStream.close()
                     return@withContext true
+                } catch (e: CancellationException) {
+                    throw e
                 } catch (_: Exception) {
                 }
             }
             false
-        }.getOrDefault(false)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            false
+        }
     }
 
     suspend fun fetchProcesses(): Pair<SystemMemoryStats, List<ProcessItem>> = withContext(Dispatchers.IO) {
@@ -145,6 +154,8 @@ class ProcessManagerClient(
             val ok = reader.readFully(bytes)
             stream.close()
             if (ok) bytes else null
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             AppLogger.e(TAG, "Failed to fetch icon for $packageName: ${e.message}")
             null
@@ -172,6 +183,8 @@ class ProcessManagerClient(
                 stream.close()
                 Result.failure(Exception(msg.ifBlank { "Force stop failed" }))
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -199,6 +212,8 @@ class ProcessManagerClient(
                 stream.close()
                 Result.failure(Exception(msg.ifBlank { "Kill PID failed" }))
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Result.failure(e)
         }
