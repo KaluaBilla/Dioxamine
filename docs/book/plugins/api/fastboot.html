@@ -35,7 +35,7 @@
             const path_to_root = "../../";
             const default_light_theme = "coal";
             const default_dark_theme = "coal";
-            window.path_to_searchindex_js = "../../searchindex-ad122626.js";
+            window.path_to_searchindex_js = "../../searchindex-5b3b3288.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../../toc-78a1705c.js"></script>
@@ -337,18 +337,60 @@ await dioxamine.fastboot.boot(file.requestId, (p) =&gt; {
 
 console.log("Device is booting image...");
 </code></pre>
+<h3 id="dioxaminefastbootstagesafrequestid-onprogress"><a class="header" href="#dioxaminefastbootstagesafrequestid-onprogress"><code>dioxamine.fastboot.stage(safRequestId, onProgress?)</code></a></h3>
+<p>Stages an image picked by the user into the bootloader memory buffer (via Fastboot <code>stage</code> command) without immediately flashing or booting it. This is commonly required for OEM unlock token staging or staging auxiliary payloads.</p>
+<h4 id="signature-8"><a class="header" href="#signature-8">Signature</a></h4>
+<pre><code class="language-typescript">dioxamine.fastboot.stage(
+    safRequestId: string,
+    onProgress?: (progress: { current: number; total: number; percentage: number }) =&gt; void
+): Promise&lt;{
+    success: boolean;
+    bytesTransferred: number;
+    response: string;
+    info: string[];
+}&gt;
+</code></pre>
+<h4 id="example-8"><a class="header" href="#example-8">Example</a></h4>
+<pre><code class="language-javascript">const file = await dioxamine.requestFilePicker("open");
+
+const res = await dioxamine.fastboot.stage(file.requestId, (p) =&gt; {
+    console.log(`Staging payload: ${p.percentage}%`);
+});
+
+console.log(`Staged ${res.bytesTransferred} bytes: ${res.response}`);
+</code></pre>
+<h3 id="dioxaminefastbootstagedatadatabase64-onprogress"><a class="header" href="#dioxaminefastbootstagedatadatabase64-onprogress"><code>dioxamine.fastboot.stageData(dataBase64, onProgress?)</code></a></h3>
+<p>Stages in-memory raw binary data (encoded as a base64 string) directly into the bootloader memory buffer. Useful for staging dynamically received payloads, OEM unlock signatures, or tokens directly from network APIs without creating a temporary SAF file.</p>
+<h4 id="signature-9"><a class="header" href="#signature-9">Signature</a></h4>
+<pre><code class="language-typescript">dioxamine.fastboot.stageData(
+    dataBase64: string,
+    onProgress?: (progress: { current: number; total: number; percentage: number }) =&gt; void
+): Promise&lt;{
+    success: boolean;
+    bytesTransferred: number;
+    response: string;
+    info: string[];
+}&gt;
+</code></pre>
+<h4 id="example-9"><a class="header" href="#example-9">Example</a></h4>
+<pre><code class="language-javascript">// Stage raw token signature received from unlock server
+const stageResult = await dioxamine.fastboot.stageData(tokenBase64);
+if (stageResult.success) {
+    await dioxamine.fastboot.rawCommand("oem unlock");
+}
+</code></pre>
 <hr>
 <h2 id="6-power--lifecycle-controls"><a class="header" href="#6-power--lifecycle-controls">6. Power &amp; Lifecycle Controls</a></h2>
 <h3 id="dioxaminefastbootreboottarget"><a class="header" href="#dioxaminefastbootreboottarget"><code>dioxamine.fastboot.reboot(target?)</code></a></h3>
 <p>Reboots the device.</p>
-<h4 id="signature-8"><a class="header" href="#signature-8">Signature</a></h4>
+<h4 id="signature-10"><a class="header" href="#signature-10">Signature</a></h4>
 <pre><code class="language-typescript">dioxamine.fastboot.reboot(target?: "system" | "bootloader" | "recovery" | "fastboot" | string): Promise&lt;{ success: boolean }&gt;
 </code></pre>
 <ul>
 <li>Default: <code>"system"</code> (normal device boot).</li>
 <li>Targets: <code>"bootloader"</code>, <code>"recovery"</code>, <code>"fastboot"</code>, or custom hardware targets (e.g. <code>"edl"</code>).</li>
 </ul>
-<h4 id="example-8"><a class="header" href="#example-8">Example</a></h4>
+<h4 id="example-10"><a class="header" href="#example-10">Example</a></h4>
 <pre><code class="language-javascript">// Reboot to recovery
 await dioxamine.fastboot.reboot("recovery");
 
@@ -365,7 +407,7 @@ await dioxamine.fastboot.reboot();
 </code></pre>
 <h3 id="dioxaminefastbootsetlockmodemode"><a class="header" href="#dioxaminefastbootsetlockmodemode"><code>dioxamine.fastboot.setLockMode(mode)</code></a></h3>
 <p>Changes bootloader lock state (sends <code>flashing &lt;mode&gt;</code>).</p>
-<h4 id="signature-9"><a class="header" href="#signature-9">Signature</a></h4>
+<h4 id="signature-11"><a class="header" href="#signature-11">Signature</a></h4>
 <pre><code class="language-typescript">dioxamine.fastboot.setLockMode(mode: "lock" | "unlock" | "lock_critical" | "unlock_critical"): Promise&lt;{
     response: string;
     info: string[];
