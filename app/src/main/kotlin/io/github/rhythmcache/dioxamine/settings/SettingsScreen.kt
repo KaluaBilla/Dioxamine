@@ -916,13 +916,13 @@ fun SettingsScreen(vm: AdbViewModel) {
                         Spacer(Modifier.height(8.dp))
 
                         Text(
-                            text = stringResource(R.string.settings_about_documentation),
+                            text = stringResource(R.string.settings_about_donate),
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 textDecoration = TextDecoration.Underline
                             ),
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.clickable { openUrl(BuildConfig.DOCUMENTATION_URL) }
+                            modifier = Modifier.clickable { openUrl(BuildConfig.DONATE_URL) }
                         )
 
                         Spacer(Modifier.height(8.dp))
@@ -940,13 +940,13 @@ fun SettingsScreen(vm: AdbViewModel) {
                         Spacer(Modifier.height(8.dp))
 
                         Text(
-                            text = stringResource(R.string.settings_about_donate),
+                            text = stringResource(R.string.settings_about_documentation),
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 textDecoration = TextDecoration.Underline
                             ),
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.clickable { openUrl(BuildConfig.DONATE_URL) }
+                            modifier = Modifier.clickable { openUrl(BuildConfig.DOCUMENTATION_URL) }
                         )
 
                         Spacer(Modifier.height(8.dp))
