@@ -724,6 +724,14 @@
     <string name="settings_about_documentation">दस्तावेज़ीकरण (Documentation)</string>
     <string name="settings_about_source_code">सोर्स कोड</string>
     <string name="settings_about_donate">डोनेट करें (Donate)</string>
+    <string name="settings_about_check_updates">अपडेट के लिए जांचें</string>
+    <string name="settings_about_checking_updates">अपडेट की जांच हो रही है…</string>
+    <string name="update_dialog_title">नया अपडेट उपलब्ध है</string>
+    <string name="update_dialog_msg">एक नया संस्करण (%1$s) उपलब्ध है।\n\nवर्तमान संस्करण: %2$s</string>
+    <string name="update_btn_download">डाउनलोड करें</string>
+    <string name="update_already_latest">आप नवीनतम संस्करण का उपयोग कर रहे हैं</string>
+    <string name="update_check_failed">अपडेट की जांच विफल रही: %1$s</string>
+    <string name="update_checking">अपडेट की जांच हो रही है…</string>
     <string name="cd_github">GitHub</string>
     <string name="cd_telegram">Telegram</string>
 

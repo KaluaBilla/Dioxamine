@@ -732,6 +732,14 @@
     <string name="settings_about_documentation">Documentation</string>
     <string name="settings_about_source_code">Source Code</string>
     <string name="settings_about_donate">Donate</string>
+    <string name="settings_about_check_updates">Check for Updates</string>
+    <string name="settings_about_checking_updates">Checking for updates…</string>
+    <string name="update_dialog_title">Update Available</string>
+    <string name="update_dialog_msg">A new version (%1$s) is available.\n\nCurrent version: %2$s</string>
+    <string name="update_btn_download">Download</string>
+    <string name="update_already_latest">You are using the latest version</string>
+    <string name="update_check_failed">Failed to check for updates: %1$s</string>
+    <string name="update_checking">Checking for updates…</string>
     <string name="cd_github">GitHub</string>
     <string name="cd_telegram">Telegram</string>
 

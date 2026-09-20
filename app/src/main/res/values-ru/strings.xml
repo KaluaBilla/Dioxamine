@@ -730,6 +730,14 @@
     <string name="settings_about_documentation">Документация</string>
     <string name="settings_about_source_code">Исходный код</string>
     <string name="settings_about_donate">Пожертвовать</string>
+    <string name="settings_about_check_updates">Проверить обновления</string>
+    <string name="settings_about_checking_updates">Проверка обновлений…</string>
+    <string name="update_dialog_title">Доступно обновление</string>
+    <string name="update_dialog_msg">Доступна новая версия (%1$s).\n\nТекущая версия: %2$s</string>
+    <string name="update_btn_download">Скачать</string>
+    <string name="update_already_latest">У вас установлена последняя версия</string>
+    <string name="update_check_failed">Не удалось проверить обновления: %1$s</string>
+    <string name="update_checking">Проверка обновлений…</string>
     <string name="cd_github">GitHub</string>
     <string name="cd_telegram">Telegram</string>
 

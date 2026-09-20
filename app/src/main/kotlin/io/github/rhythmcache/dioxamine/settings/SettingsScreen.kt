@@ -52,8 +52,10 @@ import io.github.rhythmcache.dioxamine.BuildConfig
 import io.github.rhythmcache.dioxamine.R
 import io.github.rhythmcache.dioxamine.adb.AdbViewModel
 import io.github.rhythmcache.dioxamine.core.AppLogger
+import io.github.rhythmcache.dioxamine.core.AppReleaseInfo
 import io.github.rhythmcache.dioxamine.core.AppTheme
 import io.github.rhythmcache.dioxamine.core.DioxForegroundService
+import io.github.rhythmcache.dioxamine.core.UpdateChecker
 import io.github.rhythmcache.dioxamine.plugin.PermissionPolicy
 import io.github.rhythmcache.dioxamine.plugin.PluginManifest
 import io.github.rhythmcache.dioxamine.plugin.PluginPermission
@@ -137,6 +139,8 @@ fun SettingsScreen(vm: AdbViewModel) {
 
     var showRegenDialog by remember { mutableStateOf(false) }
     var showClearLogsDialog by remember { mutableStateOf(false) }
+    var isCheckingUpdate by remember { mutableStateOf(false) }
+    var updateDialogRelease by remember { mutableStateOf<AppReleaseInfo?>(null) }
 
     val openUrl = { url: String ->
         if (url.isNotBlank()) {
@@ -944,6 +948,39 @@ fun SettingsScreen(vm: AdbViewModel) {
                             color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.clickable { openUrl(BuildConfig.DONATE_URL) }
                         )
+
+                        Spacer(Modifier.height(8.dp))
+
+                        Text(
+                            text = if (isCheckingUpdate) {
+                                stringResource(R.string.settings_about_checking_updates)
+                            } else {
+                                stringResource(R.string.settings_about_check_updates)
+                            },
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                textDecoration = TextDecoration.Underline
+                            ),
+                            fontWeight = FontWeight.Bold,
+                            color = if (isCheckingUpdate) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.clickable(enabled = !isCheckingUpdate) {
+                                isCheckingUpdate = true
+                                Toast.makeText(context, context.getString(R.string.update_checking), Toast.LENGTH_SHORT).show()
+                                scope.launch {
+                                    val result = UpdateChecker.fetchLatestRelease()
+                                    isCheckingUpdate = false
+                                    result.onSuccess { release ->
+                                        if (release.isNewer) {
+                                            updateDialogRelease = release
+                                        } else {
+                                            Toast.makeText(context, context.getString(R.string.update_already_latest), Toast.LENGTH_SHORT).show()
+                                        }
+                                    }.onFailure { err ->
+                                        val errorMsg = err.localizedMessage ?: "Unknown error"
+                                        Toast.makeText(context, context.getString(R.string.update_check_failed, errorMsg), Toast.LENGTH_LONG).show()
+                                    }
+                                }
+                            }
+                        )
         }
     }
 
@@ -981,6 +1018,46 @@ fun SettingsScreen(vm: AdbViewModel) {
             },
             dismissButton = {
                 TextButton(onClick = { showClearLogsDialog = false }) { Text(stringResource(R.string.btn_cancel)) }
+            }
+        )
+    }
+
+    updateDialogRelease?.let { release ->
+        AlertDialog(
+            onDismissRequest = { updateDialogRelease = null },
+            title = { Text(stringResource(R.string.update_dialog_title)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = stringResource(
+                            R.string.update_dialog_msg,
+                            release.versionName,
+                            BuildConfig.VERSION_NAME
+                        ),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    if (release.releaseNotes.isNotBlank()) {
+                        Text(
+                            text = release.releaseNotes.take(300).trim() + if (release.releaseNotes.length > 300) "…" else "",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(onClick = {
+                    val url = release.downloadUrl
+                    updateDialogRelease = null
+                    openUrl(url)
+                }) {
+                    Text(stringResource(R.string.update_btn_download))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { updateDialogRelease = null }) {
+                    Text(stringResource(R.string.btn_cancel))
+                }
             }
         )
     }

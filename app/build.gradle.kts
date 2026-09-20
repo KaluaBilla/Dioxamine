@@ -55,6 +55,7 @@ android {
         buildConfigField("String", "SOURCE_CODE_URL", "\"https://github.com/rhythmcache/Dioxamine\"")
         buildConfigField("String", "DOCUMENTATION_URL", "\"https://rhythmcache.github.io/Dioxamine/book/\"")
         buildConfigField("String", "DONATE_URL", "\"https://buymeacoffee.com/triple_fault\"")
+        buildConfigField("String", "GITHUB_RELEASES_API_URL", "\"https://api.github.com/repos/rhythmcache/Dioxamine/releases/latest\"")
         buildConfigField("String", "TERMINAL_PLUGIN_URL", "\"https://github.com/rhythmcache/Terminal\"")
         buildConfigField("String", "PLUGIN_DOCS_URL", "\"https://rhythmcache.github.io/Dioxamine/book/plugins/overview.html\"")
         buildConfigField("String", "TRANSLATION_URL", "\"https://github.com/rhythmcache/Dioxamine#translations\"")
