@@ -182,7 +182,7 @@ fun DioxamineApp(keyDir: File) {
                        else Modifier.padding(padding).fillMaxSize()
         ) {
             when (selectedTab) {
-                Tab.ADB -> AdbScreen(vm, pluginRepo, permissionGate, dialogGate, safBridge, onPluginActiveChange = { isPluginActive = it })
+                Tab.ADB -> AdbScreen(vm, fastbootVm, pluginRepo, permissionGate, dialogGate, safBridge, onPluginActiveChange = { isPluginActive = it })
                 Tab.SCRCPY -> ScrcpyScreen(vm, onFullScreenChange = { isScrcpyFullScreen = it })
                 Tab.FASTBOOT -> FastbootScreen(fastbootVm)
                 Tab.SETTINGS -> SettingsScreen(vm)

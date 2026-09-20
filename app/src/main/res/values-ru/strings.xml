@@ -88,6 +88,8 @@
     <string name="plugin_perm_install">Установка пакетов на подключенное устройство</string>
     <string name="plugin_perm_forward">Создание проброса сетевых портов на/с подключенного устройства</string>
     <string name="plugin_perm_reverse">Создание обратного проброса портов с подключенного устройства на это устройство</string>
+    <string name="plugin_perm_network">Доступ к сети (интернет, локальная сеть и службы localhost)</string>
+    <string name="plugin_perm_fastboot">Доступ к интерфейсу Fastboot USB загрузчика для выполнения команд, прошивки разделов и перезагрузки</string>
     <string name="plugin_dialog_attribution">Плагин: %1$s</string>
     <string name="plugin_runner_not_found">Плагин не найден</string>
     <string name="plugin_menu_info">Инфо</string>

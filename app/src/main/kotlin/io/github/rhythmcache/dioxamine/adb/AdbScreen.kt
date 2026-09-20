@@ -29,6 +29,7 @@ import io.github.rhythmcache.dioxamine.adb.discovery.QrPairingScreen
 import io.github.rhythmcache.dioxamine.adb.shell.ShellScreen
 import io.github.rhythmcache.dioxamine.core.*
 import io.github.rhythmcache.adb.AdbDeviceMode
+import io.github.rhythmcache.dioxamine.fastboot.FastbootViewModel
 import io.github.rhythmcache.dioxamine.plugin.PluginDialogGate
 import io.github.rhythmcache.dioxamine.plugin.PluginPermissionGate
 import io.github.rhythmcache.dioxamine.plugin.PluginRepository
@@ -40,6 +41,7 @@ import io.github.rhythmcache.dioxamine.plugin.PluginsTab
 @Composable
 fun AdbScreen(
     vm: AdbViewModel,
+    fastbootVm: FastbootViewModel? = null,
     pluginRepo: PluginRepository,
     permissionGate: PluginPermissionGate,
     dialogGate: PluginDialogGate,
@@ -83,6 +85,7 @@ fun AdbScreen(
         PluginRunnerScreen(
             pluginId = activePluginId!!,
             vm = vm,
+            fastbootVm = fastbootVm,
             repo = pluginRepo,
             permissionGate = permissionGate,
             dialogGate = dialogGate,

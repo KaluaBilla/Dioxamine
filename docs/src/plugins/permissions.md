@@ -6,6 +6,7 @@ Dioxamine enforces a strict permission model to protect connected devices and th
 
 Permissions must be grouped under their respective subkeys:
 - `"adb"`: Capabilities targeting the connected ADB device.
+- `"fastboot"`: Capabilities targeting connected Fastboot devices in bootloader mode.
 - `"common"`: Host capabilities applicable across modes (such as network access).
 
 ```json
@@ -14,6 +15,9 @@ Permissions must be grouped under their respective subkeys:
     "adb": [
       "shell",
       "push"
+    ],
+    "fastboot": [
+      "fastboot"
     ],
     "common": [
       "network"
@@ -32,6 +36,7 @@ Permissions must be grouped under their respective subkeys:
 | `adb` | **Package Install** | `"install"` | Allows streaming APK files to the device package manager (`pm install`). | Package install APIs |
 | `adb` | **Port Forward** | `"forward"` | Allows binding local host ports and forwarding traffic to target device sockets. | `dioxamine.adb.forwardAdd()`, `dioxamine.adb.forwardRemove()` |
 | `adb` | **Port Reverse** | `"reverse"` | Allows binding target device ports and reversing traffic back to the host system. | `dioxamine.adb.reverseAdd()`, `dioxamine.adb.reverseRemove()` |
+| `fastboot` | **Fastboot Access** | `"fastboot"` | Full access to USB Fastboot bootloader interface (variables, raw commands, flash, boot, reboot). | `dioxamine.fastboot.*` |
 | `common` | **Network Access** | `"network"` | Allows sending HTTP/HTTPS requests to the internet, local networks, and localhost services. | `dioxamine.http.fetch()` |
 
 ## Permission Policies

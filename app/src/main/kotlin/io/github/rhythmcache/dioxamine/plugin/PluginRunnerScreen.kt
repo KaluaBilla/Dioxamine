@@ -26,6 +26,7 @@ import androidx.webkit.WebViewAssetLoader
 import io.github.rhythmcache.dioxamine.R
 import io.github.rhythmcache.dioxamine.adb.AdbViewModel
 import io.github.rhythmcache.dioxamine.core.LocalDarkTheme
+import io.github.rhythmcache.dioxamine.fastboot.FastbootViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -38,6 +39,7 @@ import java.io.File
 fun PluginRunnerScreen(
     pluginId: String,
     vm: AdbViewModel,
+    fastbootVm: FastbootViewModel? = null,
     repo: PluginRepository,
     permissionGate: PluginPermissionGate,
     dialogGate: PluginDialogGate,
@@ -92,6 +94,10 @@ fun PluginRunnerScreen(
                 pluginName = manifest.name,
                 declaredPermissions = declaredPermissions,
                 getActiveClient = { vm.activeClient() },
+                getActiveFastbootClient = { fastbootVm?.activeClient() },
+                getActiveFastbootDevice = {
+                    fastbootVm?.connectedDeviceId?.let { id -> fastbootVm.devices[id] }
+                },
                 permissionGate = permissionGate,
                 dialogGate = dialogGate,
                 safBridge = safBridge,

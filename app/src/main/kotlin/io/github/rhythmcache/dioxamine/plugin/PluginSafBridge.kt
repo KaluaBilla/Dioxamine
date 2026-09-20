@@ -2,12 +2,14 @@ package io.github.rhythmcache.dioxamine.plugin
 
 import android.content.Context
 import android.net.Uri
+import android.os.ParcelFileDescriptor
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import io.github.rhythmcache.dioxamine.core.FileUtils
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -100,6 +102,20 @@ class PluginSafBridge(private val context: Context) {
                 resolvedUris.remove(requestId)
             } ?: return null
         return runCatching { context.contentResolver.openOutputStream(uri) }.getOrNull()
+    }
+
+    fun resolveFileDescriptorAndSize(requestId: String): Pair<ParcelFileDescriptor, Long>? {
+        val uri =
+            synchronized(resolvedUris) {
+                resolvedUris.remove(requestId)
+            } ?: return null
+        val pfd = runCatching { context.contentResolver.openFileDescriptor(uri, "r") }.getOrNull() ?: return null
+        var size = pfd.statSize
+        if (size <= 0L) {
+            val (_, resolvedSize) = FileUtils.resolveNameAndSize(context, uri, defaultName = "image")
+            size = resolvedSize
+        }
+        return pfd to size
     }
 
     private fun storeUri(uri: Uri): String {

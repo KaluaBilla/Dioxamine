@@ -143,6 +143,11 @@ fun parseManifest(json: String): Result<PluginManifest> {
                 IllegalArgumentException("Permission '$unknown' belongs to 'common', not 'adb' (move to permissions.common)"),
             )
         }
+        if (PluginPermission.fromFastbootString(unknown) != null) {
+            return Result.failure(
+                IllegalArgumentException("Permission '$unknown' belongs to 'fastboot', not 'adb' (move to permissions.fastboot)"),
+            )
+        }
         return Result.failure(IllegalArgumentException("Unknown ADB permission '$unknown' in plugin manifest"))
     }
 
@@ -152,14 +157,26 @@ fun parseManifest(json: String): Result<PluginManifest> {
                 IllegalArgumentException("Permission '$unknown' belongs to 'adb', not 'common' (move to permissions.adb)"),
             )
         }
+        if (PluginPermission.fromFastbootString(unknown) != null) {
+            return Result.failure(
+                IllegalArgumentException("Permission '$unknown' belongs to 'fastboot', not 'common' (move to permissions.fastboot)"),
+            )
+        }
         return Result.failure(IllegalArgumentException("Unknown common permission '$unknown' in plugin manifest"))
     }
 
-    // Fastboot permissions are planned for upcoming commits
-    if (manifest.permissions.fastboot.isNotEmpty()) {
-        return Result.failure(
-            IllegalArgumentException("Fastboot permissions are not yet supported in this version of Dioxamine"),
-        )
+    manifest.permissions.fastboot.firstOrNull { PluginPermission.fromFastbootString(it) == null }?.let { unknown ->
+        if (PluginPermission.fromAdbString(unknown) != null) {
+            return Result.failure(
+                IllegalArgumentException("Permission '$unknown' belongs to 'adb', not 'fastboot' (move to permissions.adb)"),
+            )
+        }
+        if (PluginPermission.fromCommonString(unknown) != null) {
+            return Result.failure(
+                IllegalArgumentException("Permission '$unknown' belongs to 'common', not 'fastboot' (move to permissions.common)"),
+            )
+        }
+        return Result.failure(IllegalArgumentException("Unknown fastboot permission '$unknown' in plugin manifest"))
     }
 
     return Result.success(manifest)

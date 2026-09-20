@@ -87,6 +87,7 @@
     <string name="plugin_perm_forward">Create network port forwards to/from the connected device</string>
     <string name="plugin_perm_reverse">Create reverse port mappings from the connected device to this device</string>
     <string name="plugin_perm_network">Access the network (internet, local network, and localhost services)</string>
+    <string name="plugin_perm_fastboot">Access Fastboot USB bootloader interface to execute commands, flash partitions, and reboot</string>
     <string name="plugin_dialog_attribution">Plugin: %1$s</string>
     <string name="plugin_runner_not_found">Plugin not found</string>
     <string name="plugin_menu_info">Info</string>

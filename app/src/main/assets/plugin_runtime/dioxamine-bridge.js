@@ -70,8 +70,80 @@
         reverseRemove: function(remote) { return callNative('reverseRemove', remote); }
     };
 
+    window.__dioxamine_fastboot_progress = {};
+
+    window.__dioxamine_on_fastboot_progress = function(opId, current, total, percentage, status) {
+        var fn = window.__dioxamine_fastboot_progress[opId];
+        if (fn) fn({ current: current, total: total, percentage: percentage, status: status || '' });
+    };
+
+    window.__dioxamine_on_fastboot_info = function(opId, info) {
+        var fn = window.__dioxamine_fastboot_progress[opId];
+        if (fn) fn({ current: 0, total: 0, percentage: 0, status: info || '' });
+    };
+
+    var fastboot = {
+        getActiveDevice: function() {
+            return callNative('fastbootGetActiveDevice');
+        },
+        getVariable: function(name) {
+            return callNative('fastbootGetVariable', name).then(function(res) {
+                return res.value;
+            });
+        },
+        getVar: function(name) {
+            return this.getVariable(name);
+        },
+        getAllVariables: function() {
+            return callNative('fastbootGetAllVariables');
+        },
+        getAllVars: function() {
+            return this.getAllVariables();
+        },
+        rawCommand: function(command) {
+            return callNative('fastbootRawCommand', command);
+        },
+        erase: function(partition) {
+            return this.rawCommand('erase:' + partition);
+        },
+        setActiveSlot: function(slot) {
+            return this.rawCommand('set_active:' + slot);
+        },
+        continueBoot: function() {
+            return this.rawCommand('continue');
+        },
+        shutdown: function() {
+            return this.rawCommand('shutdown');
+        },
+        setLockMode: function(mode) {
+            return this.rawCommand('flashing ' + mode);
+        },
+        reboot: function(target) {
+            return callNative('fastbootReboot', target || 'system');
+        },
+        flash: function(partition, safRequestId, onProgress) {
+            var opId = 'fb_' + Math.random().toString(36).slice(2) + Date.now();
+            if (typeof onProgress === 'function') {
+                window.__dioxamine_fastboot_progress[opId] = onProgress;
+            }
+            return callNative('fastbootFlash', partition, safRequestId, opId).finally(function() {
+                delete window.__dioxamine_fastboot_progress[opId];
+            });
+        },
+        boot: function(safRequestId, onProgress) {
+            var opId = 'fb_' + Math.random().toString(36).slice(2) + Date.now();
+            if (typeof onProgress === 'function') {
+                window.__dioxamine_fastboot_progress[opId] = onProgress;
+            }
+            return callNative('fastbootBoot', safRequestId, opId).finally(function() {
+                delete window.__dioxamine_fastboot_progress[opId];
+            });
+        }
+    };
+
     window.dioxamine = {
         adb: adb,
+        fastboot: fastboot,
         requestFilePicker: function(mode) { return callNative('requestFilePicker', mode); },
         utf8ToBase64: function(str) { return btoa(unescape(encodeURIComponent(str))); },
         base64ToUtf8: function(b64) { return decodeURIComponent(escape(atob(b64))); },

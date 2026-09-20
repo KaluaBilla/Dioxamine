@@ -51,5 +51,6 @@
     - [Native Logging and Debugging](plugins/api/logging.md)
     - [Dynamic Theming and Material 3](plugins/api/theming.md)
     - [Network HTTP Client (http.fetch)](plugins/api/network.md)
+    - [Fastboot Protocol Operations (dioxamine.fastboot)](plugins/api/fastboot.md)
 - [Packaging and Distribution](plugins/packaging.md)
 - [Complete Plugin Examples](plugins/examples.md)

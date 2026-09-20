@@ -10,6 +10,8 @@ import io.github.rhythmcache.adb.AdbClient
 import io.github.rhythmcache.adb.AdbInteractiveSession
 import io.github.rhythmcache.dioxamine.core.AppLogger
 import io.github.rhythmcache.adb.AdbStream
+import io.github.rhythmcache.dioxamine.fastboot.FastbootDevice
+import io.github.rhythmcache.fastboot.FastbootClient
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
@@ -23,6 +25,8 @@ import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.add
+import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import org.json.JSONObject
@@ -47,6 +51,8 @@ class DioxaminePluginBridge(
     private val pluginName: String,
     private val declaredPermissions: List<PluginPermission>,
     private val getActiveClient: () -> AdbClient?,
+    private val getActiveFastbootClient: () -> FastbootClient? = { null },
+    private val getActiveFastbootDevice: () -> FastbootDevice? = { null },
     private val permissionGate: PluginPermissionGate,
     private val dialogGate: PluginDialogGate,
     private val safBridge: PluginSafBridge,
@@ -833,6 +839,379 @@ class DioxaminePluginBridge(
                 )
             } catch (e: Exception) {
                 AppLogger.e("PluginBridge", "httpRequest failed for $pluginId", e)
+                reject(callbackId, e.message ?: e.toString())
+            }
+        }
+    }
+
+    // -----------------------------------------------------------------
+    // Fastboot APIs
+    // -----------------------------------------------------------------
+
+    @JavascriptInterface
+    fun fastbootGetActiveDevice(callbackId: String) {
+        scope.launch(Dispatchers.IO) {
+            try {
+                val granted =
+                    permissionGate.checkPermission(
+                        pluginId = pluginId,
+                        pluginName = pluginName,
+                        declaredPermissions = declaredPermissions,
+                        required = PluginPermission.FASTBOOT,
+                    )
+                if (!granted) {
+                    reject(callbackId, "Permission denied: fastboot")
+                    return@launch
+                }
+
+                val client = getActiveFastbootClient()
+                val device = getActiveFastbootDevice()
+                if (client == null || device == null) {
+                    resolve(callbackId, buildJsonObject {
+                        put("connected", false)
+                    })
+                } else {
+                    resolve(
+                        callbackId,
+                        buildJsonObject {
+                            put("connected", true)
+                            put("id", device.id)
+                            put("label", device.label)
+                            put("deviceName", device.deviceName)
+                        },
+                    )
+                }
+            } catch (e: Exception) {
+                AppLogger.e("PluginBridge", "fastbootGetActiveDevice failed", e)
+                reject(callbackId, e.message ?: e.toString())
+            }
+        }
+    }
+
+    @JavascriptInterface
+    fun fastbootRawCommand(
+        command: String,
+        callbackId: String,
+    ) {
+        scope.launch(Dispatchers.IO) {
+            try {
+                val granted =
+                    permissionGate.checkPermission(
+                        pluginId = pluginId,
+                        pluginName = pluginName,
+                        declaredPermissions = declaredPermissions,
+                        required = PluginPermission.FASTBOOT,
+                    )
+                if (!granted) {
+                    reject(callbackId, "Permission denied: fastboot")
+                    return@launch
+                }
+
+                val client = getActiveFastbootClient()
+                if (client == null) {
+                    reject(callbackId, "No active fastboot device")
+                    return@launch
+                }
+
+                val infoList = mutableListOf<String>()
+                val result = client.rawCommand(command, onInfo = { info ->
+                    infoList.add(info)
+                })
+
+                resolve(
+                    callbackId,
+                    buildJsonObject {
+                        put("response", result.response)
+                        put(
+                            "info",
+                            buildJsonArray {
+                                infoList.forEach { add(it) }
+                            },
+                        )
+                    },
+                )
+            } catch (e: Exception) {
+                AppLogger.e("PluginBridge", "fastbootRawCommand failed", e)
+                reject(callbackId, e.message ?: e.toString())
+            }
+        }
+    }
+
+    @JavascriptInterface
+    fun fastbootGetVariable(
+        name: String,
+        callbackId: String,
+    ) {
+        scope.launch(Dispatchers.IO) {
+            try {
+                val granted =
+                    permissionGate.checkPermission(
+                        pluginId = pluginId,
+                        pluginName = pluginName,
+                        declaredPermissions = declaredPermissions,
+                        required = PluginPermission.FASTBOOT,
+                    )
+                if (!granted) {
+                    reject(callbackId, "Permission denied: fastboot")
+                    return@launch
+                }
+
+                val client = getActiveFastbootClient()
+                if (client == null) {
+                    reject(callbackId, "No active fastboot device")
+                    return@launch
+                }
+
+                val value = client.getVar(name)
+                resolve(callbackId, buildJsonObject { put("value", value) })
+            } catch (e: Exception) {
+                AppLogger.e("PluginBridge", "fastbootGetVariable failed", e)
+                reject(callbackId, e.message ?: e.toString())
+            }
+        }
+    }
+
+    @JavascriptInterface
+    fun fastbootGetAllVariables(callbackId: String) {
+        scope.launch(Dispatchers.IO) {
+            try {
+                val granted =
+                    permissionGate.checkPermission(
+                        pluginId = pluginId,
+                        pluginName = pluginName,
+                        declaredPermissions = declaredPermissions,
+                        required = PluginPermission.FASTBOOT,
+                    )
+                if (!granted) {
+                    reject(callbackId, "Permission denied: fastboot")
+                    return@launch
+                }
+
+                val client = getActiveFastbootClient()
+                if (client == null) {
+                    reject(callbackId, "No active fastboot device")
+                    return@launch
+                }
+
+                val vars = client.getAllVars()
+                resolve(
+                    callbackId,
+                    buildJsonObject {
+                        vars.forEach { (k, v) ->
+                            put(k, v)
+                        }
+                    },
+                )
+            } catch (e: Exception) {
+                AppLogger.e("PluginBridge", "fastbootGetAllVariables failed", e)
+                reject(callbackId, e.message ?: e.toString())
+            }
+        }
+    }
+
+    @JavascriptInterface
+    fun fastbootFlash(
+        partition: String,
+        safRequestId: String,
+        opId: String,
+        callbackId: String,
+    ) {
+        scope.launch(Dispatchers.IO) {
+            try {
+                val granted =
+                    permissionGate.checkPermission(
+                        pluginId = pluginId,
+                        pluginName = pluginName,
+                        declaredPermissions = declaredPermissions,
+                        required = PluginPermission.FASTBOOT,
+                    )
+                if (!granted) {
+                    reject(callbackId, "Permission denied: fastboot")
+                    return@launch
+                }
+
+                val client = getActiveFastbootClient()
+                if (client == null) {
+                    reject(callbackId, "No active fastboot device")
+                    return@launch
+                }
+
+                val (pfd, size) = safBridge.resolveFileDescriptorAndSize(safRequestId)
+                    ?: run {
+                        reject(callbackId, "Invalid or expired safRequestId")
+                        return@launch
+                    }
+
+                try {
+                    if (size <= 0L) {
+                        reject(callbackId, "Cannot flash empty file (0 bytes)")
+                        return@launch
+                    }
+                    val infoList = mutableListOf<String>()
+                    var lastInfo = ""
+                    val encodedOpId = Json.encodeToString(String.serializer(), opId)
+                    client.flash(
+                        partition = partition,
+                        fd = pfd.fileDescriptor,
+                        size = size,
+                        onInfo = { info ->
+                            infoList.add(info)
+                            lastInfo = info
+                            AppLogger.d("PluginBridge", "fastboot flash [$partition]: $info")
+                            val encodedInfo = Json.encodeToString(String.serializer(), info)
+                            evaluateJs("window.__dioxamine_on_fastboot_info($encodedOpId, $encodedInfo)")
+                        },
+                        onProgress = { progress ->
+                            val percentage = if (progress.total > 0) (progress.current.toDouble() / progress.total * 100).toInt() else 0
+                            val encodedInfo = Json.encodeToString(String.serializer(), lastInfo)
+                            evaluateJs("window.__dioxamine_on_fastboot_progress($encodedOpId, ${progress.current}, ${progress.total}, $percentage, $encodedInfo)")
+                        },
+                    )
+                    resolve(
+                        callbackId,
+                        buildJsonObject {
+                            put("success", true)
+                            put("bytesTransferred", size)
+                            put(
+                                "info",
+                                buildJsonArray {
+                                    infoList.forEach { add(it) }
+                                },
+                            )
+                        },
+                    )
+                } finally {
+                    runCatching { pfd.close() }
+                }
+            } catch (e: Exception) {
+                AppLogger.e("PluginBridge", "fastbootFlash failed", e)
+                reject(callbackId, e.message ?: e.toString())
+            }
+        }
+    }
+
+    @JavascriptInterface
+    fun fastbootBoot(
+        safRequestId: String,
+        opId: String,
+        callbackId: String,
+    ) {
+        scope.launch(Dispatchers.IO) {
+            try {
+                val granted =
+                    permissionGate.checkPermission(
+                        pluginId = pluginId,
+                        pluginName = pluginName,
+                        declaredPermissions = declaredPermissions,
+                        required = PluginPermission.FASTBOOT,
+                    )
+                if (!granted) {
+                    reject(callbackId, "Permission denied: fastboot")
+                    return@launch
+                }
+
+                val client = getActiveFastbootClient()
+                if (client == null) {
+                    reject(callbackId, "No active fastboot device")
+                    return@launch
+                }
+
+                val (pfd, size) = safBridge.resolveFileDescriptorAndSize(safRequestId)
+                    ?: run {
+                        reject(callbackId, "Invalid or expired safRequestId")
+                        return@launch
+                    }
+
+                try {
+                    if (size <= 0L) {
+                        reject(callbackId, "Cannot boot empty file (0 bytes)")
+                        return@launch
+                    }
+                    val infoList = mutableListOf<String>()
+                    var lastInfo = ""
+                    val encodedOpId = Json.encodeToString(String.serializer(), opId)
+                    client.boot(
+                        fd = pfd.fileDescriptor,
+                        size = size,
+                        onInfo = { info ->
+                            infoList.add(info)
+                            lastInfo = info
+                            AppLogger.d("PluginBridge", "fastboot boot: $info")
+                            val encodedInfo = Json.encodeToString(String.serializer(), info)
+                            evaluateJs("window.__dioxamine_on_fastboot_info($encodedOpId, $encodedInfo)")
+                        },
+                        onProgress = { progress ->
+                            val percentage = if (progress.total > 0) (progress.current.toDouble() / progress.total * 100).toInt() else 0
+                            val encodedInfo = Json.encodeToString(String.serializer(), lastInfo)
+                            evaluateJs("window.__dioxamine_on_fastboot_progress($encodedOpId, ${progress.current}, ${progress.total}, $percentage, $encodedInfo)")
+                        },
+                    )
+                    resolve(
+                        callbackId,
+                        buildJsonObject {
+                            put("success", true)
+                            put("bytesTransferred", size)
+                            put(
+                                "info",
+                                buildJsonArray {
+                                    infoList.forEach { add(it) }
+                                },
+                            )
+                        },
+                    )
+                } finally {
+                    runCatching { pfd.close() }
+                }
+            } catch (e: Exception) {
+                AppLogger.e("PluginBridge", "fastbootBoot failed", e)
+                reject(callbackId, e.message ?: e.toString())
+            }
+        }
+    }
+
+    @JavascriptInterface
+    fun fastbootReboot(
+        target: String,
+        callbackId: String,
+    ) {
+        scope.launch(Dispatchers.IO) {
+            try {
+                val granted =
+                    permissionGate.checkPermission(
+                        pluginId = pluginId,
+                        pluginName = pluginName,
+                        declaredPermissions = declaredPermissions,
+                        required = PluginPermission.FASTBOOT,
+                    )
+                if (!granted) {
+                    reject(callbackId, "Permission denied: fastboot")
+                    return@launch
+                }
+
+                val client = getActiveFastbootClient()
+                if (client == null) {
+                    reject(callbackId, "No active fastboot device")
+                    return@launch
+                }
+
+                val normalized = target.lowercase().trim()
+                val rebootTarget = when (normalized) {
+                    "system", "" -> FastbootClient.RebootTarget.SYSTEM
+                    "bootloader" -> FastbootClient.RebootTarget.BOOTLOADER
+                    "recovery" -> FastbootClient.RebootTarget.RECOVERY
+                    "fastboot" -> FastbootClient.RebootTarget.FASTBOOT
+                    else -> null
+                }
+
+                if (rebootTarget != null) {
+                    client.reboot(rebootTarget, onInfo = { info -> AppLogger.d("PluginBridge", "fastboot reboot: $info") })
+                } else {
+                    client.reboot(normalized, onInfo = { info -> AppLogger.d("PluginBridge", "fastboot reboot: $info") })
+                }
+
+                resolve(callbackId, buildJsonObject { put("success", true) })
+            } catch (e: Exception) {
+                AppLogger.e("PluginBridge", "fastbootReboot failed", e)
                 reject(callbackId, e.message ?: e.toString())
             }
         }

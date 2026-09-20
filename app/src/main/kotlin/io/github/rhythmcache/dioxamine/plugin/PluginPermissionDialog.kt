@@ -23,6 +23,7 @@ fun PluginPermissionDialogHost(gate: PluginPermissionGate) {
                 PluginPermission.FORWARD -> stringResource(R.string.plugin_perm_forward)
                 PluginPermission.REVERSE -> stringResource(R.string.plugin_perm_reverse)
                 PluginPermission.NETWORK -> stringResource(R.string.plugin_perm_network)
+                PluginPermission.FASTBOOT -> stringResource(R.string.plugin_perm_fastboot)
             }
 
         AlertDialog(

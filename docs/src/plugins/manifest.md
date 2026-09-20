@@ -58,6 +58,7 @@ When installing or loading a plugin, Dioxamine strictly enforces the following v
    - `permissions` must be an object with subkeys (legacy flat arrays are rejected).
    - ADB permissions in `permissions.adb` must only be: `shell`, `push`, `pull`, `install`, `forward`, `reverse`.
    - Common host permissions in `permissions.common` must only be: `network` (or `internet`).
+   - Fastboot permissions in `permissions.fastboot` must only be: `fastboot` (or `access`).
    - Unknown permissions or permissions placed in the wrong subkey will fail manifest validation with an explicit error.
 4. **App Version Compatibility**:
    - If `minAppVersionCode` exceeds the running Dioxamine application version, installation will be blocked with a compatibility notice.

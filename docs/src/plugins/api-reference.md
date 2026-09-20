@@ -2,7 +2,7 @@
 
 The global `dioxamine` object provides asynchronous methods for interacting with connected devices, native dialogs, file systems, and the Android host. Device operations are organized into dedicated namespaces:
 - **`dioxamine.adb.*`**: ADB device operations (shell, sync, port forwarding).
-- **`dioxamine.fastboot.*`**: Fastboot bootloader operations (coming soon).
+- **`dioxamine.fastboot.*`**: Fastboot bootloader operations (variables, raw commands, flash, boot, reboot).
 - **`dioxamine.*`**: Common UI dialogs, file pickers, theming, logging, and HTTP client.
 
 ## Bridge Initialization
@@ -34,3 +34,4 @@ The API is organized into the following specialized modules:
 7. **[Native Logging and Debugging](api/logging.md)**: Forward logs and console output directly to Android Logcat.
 8. **[Dynamic Theming and Material 3](api/theming.md)**: Integrate with Dioxamine's dynamic color schemes and listen for theme changes.
 9. **[Network HTTP Client (http.fetch)](api/network.md)**: Perform asynchronous HTTP/HTTPS network requests with native CORS-free execution and permission gating.
+10. **[Fastboot Protocol Operations](api/fastboot.md)**: Inspect bootloader variables, execute raw commands, flash partitions, live boot images, switch slots, and reboot devices via `dioxamine.fastboot.*`.

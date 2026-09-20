@@ -86,6 +86,8 @@
     <string name="plugin_perm_install">कनेक्टेड डिवाइस पर पैकेज इंस्टॉल करें</string>
     <string name="plugin_perm_forward">कनेक्टेड डिवाइस से/तक नेटवर्क पोर्ट फॉरवर्ड बनाएं</string>
     <string name="plugin_perm_reverse">कनेक्टेड डिवाइस से इस डिवाइस तक रिवर्स पोर्ट मैपिंग बनाएं</string>
+    <string name="plugin_perm_network">नेटवर्क एक्सेस करें (इंटरनेट, लोकल नेटवर्क और लोकलहोस्ट सेवाएं)</string>
+    <string name="plugin_perm_fastboot">कमांड निष्पादित करने, विभाजन फ्लैश करने और रीबूट करने के लिए फास्टबूट यूएसबी इंटरफेस एक्सेस करें</string>
     <string name="plugin_dialog_attribution">प्लगइन: %1$s</string>
     <string name="plugin_runner_not_found">प्लगइन नहीं मिला</string>
     <string name="plugin_menu_info">जानकारी</string>

@@ -14,7 +14,8 @@ enum class PluginPermission {
     INSTALL,
     FORWARD,
     REVERSE,
-    NETWORK;
+    NETWORK,
+    FASTBOOT;
 
     companion object {
         fun fromAdbString(s: String): PluginPermission? =
@@ -34,8 +35,14 @@ enum class PluginPermission {
                 else -> null
             }
 
+        fun fromFastbootString(s: String): PluginPermission? =
+            when (s.lowercase().trim()) {
+                "fastboot" -> FASTBOOT
+                else -> null
+            }
+
         fun fromManifestString(s: String): PluginPermission? =
-            fromAdbString(s) ?: fromCommonString(s)
+            fromAdbString(s) ?: fromCommonString(s) ?: fromFastbootString(s)
     }
 }
 
