@@ -44,6 +44,7 @@ private data class DialogRequestPayload(
 
 private data class TrackedForward(val client: AdbClient, val local: String)
 private data class TrackedReverse(val client: AdbClient, val remote: String)
+private const val MAX_STAGE_DATA_BASE64_LENGTH = 24 * 1024 * 1024 // ~16MB decoded payload limit
 
 class DioxaminePluginBridge(
     private val context: Context,
@@ -1207,12 +1208,13 @@ class DioxaminePluginBridge(
                         return@launch
                     }
                     val encodedOpId = Json.encodeToString(String.serializer(), opId)
+                    val encodedEmpty = Json.encodeToString(String.serializer(), "")
                     val result = client.stage(
                         fd = pfd.fileDescriptor,
                         size = size,
                         onProgress = { progress ->
                             val percentage = if (progress.total > 0) (progress.current.toDouble() / progress.total * 100).toInt() else 0
-                            evaluateJs("window.__dioxamine_on_fastboot_progress($encodedOpId, ${progress.current}, ${progress.total}, $percentage, '')")
+                            evaluateJs("window.__dioxamine_on_fastboot_progress($encodedOpId, ${progress.current}, ${progress.total}, $percentage, $encodedEmpty)")
                         },
                     )
                     resolve(
@@ -1265,6 +1267,14 @@ class DioxaminePluginBridge(
                     return@launch
                 }
 
+                if (dataBase64.length > MAX_STAGE_DATA_BASE64_LENGTH) {
+                    reject(
+                        callbackId,
+                        "Base64 payload exceeds maximum in-memory stage limit (16MB). Use fastboot.stage() with SAF for large images.",
+                    )
+                    return@launch
+                }
+
                 val bytes = try {
                     Base64.decode(dataBase64, Base64.DEFAULT)
                 } catch (e: Exception) {
@@ -1278,11 +1288,12 @@ class DioxaminePluginBridge(
                 }
 
                 val encodedOpId = Json.encodeToString(String.serializer(), opId)
+                val encodedEmpty = Json.encodeToString(String.serializer(), "")
                 val result = client.stage(
                     image = bytes,
                     onProgress = { progress ->
                         val percentage = if (progress.total > 0) (progress.current.toDouble() / progress.total * 100).toInt() else 0
-                        evaluateJs("window.__dioxamine_on_fastboot_progress($encodedOpId, ${progress.current}, ${progress.total}, $percentage, '')")
+                        evaluateJs("window.__dioxamine_on_fastboot_progress($encodedOpId, ${progress.current}, ${progress.total}, $percentage, $encodedEmpty)")
                     },
                 )
                 resolve(
