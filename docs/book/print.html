@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "coal";
             const default_dark_theme = "coal";
-            window.path_to_searchindex_js = "searchindex-b1676fa4.js";
+            window.path_to_searchindex_js = "searchindex-7d6438b7.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-1f612337.js"></script>
@@ -1713,9 +1713,11 @@ The native asset loader enforces canonical path checking, preventing plugins fro
   "entry": "index.html",
   "icon": "icon.png",
   "minAppVersionCode": 1,
-  "permissions": [
-    "shell"
-  ],
+  "permissions": {
+    "adb": [
+      "shell"
+    ]
+  },
   "fullscreen": false
 }
 </code></pre>
@@ -1888,9 +1890,11 @@ if (window.dioxamine &amp;&amp; window.__dioxamine_bridge_ready) {
   "entry": "index.html",
   "icon": "icon.png",
   "minAppVersionCode": 1,
-  "permissions": [
-    "shell"
-  ],
+  "permissions": {
+    "adb": [
+      "shell"
+    ]
+  },
   "fullscreen": true,
   "homepage": "https://github.com/rhythmcache/dioxamine"
 }
@@ -1912,7 +1916,7 @@ if (window.dioxamine &amp;&amp; window.__dioxamine_bridge_ready) {
 <tr><td style="text-align: left"><code>entry</code></td><td style="text-align: left"><code>String</code></td><td style="text-align: left"><strong>Yes</strong></td><td style="text-align: left">Relative path to the HTML entrypoint file (for example, <code>"index.html"</code> or <code>"ui/main.html"</code>). Path traversal (<code>..</code>) is forbidden.</td></tr>
 <tr><td style="text-align: left"><code>icon</code></td><td style="text-align: left"><code>String</code></td><td style="text-align: left">No</td><td style="text-align: left">Relative path to the plugin icon image (PNG, WebP, JPG, or SVG). Default: <code>null</code>.</td></tr>
 <tr><td style="text-align: left"><code>minAppVersionCode</code></td><td style="text-align: left"><code>Integer</code></td><td style="text-align: left">No</td><td style="text-align: left">Minimum Dioxamine app <code>versionCode</code> required to execute this plugin. Default: <code>1</code>.</td></tr>
-<tr><td style="text-align: left"><code>permissions</code></td><td style="text-align: left"><code>Array&lt;String&gt;</code></td><td style="text-align: left">No</td><td style="text-align: left">List of required permission identifiers. Only valid permission names are permitted. Default: <code>[]</code>.</td></tr>
+<tr><td style="text-align: left"><code>permissions</code></td><td style="text-align: left"><code>Object</code></td><td style="text-align: left">No</td><td style="text-align: left">Declared permission groups. Supported subkeys: <code>adb</code> (list of ADB permissions) and <code>common</code> (list of general permissions, e.g. <code>"network"</code>). Default: <code>{}</code>.</td></tr>
 <tr><td style="text-align: left"><code>fullscreen</code></td><td style="text-align: left"><code>Boolean</code></td><td style="text-align: left">No</td><td style="text-align: left">If <code>true</code>, hides the Dioxamine top bar on launch to provide an edge-to-edge full-screen display. Default: <code>false</code>.</td></tr>
 <tr><td style="text-align: left"><code>homepage</code></td><td style="text-align: left"><code>String</code></td><td style="text-align: left">No</td><td style="text-align: left">Web URL pointing to the plugin repository, source code, or documentation.</td></tr>
 </tbody>
@@ -1933,10 +1937,12 @@ if (window.dioxamine &amp;&amp; window.__dioxamine_bridge_ready) {
 <li>Any path containing <code>..</code> or leading slashes will be rejected.</li>
 </ul>
 </li>
-<li><strong>Permission Whitelist</strong>:
+<li><strong>Permission Structure and Whitelist</strong>:
 <ul>
-<li>Every entry in <code>permissions</code> must be one of the recognized permission strings: <code>shell</code>, <code>push</code>, <code>pull</code>, <code>install</code>, <code>forward</code>, <code>reverse</code>, <code>network</code> (or <code>internet</code>).</li>
-<li>Unknown permissions will fail manifest validation with an explicit error.</li>
+<li><code>permissions</code> must be an object with subkeys (legacy flat arrays are rejected).</li>
+<li>ADB permissions in <code>permissions.adb</code> must only be: <code>shell</code>, <code>push</code>, <code>pull</code>, <code>install</code>, <code>forward</code>, <code>reverse</code>.</li>
+<li>Common host permissions in <code>permissions.common</code> must only be: <code>network</code> (or <code>internet</code>).</li>
+<li>Unknown permissions or permissions placed in the wrong subkey will fail manifest validation with an explicit error.</li>
 </ul>
 </li>
 <li><strong>App Version Compatibility</strong>:
@@ -1948,21 +1954,38 @@ if (window.dioxamine &amp;&amp; window.__dioxamine_bridge_ready) {
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="permissions-and-security-model"><a class="header" href="#permissions-and-security-model">Permissions and Security Model</a></h1>
 <p>Dioxamine enforces a strict permission model to protect connected devices and the host Android system from unauthorized operations.</p>
-<h2 id="declared-permissions"><a class="header" href="#declared-permissions">Declared Permissions</a></h2>
-<p>Plugins must explicitly declare every required capability in <code>plugin.json</code>. Attempting to call an API without declaring the corresponding permission results in an immediate Promise rejection with <code>SecurityException: Permission not declared in manifest</code>.</p>
+<h2 id="declaring-permissions-in-pluginjson"><a class="header" href="#declaring-permissions-in-pluginjson">Declaring Permissions in <code>plugin.json</code></a></h2>
+<p>Permissions must be grouped under their respective subkeys:</p>
+<ul>
+<li><code>"adb"</code>: Capabilities targeting the connected ADB device.</li>
+<li><code>"common"</code>: Host capabilities applicable across modes (such as network access).</li>
+</ul>
+<pre><code class="language-json">{
+  "permissions": {
+    "adb": [
+      "shell",
+      "push"
+    ],
+    "common": [
+      "network"
+    ]
+  }
+}
+</code></pre>
+<h2 id="permission-reference"><a class="header" href="#permission-reference">Permission Reference</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th style="text-align: left">Permission</th><th style="text-align: left">Identifier</th><th style="text-align: left">Description</th><th style="text-align: left">Protected APIs</th></tr>
+<tr><th style="text-align: left">Subkey</th><th style="text-align: left">Permission</th><th style="text-align: left">Identifier</th><th style="text-align: left">Description</th><th style="text-align: left">Protected APIs</th></tr>
 </thead>
 <tbody>
-<tr><td style="text-align: left"><strong>Shell Execution</strong></td><td style="text-align: left"><code>"shell"</code></td><td style="text-align: left">Allows executing non-interactive shell commands and opening interactive PTY/sh sessions.</td><td style="text-align: left"><code>dioxamine.shellExec()</code>, <code>dioxamine.openInteractiveShell()</code></td></tr>
-<tr><td style="text-align: left"><strong>File Push</strong></td><td style="text-align: left"><code>"push"</code></td><td style="text-align: left">Allows writing and pushing files or streams onto the target device filesystem.</td><td style="text-align: left"><code>dioxamine.pushFile()</code>, <code>dioxamine.pushStream()</code></td></tr>
-<tr><td style="text-align: left"><strong>File Pull</strong></td><td style="text-align: left"><code>"pull"</code></td><td style="text-align: left">Allows reading and pulling files or directories from the target device filesystem.</td><td style="text-align: left"><code>dioxamine.pullFile()</code>, <code>dioxamine.pullStream()</code></td></tr>
-<tr><td style="text-align: left"><strong>Package Install</strong></td><td style="text-align: left"><code>"install"</code></td><td style="text-align: left">Allows streaming APK files to the device package manager (<code>pm install</code>).</td><td style="text-align: left"><code>dioxamine.installApk()</code></td></tr>
-<tr><td style="text-align: left"><strong>Port Forward</strong></td><td style="text-align: left"><code>"forward"</code></td><td style="text-align: left">Allows binding local host ports and forwarding traffic to target device sockets.</td><td style="text-align: left"><code>dioxamine.forwardPort()</code>, <code>dioxamine.forwardList()</code>, <code>dioxamine.forwardRemove()</code></td></tr>
-<tr><td style="text-align: left"><strong>Port Reverse</strong></td><td style="text-align: left"><code>"reverse"</code></td><td style="text-align: left">Allows binding target device ports and reversing traffic back to the host system.</td><td style="text-align: left"><code>dioxamine.reversePort()</code>, <code>dioxamine.reverseList()</code>, <code>dioxamine.reverseRemove()</code></td></tr>
-<tr><td style="text-align: left"><strong>Network Access</strong></td><td style="text-align: left"><code>"network"</code></td><td style="text-align: left">Allows sending HTTP/HTTPS requests to the internet, local networks, and localhost services.</td><td style="text-align: left"><code>dioxamine.http.fetch()</code></td></tr>
+<tr><td style="text-align: left"><code>adb</code></td><td style="text-align: left"><strong>Shell Execution</strong></td><td style="text-align: left"><code>"shell"</code></td><td style="text-align: left">Allows executing non-interactive shell commands and opening interactive PTY/sh sessions.</td><td style="text-align: left"><code>dioxamine.adb.shellExec()</code>, <code>dioxamine.adb.openInteractiveShell()</code></td></tr>
+<tr><td style="text-align: left"><code>adb</code></td><td style="text-align: left"><strong>File Push</strong></td><td style="text-align: left"><code>"push"</code></td><td style="text-align: left">Allows pushing files from host SAF into target device filesystem.</td><td style="text-align: left"><code>dioxamine.adb.push()</code></td></tr>
+<tr><td style="text-align: left"><code>adb</code></td><td style="text-align: left"><strong>File Pull</strong></td><td style="text-align: left"><code>"pull"</code></td><td style="text-align: left">Allows pulling files from target device filesystem to host SAF.</td><td style="text-align: left"><code>dioxamine.adb.pull()</code></td></tr>
+<tr><td style="text-align: left"><code>adb</code></td><td style="text-align: left"><strong>Package Install</strong></td><td style="text-align: left"><code>"install"</code></td><td style="text-align: left">Allows streaming APK files to the device package manager (<code>pm install</code>).</td><td style="text-align: left">Package install APIs</td></tr>
+<tr><td style="text-align: left"><code>adb</code></td><td style="text-align: left"><strong>Port Forward</strong></td><td style="text-align: left"><code>"forward"</code></td><td style="text-align: left">Allows binding local host ports and forwarding traffic to target device sockets.</td><td style="text-align: left"><code>dioxamine.adb.forwardAdd()</code>, <code>dioxamine.adb.forwardRemove()</code></td></tr>
+<tr><td style="text-align: left"><code>adb</code></td><td style="text-align: left"><strong>Port Reverse</strong></td><td style="text-align: left"><code>"reverse"</code></td><td style="text-align: left">Allows binding target device ports and reversing traffic back to the host system.</td><td style="text-align: left"><code>dioxamine.adb.reverseAdd()</code>, <code>dioxamine.adb.reverseRemove()</code></td></tr>
+<tr><td style="text-align: left"><code>common</code></td><td style="text-align: left"><strong>Network Access</strong></td><td style="text-align: left"><code>"network"</code></td><td style="text-align: left">Allows sending HTTP/HTTPS requests to the internet, local networks, and localhost services.</td><td style="text-align: left"><code>dioxamine.http.fetch()</code></td></tr>
 </tbody>
 </table>
 </div>
@@ -2877,9 +2900,11 @@ Use relative paths in HTML (<code>&lt;link rel="stylesheet" href="styles.css"&gt
   "entry": "index.html",
   "icon": "icon.png",
   "minAppVersionCode": 1,
-  "permissions": [
-    "shell"
-  ],
+  "permissions": {
+    "adb": [
+      "shell"
+    ]
+  },
   "fullscreen": false
 }
 </code></pre>
@@ -2915,9 +2940,11 @@ document.getElementById('refresh-btn').addEventListener('click', refreshSpecs);
   "entry": "index.html",
   "icon": "icon.png",
   "minAppVersionCode": 1,
-  "permissions": [
-    "shell"
-  ],
+  "permissions": {
+    "adb": [
+      "shell"
+    ]
+  },
   "fullscreen": true
 }
 </code></pre>
@@ -2970,9 +2997,11 @@ connectTerminal();
   "entry": "index.html",
   "icon": "icon.png",
   "minAppVersionCode": 1,
-  "permissions": [
-    "shell"
-  ],
+  "permissions": {
+    "adb": [
+      "shell"
+    ]
+  },
   "fullscreen": true
 }
 </code></pre>

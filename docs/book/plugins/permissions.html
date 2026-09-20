@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "coal";
             const default_dark_theme = "coal";
-            window.path_to_searchindex_js = "../searchindex-b1676fa4.js";
+            window.path_to_searchindex_js = "../searchindex-7d6438b7.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-1f612337.js"></script>
@@ -182,21 +182,38 @@
                     <main>
                         <h1 id="permissions-and-security-model"><a class="header" href="#permissions-and-security-model">Permissions and Security Model</a></h1>
 <p>Dioxamine enforces a strict permission model to protect connected devices and the host Android system from unauthorized operations.</p>
-<h2 id="declared-permissions"><a class="header" href="#declared-permissions">Declared Permissions</a></h2>
-<p>Plugins must explicitly declare every required capability in <code>plugin.json</code>. Attempting to call an API without declaring the corresponding permission results in an immediate Promise rejection with <code>SecurityException: Permission not declared in manifest</code>.</p>
+<h2 id="declaring-permissions-in-pluginjson"><a class="header" href="#declaring-permissions-in-pluginjson">Declaring Permissions in <code>plugin.json</code></a></h2>
+<p>Permissions must be grouped under their respective subkeys:</p>
+<ul>
+<li><code>"adb"</code>: Capabilities targeting the connected ADB device.</li>
+<li><code>"common"</code>: Host capabilities applicable across modes (such as network access).</li>
+</ul>
+<pre><code class="language-json">{
+  "permissions": {
+    "adb": [
+      "shell",
+      "push"
+    ],
+    "common": [
+      "network"
+    ]
+  }
+}
+</code></pre>
+<h2 id="permission-reference"><a class="header" href="#permission-reference">Permission Reference</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th style="text-align: left">Permission</th><th style="text-align: left">Identifier</th><th style="text-align: left">Description</th><th style="text-align: left">Protected APIs</th></tr>
+<tr><th style="text-align: left">Subkey</th><th style="text-align: left">Permission</th><th style="text-align: left">Identifier</th><th style="text-align: left">Description</th><th style="text-align: left">Protected APIs</th></tr>
 </thead>
 <tbody>
-<tr><td style="text-align: left"><strong>Shell Execution</strong></td><td style="text-align: left"><code>"shell"</code></td><td style="text-align: left">Allows executing non-interactive shell commands and opening interactive PTY/sh sessions.</td><td style="text-align: left"><code>dioxamine.shellExec()</code>, <code>dioxamine.openInteractiveShell()</code></td></tr>
-<tr><td style="text-align: left"><strong>File Push</strong></td><td style="text-align: left"><code>"push"</code></td><td style="text-align: left">Allows writing and pushing files or streams onto the target device filesystem.</td><td style="text-align: left"><code>dioxamine.pushFile()</code>, <code>dioxamine.pushStream()</code></td></tr>
-<tr><td style="text-align: left"><strong>File Pull</strong></td><td style="text-align: left"><code>"pull"</code></td><td style="text-align: left">Allows reading and pulling files or directories from the target device filesystem.</td><td style="text-align: left"><code>dioxamine.pullFile()</code>, <code>dioxamine.pullStream()</code></td></tr>
-<tr><td style="text-align: left"><strong>Package Install</strong></td><td style="text-align: left"><code>"install"</code></td><td style="text-align: left">Allows streaming APK files to the device package manager (<code>pm install</code>).</td><td style="text-align: left"><code>dioxamine.installApk()</code></td></tr>
-<tr><td style="text-align: left"><strong>Port Forward</strong></td><td style="text-align: left"><code>"forward"</code></td><td style="text-align: left">Allows binding local host ports and forwarding traffic to target device sockets.</td><td style="text-align: left"><code>dioxamine.forwardPort()</code>, <code>dioxamine.forwardList()</code>, <code>dioxamine.forwardRemove()</code></td></tr>
-<tr><td style="text-align: left"><strong>Port Reverse</strong></td><td style="text-align: left"><code>"reverse"</code></td><td style="text-align: left">Allows binding target device ports and reversing traffic back to the host system.</td><td style="text-align: left"><code>dioxamine.reversePort()</code>, <code>dioxamine.reverseList()</code>, <code>dioxamine.reverseRemove()</code></td></tr>
-<tr><td style="text-align: left"><strong>Network Access</strong></td><td style="text-align: left"><code>"network"</code></td><td style="text-align: left">Allows sending HTTP/HTTPS requests to the internet, local networks, and localhost services.</td><td style="text-align: left"><code>dioxamine.http.fetch()</code></td></tr>
+<tr><td style="text-align: left"><code>adb</code></td><td style="text-align: left"><strong>Shell Execution</strong></td><td style="text-align: left"><code>"shell"</code></td><td style="text-align: left">Allows executing non-interactive shell commands and opening interactive PTY/sh sessions.</td><td style="text-align: left"><code>dioxamine.adb.shellExec()</code>, <code>dioxamine.adb.openInteractiveShell()</code></td></tr>
+<tr><td style="text-align: left"><code>adb</code></td><td style="text-align: left"><strong>File Push</strong></td><td style="text-align: left"><code>"push"</code></td><td style="text-align: left">Allows pushing files from host SAF into target device filesystem.</td><td style="text-align: left"><code>dioxamine.adb.push()</code></td></tr>
+<tr><td style="text-align: left"><code>adb</code></td><td style="text-align: left"><strong>File Pull</strong></td><td style="text-align: left"><code>"pull"</code></td><td style="text-align: left">Allows pulling files from target device filesystem to host SAF.</td><td style="text-align: left"><code>dioxamine.adb.pull()</code></td></tr>
+<tr><td style="text-align: left"><code>adb</code></td><td style="text-align: left"><strong>Package Install</strong></td><td style="text-align: left"><code>"install"</code></td><td style="text-align: left">Allows streaming APK files to the device package manager (<code>pm install</code>).</td><td style="text-align: left">Package install APIs</td></tr>
+<tr><td style="text-align: left"><code>adb</code></td><td style="text-align: left"><strong>Port Forward</strong></td><td style="text-align: left"><code>"forward"</code></td><td style="text-align: left">Allows binding local host ports and forwarding traffic to target device sockets.</td><td style="text-align: left"><code>dioxamine.adb.forwardAdd()</code>, <code>dioxamine.adb.forwardRemove()</code></td></tr>
+<tr><td style="text-align: left"><code>adb</code></td><td style="text-align: left"><strong>Port Reverse</strong></td><td style="text-align: left"><code>"reverse"</code></td><td style="text-align: left">Allows binding target device ports and reversing traffic back to the host system.</td><td style="text-align: left"><code>dioxamine.adb.reverseAdd()</code>, <code>dioxamine.adb.reverseRemove()</code></td></tr>
+<tr><td style="text-align: left"><code>common</code></td><td style="text-align: left"><strong>Network Access</strong></td><td style="text-align: left"><code>"network"</code></td><td style="text-align: left">Allows sending HTTP/HTTPS requests to the internet, local networks, and localhost services.</td><td style="text-align: left"><code>dioxamine.http.fetch()</code></td></tr>
 </tbody>
 </table>
 </div>

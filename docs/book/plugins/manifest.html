@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "coal";
             const default_dark_theme = "coal";
-            window.path_to_searchindex_js = "../searchindex-b1676fa4.js";
+            window.path_to_searchindex_js = "../searchindex-7d6438b7.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-1f612337.js"></script>
@@ -194,9 +194,11 @@
   "entry": "index.html",
   "icon": "icon.png",
   "minAppVersionCode": 1,
-  "permissions": [
-    "shell"
-  ],
+  "permissions": {
+    "adb": [
+      "shell"
+    ]
+  },
   "fullscreen": true,
   "homepage": "https://github.com/rhythmcache/dioxamine"
 }
@@ -218,7 +220,7 @@
 <tr><td style="text-align: left"><code>entry</code></td><td style="text-align: left"><code>String</code></td><td style="text-align: left"><strong>Yes</strong></td><td style="text-align: left">Relative path to the HTML entrypoint file (for example, <code>"index.html"</code> or <code>"ui/main.html"</code>). Path traversal (<code>..</code>) is forbidden.</td></tr>
 <tr><td style="text-align: left"><code>icon</code></td><td style="text-align: left"><code>String</code></td><td style="text-align: left">No</td><td style="text-align: left">Relative path to the plugin icon image (PNG, WebP, JPG, or SVG). Default: <code>null</code>.</td></tr>
 <tr><td style="text-align: left"><code>minAppVersionCode</code></td><td style="text-align: left"><code>Integer</code></td><td style="text-align: left">No</td><td style="text-align: left">Minimum Dioxamine app <code>versionCode</code> required to execute this plugin. Default: <code>1</code>.</td></tr>
-<tr><td style="text-align: left"><code>permissions</code></td><td style="text-align: left"><code>Array&lt;String&gt;</code></td><td style="text-align: left">No</td><td style="text-align: left">List of required permission identifiers. Only valid permission names are permitted. Default: <code>[]</code>.</td></tr>
+<tr><td style="text-align: left"><code>permissions</code></td><td style="text-align: left"><code>Object</code></td><td style="text-align: left">No</td><td style="text-align: left">Declared permission groups. Supported subkeys: <code>adb</code> (list of ADB permissions) and <code>common</code> (list of general permissions, e.g. <code>"network"</code>). Default: <code>{}</code>.</td></tr>
 <tr><td style="text-align: left"><code>fullscreen</code></td><td style="text-align: left"><code>Boolean</code></td><td style="text-align: left">No</td><td style="text-align: left">If <code>true</code>, hides the Dioxamine top bar on launch to provide an edge-to-edge full-screen display. Default: <code>false</code>.</td></tr>
 <tr><td style="text-align: left"><code>homepage</code></td><td style="text-align: left"><code>String</code></td><td style="text-align: left">No</td><td style="text-align: left">Web URL pointing to the plugin repository, source code, or documentation.</td></tr>
 </tbody>
@@ -239,10 +241,12 @@
 <li>Any path containing <code>..</code> or leading slashes will be rejected.</li>
 </ul>
 </li>
-<li><strong>Permission Whitelist</strong>:
+<li><strong>Permission Structure and Whitelist</strong>:
 <ul>
-<li>Every entry in <code>permissions</code> must be one of the recognized permission strings: <code>shell</code>, <code>push</code>, <code>pull</code>, <code>install</code>, <code>forward</code>, <code>reverse</code>, <code>network</code> (or <code>internet</code>).</li>
-<li>Unknown permissions will fail manifest validation with an explicit error.</li>
+<li><code>permissions</code> must be an object with subkeys (legacy flat arrays are rejected).</li>
+<li>ADB permissions in <code>permissions.adb</code> must only be: <code>shell</code>, <code>push</code>, <code>pull</code>, <code>install</code>, <code>forward</code>, <code>reverse</code>.</li>
+<li>Common host permissions in <code>permissions.common</code> must only be: <code>network</code> (or <code>internet</code>).</li>
+<li>Unknown permissions or permissions placed in the wrong subkey will fail manifest validation with an explicit error.</li>
 </ul>
 </li>
 <li><strong>App Version Compatibility</strong>:
