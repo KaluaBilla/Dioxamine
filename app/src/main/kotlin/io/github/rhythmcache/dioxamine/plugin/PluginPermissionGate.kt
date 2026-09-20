@@ -17,7 +17,7 @@ enum class PluginPermission {
     NETWORK;
 
     companion object {
-        fun fromManifestString(s: String): PluginPermission? =
+        fun fromAdbString(s: String): PluginPermission? =
             when (s.lowercase().trim()) {
                 "shell" -> SHELL
                 "push" -> PUSH
@@ -25,9 +25,17 @@ enum class PluginPermission {
                 "install" -> INSTALL
                 "forward" -> FORWARD
                 "reverse" -> REVERSE
+                else -> null
+            }
+
+        fun fromCommonString(s: String): PluginPermission? =
+            when (s.lowercase().trim()) {
                 "network", "internet" -> NETWORK
                 else -> null
             }
+
+        fun fromManifestString(s: String): PluginPermission? =
+            fromAdbString(s) ?: fromCommonString(s)
     }
 }
 

@@ -4,6 +4,19 @@ import io.github.rhythmcache.dioxamine.BuildConfig
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
+
+@Serializable
+data class PluginPermissionsConfig(
+    val adb: List<String> = emptyList(),
+    val common: List<String> = emptyList(),
+    val fastboot: List<String> = emptyList(),
+) {
+    fun allList(): List<String> = adb + common + fastboot
+    fun isEmpty(): Boolean = adb.isEmpty() && common.isEmpty() && fastboot.isEmpty()
+    fun isNotEmpty(): Boolean = !isEmpty()
+}
 
 @Serializable
 data class PluginManifest(
@@ -17,7 +30,7 @@ data class PluginManifest(
     val entry: String,
     val icon: String? = null,
     val minAppVersionCode: Int = 1,
-    val permissions: List<String> = emptyList(),
+    val permissions: PluginPermissionsConfig = PluginPermissionsConfig(),
     val homepage: String? = null,
     val fullscreen: Boolean = false,
 )
@@ -30,6 +43,18 @@ fun parseManifest(json: String): Result<PluginManifest> {
         try {
             jsonParser.decodeFromString<PluginManifest>(json)
         } catch (e: SerializationException) {
+            val isFlatPermissions = runCatching {
+                val root = jsonParser.parseToJsonElement(json)
+                root is JsonObject && root["permissions"] is JsonArray
+            }.getOrDefault(false)
+            if (isFlatPermissions) {
+                return Result.failure(
+                    IllegalArgumentException(
+                        "Invalid permissions format: 'permissions' must be an object with subkeys like 'adb' and 'common' (e.g. {\"permissions\": {\"adb\": [\"shell\"]}}). Flat arrays are no longer supported.",
+                        e,
+                    ),
+                )
+            }
             return Result.failure(IllegalArgumentException("JSON deserialization failed: ${e.message}", e))
         } catch (e: Exception) {
             return Result.failure(IllegalArgumentException("Invalid JSON format: ${e.message}", e))
@@ -111,9 +136,30 @@ fun parseManifest(json: String): Result<PluginManifest> {
         )
     }
 
-    // 10. Reject unknown permissions in manifest
-    manifest.permissions.firstOrNull { PluginPermission.fromManifestString(it) == null }?.let { unknownPerm ->
-        return Result.failure(IllegalArgumentException("Unknown permission '$unknownPerm' in plugin manifest"))
+    // 10. Reject unknown permissions in manifest by subkey
+    manifest.permissions.adb.firstOrNull { PluginPermission.fromAdbString(it) == null }?.let { unknown ->
+        if (PluginPermission.fromCommonString(unknown) != null) {
+            return Result.failure(
+                IllegalArgumentException("Permission '$unknown' belongs to 'common', not 'adb' (move to permissions.common)"),
+            )
+        }
+        return Result.failure(IllegalArgumentException("Unknown ADB permission '$unknown' in plugin manifest"))
+    }
+
+    manifest.permissions.common.firstOrNull { PluginPermission.fromCommonString(it) == null }?.let { unknown ->
+        if (PluginPermission.fromAdbString(unknown) != null) {
+            return Result.failure(
+                IllegalArgumentException("Permission '$unknown' belongs to 'adb', not 'common' (move to permissions.adb)"),
+            )
+        }
+        return Result.failure(IllegalArgumentException("Unknown common permission '$unknown' in plugin manifest"))
+    }
+
+    // Fastboot permissions are planned for upcoming commits
+    if (manifest.permissions.fastboot.isNotEmpty()) {
+        return Result.failure(
+            IllegalArgumentException("Fastboot permissions are not yet supported in this version of Dioxamine"),
+        )
     }
 
     return Result.success(manifest)

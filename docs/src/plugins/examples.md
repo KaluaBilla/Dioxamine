@@ -24,9 +24,11 @@ A standard windowed page plugin demonstrating non-interactive `shellExec()`, Mat
   "entry": "index.html",
   "icon": "icon.png",
   "minAppVersionCode": 1,
-  "permissions": [
-    "shell"
-  ],
+  "permissions": {
+    "adb": [
+      "shell"
+    ]
+  },
   "fullscreen": false
 }
 ```
@@ -69,9 +71,11 @@ A full-screen interactive PTY terminal connecting `xterm.js` to `openInteractive
   "entry": "index.html",
   "icon": "icon.png",
   "minAppVersionCode": 1,
-  "permissions": [
-    "shell"
-  ],
+  "permissions": {
+    "adb": [
+      "shell"
+    ]
+  },
   "fullscreen": true
 }
 ```
@@ -131,9 +135,11 @@ A full-screen streaming log viewer featuring tag filtering, log level color codi
   "entry": "index.html",
   "icon": "icon.png",
   "minAppVersionCode": 1,
-  "permissions": [
-    "shell"
-  ],
+  "permissions": {
+    "adb": [
+      "shell"
+    ]
+  },
   "fullscreen": true
 }
 ```

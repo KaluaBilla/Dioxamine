@@ -1017,7 +1017,7 @@ private fun PluginPermissionsDialog(
                 ) {
                     plugins.forEach { plugin ->
                         val declaredPermissions = remember(plugin.id) {
-                            plugin.permissions.mapNotNull { PluginPermission.fromManifestString(it) }
+                            plugin.permissions.allList().mapNotNull { PluginPermission.fromManifestString(it) }
                         }
 
                         Card(

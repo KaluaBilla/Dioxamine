@@ -401,7 +401,7 @@ fun PluginsTab(
                     if (manifest.permissions.isNotEmpty()) {
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            text = stringResource(R.string.plugin_info_permissions, manifest.permissions.joinToString(", ")),
+                            text = stringResource(R.string.plugin_info_permissions, manifest.permissions.allList().joinToString(", ")),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.primary,
                         )

@@ -2,19 +2,37 @@
 
 Dioxamine enforces a strict permission model to protect connected devices and the host Android system from unauthorized operations.
 
-## Declared Permissions
+## Declaring Permissions in `plugin.json`
 
-Plugins must explicitly declare every required capability in `plugin.json`. Attempting to call an API without declaring the corresponding permission results in an immediate Promise rejection with `SecurityException: Permission not declared in manifest`.
+Permissions must be grouped under their respective subkeys:
+- `"adb"`: Capabilities targeting the connected ADB device.
+- `"common"`: Host capabilities applicable across modes (such as network access).
 
-| Permission | Identifier | Description | Protected APIs |
-| :--- | :--- | :--- | :--- |
-| **Shell Execution** | `"shell"` | Allows executing non-interactive shell commands and opening interactive PTY/sh sessions. | `dioxamine.shellExec()`, `dioxamine.openInteractiveShell()` |
-| **File Push** | `"push"` | Allows writing and pushing files or streams onto the target device filesystem. | `dioxamine.pushFile()`, `dioxamine.pushStream()` |
-| **File Pull** | `"pull"` | Allows reading and pulling files or directories from the target device filesystem. | `dioxamine.pullFile()`, `dioxamine.pullStream()` |
-| **Package Install** | `"install"` | Allows streaming APK files to the device package manager (`pm install`). | `dioxamine.installApk()` |
-| **Port Forward** | `"forward"` | Allows binding local host ports and forwarding traffic to target device sockets. | `dioxamine.forwardPort()`, `dioxamine.forwardList()`, `dioxamine.forwardRemove()` |
-| **Port Reverse** | `"reverse"` | Allows binding target device ports and reversing traffic back to the host system. | `dioxamine.reversePort()`, `dioxamine.reverseList()`, `dioxamine.reverseRemove()` |
-| **Network Access** | `"network"` | Allows sending HTTP/HTTPS requests to the internet, local networks, and localhost services. | `dioxamine.http.fetch()` |
+```json
+{
+  "permissions": {
+    "adb": [
+      "shell",
+      "push"
+    ],
+    "common": [
+      "network"
+    ]
+  }
+}
+```
+
+## Permission Reference
+
+| Subkey | Permission | Identifier | Description | Protected APIs |
+| :--- | :--- | :--- | :--- | :--- |
+| `adb` | **Shell Execution** | `"shell"` | Allows executing non-interactive shell commands and opening interactive PTY/sh sessions. | `dioxamine.adb.shellExec()`, `dioxamine.adb.openInteractiveShell()` |
+| `adb` | **File Push** | `"push"` | Allows pushing files from host SAF into target device filesystem. | `dioxamine.adb.push()` |
+| `adb` | **File Pull** | `"pull"` | Allows pulling files from target device filesystem to host SAF. | `dioxamine.adb.pull()` |
+| `adb` | **Package Install** | `"install"` | Allows streaming APK files to the device package manager (`pm install`). | Package install APIs |
+| `adb` | **Port Forward** | `"forward"` | Allows binding local host ports and forwarding traffic to target device sockets. | `dioxamine.adb.forwardAdd()`, `dioxamine.adb.forwardRemove()` |
+| `adb` | **Port Reverse** | `"reverse"` | Allows binding target device ports and reversing traffic back to the host system. | `dioxamine.adb.reverseAdd()`, `dioxamine.adb.reverseRemove()` |
+| `common` | **Network Access** | `"network"` | Allows sending HTTP/HTTPS requests to the internet, local networks, and localhost services. | `dioxamine.http.fetch()` |
 
 ## Permission Policies
 

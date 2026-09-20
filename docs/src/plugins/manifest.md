@@ -16,9 +16,11 @@ Every Dioxamine plugin must include a valid `plugin.json` file at the root of it
   "entry": "index.html",
   "icon": "icon.png",
   "minAppVersionCode": 1,
-  "permissions": [
-    "shell"
-  ],
+  "permissions": {
+    "adb": [
+      "shell"
+    ]
+  },
   "fullscreen": true,
   "homepage": "https://github.com/rhythmcache/dioxamine"
 }
@@ -38,7 +40,7 @@ Every Dioxamine plugin must include a valid `plugin.json` file at the root of it
 | `entry` | `String` | **Yes** | Relative path to the HTML entrypoint file (for example, `"index.html"` or `"ui/main.html"`). Path traversal (`..`) is forbidden. |
 | `icon` | `String` | No | Relative path to the plugin icon image (PNG, WebP, JPG, or SVG). Default: `null`. |
 | `minAppVersionCode` | `Integer` | No | Minimum Dioxamine app `versionCode` required to execute this plugin. Default: `1`. |
-| `permissions` | `Array<String>` | No | List of required permission identifiers. Only valid permission names are permitted. Default: `[]`. |
+| `permissions` | `Object` | No | Declared permission groups. Supported subkeys: `adb` (list of ADB permissions) and `common` (list of general permissions, e.g. `"network"`). Default: `{}`. |
 | `fullscreen` | `Boolean` | No | If `true`, hides the Dioxamine top bar on launch to provide an edge-to-edge full-screen display. Default: `false`. |
 | `homepage` | `String` | No | Web URL pointing to the plugin repository, source code, or documentation. |
 
@@ -52,8 +54,10 @@ When installing or loading a plugin, Dioxamine strictly enforces the following v
 2. **Path Sanitization**:
    - `entry` and `icon` paths must point inside the plugin directory.
    - Any path containing `..` or leading slashes will be rejected.
-3. **Permission Whitelist**:
-   - Every entry in `permissions` must be one of the recognized permission strings: `shell`, `push`, `pull`, `install`, `forward`, `reverse`, `network` (or `internet`).
-   - Unknown permissions will fail manifest validation with an explicit error.
+3. **Permission Structure and Whitelist**:
+   - `permissions` must be an object with subkeys (legacy flat arrays are rejected).
+   - ADB permissions in `permissions.adb` must only be: `shell`, `push`, `pull`, `install`, `forward`, `reverse`.
+   - Common host permissions in `permissions.common` must only be: `network` (or `internet`).
+   - Unknown permissions or permissions placed in the wrong subkey will fail manifest validation with an explicit error.
 4. **App Version Compatibility**:
    - If `minAppVersionCode` exceeds the running Dioxamine application version, installation will be blocked with a compatibility notice.

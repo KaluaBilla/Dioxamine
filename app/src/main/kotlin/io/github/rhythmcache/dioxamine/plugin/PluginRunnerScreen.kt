@@ -81,7 +81,7 @@ fun PluginRunnerScreen(
     var isFullScreen by remember(manifest.id) { mutableStateOf(manifest.fullscreen) }
 
     val declaredPermissions = remember(manifest.permissions) {
-        manifest.permissions.mapNotNull { PluginPermission.fromManifestString(it) }
+        manifest.permissions.allList().mapNotNull { PluginPermission.fromManifestString(it) }
     }
 
     val bridge =

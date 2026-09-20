@@ -18,9 +18,11 @@ Create a new directory named `device-info-plugin` and add a `plugin.json` file:
   "entry": "index.html",
   "icon": "icon.png",
   "minAppVersionCode": 1,
-  "permissions": [
-    "shell"
-  ],
+  "permissions": {
+    "adb": [
+      "shell"
+    ]
+  },
   "fullscreen": false
 }
 ```
