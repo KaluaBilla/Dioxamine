@@ -34,6 +34,16 @@ class ShellViewModel(application: Application) : AndroidViewModel(application) {
     var currentDeviceId: String? = null
         private set
 
+    var onTextChanged: ((TerminalSession) -> Unit)? = null
+        set(value) {
+            field = value
+            session?.onTextChanged = value
+        }
+
+    fun setColors(foreground: Int, background: Int, cursor: Int) {
+        session?.setColors(foreground, background, cursor)
+    }
+
     /**
      * Start (or restart) an interactive shell on [client].
      * Closes any existing session first.
@@ -43,6 +53,7 @@ class ShellViewModel(application: Application) : AndroidViewModel(application) {
         currentDeviceId = deviceId
 
         val newSession = ShellSession(getApplication())
+        newSession.onTextChanged = onTextChanged
         session = newSession
 
         viewModelScope.launch {

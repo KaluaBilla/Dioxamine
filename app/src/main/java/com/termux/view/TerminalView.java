@@ -83,6 +83,25 @@ public final class TerminalView extends View {
     /** What was left in from scrolling movement. */
     float mScrollRemainder;
 
+    private int mCustomForegroundColor = 0;
+    private int mDefaultBackgroundColor = 0xFF000000;
+    private int mCustomCursorColor = 0;
+
+    public void setColors(int foreground, int background, int cursor) {
+        if (mCustomForegroundColor == foreground &&
+            mDefaultBackgroundColor == background &&
+            mCustomCursorColor == cursor) {
+            return;
+        }
+        mCustomForegroundColor = foreground;
+        mDefaultBackgroundColor = background;
+        mCustomCursorColor = cursor;
+        if (mTermSession != null) {
+            mTermSession.setColors(foreground, background, cursor);
+        }
+        invalidate();
+    }
+
     /** If non-zero, this is the last unicode code point received if that was a combining character. */
     int mCombiningAccent;
 
@@ -296,9 +315,20 @@ public final class TerminalView extends View {
     public boolean attachSession(TerminalSession session) {
         if (session == mTermSession) return false;
 
+        if (mTermSession != null) {
+            mTermSession.setSessionUpdateListener(null);
+        }
+
         mTermSession = session;
         mEmulator = null;
         mCombiningAccent = 0;
+
+        if (mTermSession != null) {
+            mTermSession.setSessionUpdateListener(s -> onScreenUpdated());
+            if (mCustomForegroundColor != 0 || mDefaultBackgroundColor != 0xFF000000) {
+                mTermSession.setColors(mCustomForegroundColor, mDefaultBackgroundColor, mCustomCursorColor);
+            }
+        }
 
         // The emulator's cached value will be read in `updateSize()` when emulator is set.
         setTopRow(0, false);
@@ -319,14 +349,8 @@ public final class TerminalView extends View {
         // and the alternate view was the one selected the last time.
         if (mClient.isTerminalViewSelected()) {
             if (mClient.shouldEnforceCharBasedInput()) {
-                // Some keyboards seems do not reset the internal state on TYPE_NULL.
-                // Affects mostly Samsung stock keyboards.
-                // https://github.com/termux/termux-app/issues/686
-                // However, this is not a valid value as per AOSP since `InputType.TYPE_CLASS_*` is
-                // not set and it logs a warning:
-                // W/InputAttributes: Unexpected input class: inputType=0x00080090 imeOptions=0x02000000
-                // https://cs.android.com/android/platform/superproject/+/android-11.0.0_r40:packages/inputmethods/LatinIME/java/src/com/android/inputmethod/latin/InputAttributes.java;l=79
-                outAttrs.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
+                // Standard character-based input without autocomplete/composing delays.
+                outAttrs.inputType = InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
             } else {
                 // Using InputType.NULL is the most correct input type and avoids issues with other hacks.
                 //
@@ -463,7 +487,15 @@ public final class TerminalView extends View {
     }
 
     public void onScreenUpdated(boolean skipScrolling) {
-        if (mEmulator == null) return;
+        if (Looper.getMainLooper().getThread() != Thread.currentThread()) {
+            post(() -> onScreenUpdated(skipScrolling));
+            return;
+        }
+
+        if (mEmulator == null) {
+            updateSize();
+            if (mEmulator == null) return;
+        }
 
         int rowsInHistory = mEmulator.getScreen().getActiveTranscriptRows();
         if (mTopRow < -rowsInHistory) setTopRow(-rowsInHistory);
@@ -1029,9 +1061,12 @@ public final class TerminalView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        if (mEmulator == null) {
-            canvas.drawColor(0XFF000000);
-        } else {
+        int bg = (mEmulator != null && mEmulator.mColors != null)
+                ? mEmulator.mColors.mCurrentColors[TextStyle.COLOR_INDEX_BACKGROUND]
+                : mDefaultBackgroundColor;
+        canvas.drawColor(bg);
+
+        if (mEmulator != null) {
             // render the terminal view and highlight any selected text
             int[] sel = mDefaultSelectors;
             if (mTextSelectionCursorController != null) {
@@ -1463,6 +1498,10 @@ public final class TerminalView extends View {
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
 
+        if (mTermSession != null) {
+            mTermSession.setSessionUpdateListener(s -> onScreenUpdated());
+        }
+
         if (mTextSelectionCursorController != null) {
             getViewTreeObserver().addOnTouchModeChangeListener(mTextSelectionCursorController);
         }
@@ -1471,6 +1510,10 @@ public final class TerminalView extends View {
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
+
+        if (mTermSession != null) {
+            mTermSession.setSessionUpdateListener(null);
+        }
 
         if (mTextSelectionCursorController != null) {
             // Might solve the following exception

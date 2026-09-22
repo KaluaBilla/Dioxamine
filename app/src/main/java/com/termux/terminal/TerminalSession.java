@@ -26,6 +26,35 @@ public final class TerminalSession extends TerminalOutput {
         void onSessionResize(@NonNull TerminalSession session, int columns, int rows);
     }
 
+    public interface SessionUpdateListener {
+        void onSessionUpdate(@NonNull TerminalSession session);
+    }
+
+    private SessionUpdateListener mSessionUpdateListener;
+
+    public void setSessionUpdateListener(SessionUpdateListener listener) {
+        this.mSessionUpdateListener = listener;
+    }
+
+    private Integer mCustomForeground;
+    private Integer mCustomBackground;
+    private Integer mCustomCursor;
+
+    public void setColors(int foreground, int background, int cursor) {
+        if (mCustomForeground != null && mCustomForeground == foreground &&
+            mCustomBackground != null && mCustomBackground == background &&
+            mCustomCursor != null && mCustomCursor == cursor) {
+            return;
+        }
+        mCustomForeground = foreground;
+        mCustomBackground = background;
+        mCustomCursor = cursor;
+        if (mEmulator != null && mEmulator.mColors != null) {
+            mEmulator.mColors.setColors(foreground, background, cursor);
+        }
+        notifyScreenUpdate();
+    }
+
     private static final int MSG_NEW_INPUT = 1;
     private static final int MSG_PROCESS_EXITED = 4;
 
@@ -128,6 +157,9 @@ public final class TerminalSession extends TerminalOutput {
      */
     public void initializeEmulator(int columns, int rows, int cellWidthPixels, int cellHeightPixels) {
         mEmulator = new TerminalEmulator(this, columns, rows, cellWidthPixels, cellHeightPixels, mTranscriptRows, mClient);
+        if (mCustomForeground != null && mCustomBackground != null && mCustomCursor != null) {
+            mEmulator.mColors.setColors(mCustomForeground, mCustomBackground, mCustomCursor);
+        }
         mShellPid = 1;
         if (mClient != null) {
             mClient.setTerminalShellPid(this, mShellPid);
@@ -199,6 +231,9 @@ public final class TerminalSession extends TerminalOutput {
     protected void notifyScreenUpdate() {
         if (mClient != null) {
             mClient.onTextChanged(this);
+        }
+        if (mSessionUpdateListener != null) {
+            mSessionUpdateListener.onSessionUpdate(this);
         }
     }
 

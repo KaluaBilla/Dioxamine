@@ -14,6 +14,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -61,9 +62,24 @@ fun ShellScreen(adbViewModel: AdbViewModel) {
     val terminalSession by shellVm.terminalSession.collectAsState()
     val errorMessage by shellVm.errorMessage.collectAsState()
 
+    val colorScheme = MaterialTheme.colorScheme
+    val terminalBg = colorScheme.background.toArgb()
+    val terminalFg = colorScheme.onBackground.toArgb()
+    val terminalCursor = colorScheme.primary.toArgb()
+
     var ctrlActive by remember { mutableStateOf(false) }
     var altActive by remember { mutableStateOf(false) }
     var terminalViewRef by remember { mutableStateOf<TerminalView?>(null) }
+
+    // Wire live text update callbacks to the TerminalView so echoed output invalidates in real-time
+    DisposableEffect(shellVm) {
+        shellVm.onTextChanged = {
+            terminalViewRef?.onScreenUpdated()
+        }
+        onDispose {
+            shellVm.onTextChanged = null
+        }
+    }
 
     val typeface = remember {
         try {
@@ -75,6 +91,8 @@ fun ShellScreen(adbViewModel: AdbViewModel) {
 
     val viewClient = remember {
         object : TerminalViewClient {
+            override fun shouldEnforceCharBasedInput(): Boolean = true
+
             override fun readControlKey(): Boolean = ctrlActive
             override fun readAltKey(): Boolean = altActive
 
@@ -88,7 +106,7 @@ fun ShellScreen(adbViewModel: AdbViewModel) {
                 val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
                 terminalViewRef?.let { tv ->
                     tv.requestFocus()
-                    imm?.showSoftInput(tv, InputMethodManager.SHOW_IMPLICIT)
+                    imm?.showSoftInput(tv, 0)
                 }
             }
         }
@@ -116,7 +134,7 @@ fun ShellScreen(adbViewModel: AdbViewModel) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         // -- Terminal View (fills available space) -----------------
         Box(
@@ -133,6 +151,7 @@ fun ShellScreen(adbViewModel: AdbViewModel) {
                         setTextSize(fontPx)
                         setTypeface(typeface)
                         setTerminalViewClient(viewClient)
+                        setColors(terminalFg, terminalBg, terminalCursor)
                         terminalSession?.let { attachSession(it) }
                         isFocusable = true
                         isFocusableInTouchMode = true
@@ -142,6 +161,7 @@ fun ShellScreen(adbViewModel: AdbViewModel) {
                 update = { view ->
                     terminalViewRef = view
                     view.setTerminalViewClient(viewClient)
+                    view.setColors(terminalFg, terminalBg, terminalCursor)
                     if (terminalSession != null && view.currentSession != terminalSession) {
                         view.attachSession(terminalSession)
                     }
@@ -181,7 +201,7 @@ fun ShellScreen(adbViewModel: AdbViewModel) {
                 val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
                 terminalViewRef?.let { tv ->
                     tv.requestFocus()
-                    imm?.showSoftInput(tv, InputMethodManager.SHOW_IMPLICIT)
+                    imm?.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0)
                 }
             },
             onClear          = { shellVm.clearTerminal() },

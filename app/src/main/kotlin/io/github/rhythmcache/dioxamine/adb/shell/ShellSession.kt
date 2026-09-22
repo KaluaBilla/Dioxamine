@@ -41,6 +41,12 @@ class ShellSession(
     private val _title = MutableStateFlow<String?>(null)
     val title: StateFlow<String?> = _title
 
+    var onTextChanged: ((TerminalSession) -> Unit)? = null
+
+    fun setColors(foreground: Int, background: Int, cursor: Int) {
+        _terminalSession.value?.setColors(foreground, background, cursor)
+    }
+
     fun start(client: AdbClient) {
         if (_state.value == ShellSessionState.ACTIVE ||
             _state.value == ShellSessionState.STARTING
@@ -57,6 +63,10 @@ class ShellSession(
                 adbSession = adb
 
                 val termClient = object : TerminalSessionClient {
+                    override fun onTextChanged(changedSession: TerminalSession) {
+                        onTextChanged?.invoke(changedSession)
+                    }
+
                     override fun onTitleChanged(changedSession: TerminalSession) {
                         _title.value = changedSession.title
                     }

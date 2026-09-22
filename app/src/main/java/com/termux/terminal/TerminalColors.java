@@ -30,6 +30,29 @@ public final class TerminalColors {
     }
 
     /**
+     * Set dynamic theme colors (foreground, background, cursor).
+     */
+    public void setColors(int foreground, int background, int cursor) {
+        COLOR_SCHEME.mDefaultColors[TextStyle.COLOR_INDEX_FOREGROUND] = foreground;
+        COLOR_SCHEME.mDefaultColors[TextStyle.COLOR_INDEX_BACKGROUND] = background;
+        COLOR_SCHEME.mDefaultColors[TextStyle.COLOR_INDEX_CURSOR] = cursor;
+        mCurrentColors[TextStyle.COLOR_INDEX_FOREGROUND] = foreground;
+        mCurrentColors[TextStyle.COLOR_INDEX_BACKGROUND] = background;
+        mCurrentColors[TextStyle.COLOR_INDEX_CURSOR] = cursor;
+
+        int brightness = getPerceivedBrightnessOfColor(background);
+        if (brightness >= 130) {
+            // Light background: ensure color 7 (white) and color 15 (bright white) are readable
+            mCurrentColors[7] = 0xff4f5b66;
+            mCurrentColors[15] = 0xff2b303c;
+        } else {
+            // Dark background: restore default ansi 7 & 15
+            mCurrentColors[7] = COLOR_SCHEME.mDefaultColors[7];
+            mCurrentColors[15] = COLOR_SCHEME.mDefaultColors[15];
+        }
+    }
+
+    /**
      * Parse color according to http://manpages.ubuntu.com/manpages/intrepid/man3/XQueryColor.3.html
      * <p/>
      * Highest bit is set if successful, so return value is 0xFF${R}${G}${B}. Return 0 if failed.

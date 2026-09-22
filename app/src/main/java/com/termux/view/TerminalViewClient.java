@@ -33,7 +33,7 @@ public interface TerminalViewClient {
     }
 
     default boolean shouldEnforceCharBasedInput() {
-        return false;
+        return true;
     }
 
     default boolean shouldUseCtrlSpaceWorkaround() {
