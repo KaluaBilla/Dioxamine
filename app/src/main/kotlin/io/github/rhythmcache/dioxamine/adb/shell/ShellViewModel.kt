@@ -1,59 +1,38 @@
 package io.github.rhythmcache.dioxamine.adb.shell
 
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.termux.terminal.TerminalSession
 import io.github.rhythmcache.adb.AdbClient
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import java.util.concurrent.atomic.AtomicBoolean
 
 /**
- * ViewModel for the ADB interactive shell.
+ * ViewModel for the ADB interactive terminal shell.
  *
- * Owns the [ShellSession], collects raw output into a [ShellBuffer],
- * parses ANSI colours, and exposes styled lines plus command history
- * for the Compose UI layer.
+ * Manages the [ShellSession] lifecycle and exposes the active [TerminalSession]
+ * to the Compose UI layer.
  */
-class ShellViewModel : ViewModel() {
+class ShellViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val buffer = ShellBuffer()
     private var session: ShellSession? = null
-    private var collectorJob: Job? = null
 
-    // -- Exposed state -----------------------------------------------
-
-    val outputLines: SnapshotStateList<String> = mutableStateListOf()
-    var currentLine by mutableStateOf("")
-        private set
-
-    private var lastReadIndex = 0L
+    private val _terminalSession = MutableStateFlow<TerminalSession?>(null)
+    val terminalSession: StateFlow<TerminalSession?> = _terminalSession
 
     private val _sessionState = MutableStateFlow(ShellSessionState.IDLE)
-    /** Current session lifecycle state. */
     val sessionState: StateFlow<ShellSessionState> = _sessionState
 
     private val _errorMessage = MutableStateFlow<String?>(null)
-    /** Error detail when session is in ERROR state. */
     val errorMessage: StateFlow<String?> = _errorMessage
 
-    // -- Command history ---------------------------------------------
-
-    private val _history = mutableListOf<String>()
-    private var historyIndex = -1
+    private val _title = MutableStateFlow<String?>(null)
+    val title: StateFlow<String?> = _title
 
     var currentDeviceId: String? = null
         private set
-
-    // -- Session lifecycle -------------------------------------------
 
     /**
      * Start (or restart) an interactive shell on [client].
@@ -61,112 +40,62 @@ class ShellViewModel : ViewModel() {
      */
     fun startSession(deviceId: String?, client: AdbClient) {
         stopSession()
-        buffer.clear()
-        outputLines.clear()
-        currentLine = ""
-        lastReadIndex = buffer.oldestAvailableIndex()
         currentDeviceId = deviceId
 
-        val newSession = ShellSession()
+        val newSession = ShellSession(getApplication())
         session = newSession
 
+        viewModelScope.launch {
+            newSession.terminalSession.collect { _terminalSession.value = it }
+        }
         viewModelScope.launch {
             newSession.state.collect { _sessionState.value = it }
         }
         viewModelScope.launch {
             newSession.errorMessage.collect { _errorMessage.value = it }
         }
-
-        collectorJob = viewModelScope.launch {
-            val dirty = AtomicBoolean(false)
-
-            launch {
-                newSession.output.collect { chunk ->
-                    buffer.append(chunk)
-                    dirty.set(true)
-                }
-            }
-
-            launch {
-                while (isActive) {
-                    if (dirty.compareAndSet(true, false)) {
-                        flushToUi()
-                    }
-                    delay(50)
-                }
-            }
+        viewModelScope.launch {
+            newSession.title.collect { _title.value = it }
         }
 
         newSession.start(client)
     }
 
-    private fun flushToUi() {
-        val oldestAvailable = buffer.oldestAvailableIndex()
-        if (lastReadIndex < oldestAvailable) {
-            lastReadIndex = oldestAvailable
-        }
-
-        val total = buffer.completedLineCount()
-        if (lastReadIndex < total) {
-            outputLines.addAll(buffer.linesInRange(lastReadIndex, total))
-            lastReadIndex = total
-        }
-
-        currentLine = buffer.currentIncompleteLine()
-    }
-
     /** Close the current session (if any). */
     fun stopSession() {
-        collectorJob?.cancel()
-        collectorJob = null
         session?.close()
         session = null
+        _terminalSession.value = null
     }
 
-    // -- Commands ----------------------------------------------------
+    // -- Terminal Input Helpers --------------------------------------
 
-    /** Send a command string to the shell (appended to history). */
+    fun sendRaw(bytes: ByteArray) {
+        session?.write(bytes)
+    }
+
+    fun sendText(text: String) {
+        session?.write(text)
+    }
+
     fun sendCommand(command: String) {
-        if (command.isNotBlank()) {
-            _history.add(command)
-        }
-        historyIndex = _history.size
-        session?.sendCommand(command)
+        session?.write("$command\r")
     }
 
-    fun sendRaw(bytes: ByteArray) { session?.sendRaw(bytes) }
-    fun sendInterrupt() { session?.sendInterrupt() }
-    fun sendEof()       { session?.sendEof() }
-    fun sendTab()       { session?.sendTab() }
-    fun sendSuspend()   { session?.sendSuspend() }
+    fun sendInterrupt() = sendRaw(byteArrayOf(0x03)) // Ctrl+C
+    fun sendEof()       = sendRaw(byteArrayOf(0x04)) // Ctrl+D
+    fun sendSuspend()   = sendRaw(byteArrayOf(0x1A)) // Ctrl+Z
+    fun sendTab()       = sendRaw(byteArrayOf(0x09)) // Tab
+    fun sendEscape()    = sendRaw(byteArrayOf(0x1B)) // Esc
 
-    // -- Buffer management -------------------------------------------
+    fun sendArrowUp()    = sendRaw("\u001b[A".toByteArray())
+    fun sendArrowDown()  = sendRaw("\u001b[B".toByteArray())
+    fun sendArrowRight() = sendRaw("\u001b[C".toByteArray())
+    fun sendArrowLeft()  = sendRaw("\u001b[D".toByteArray())
 
-    /** Clear terminal output. */
-    fun clearBuffer() {
-        buffer.clear()
-        outputLines.clear()
-        currentLine = ""
-        lastReadIndex = buffer.oldestAvailableIndex()
+    fun clearTerminal() {
+        session?.reset()
     }
-
-    // -- History navigation ------------------------------------------
-
-    /** Navigate up in history (older). Returns command text or null. */
-    fun historyUp(): String? {
-        if (_history.isEmpty()) return null
-        historyIndex = (historyIndex - 1).coerceAtLeast(0)
-        return _history[historyIndex]
-    }
-
-    /** Navigate down in history (newer). Returns command text or empty string. */
-    fun historyDown(): String? {
-        if (_history.isEmpty()) return null
-        historyIndex = (historyIndex + 1).coerceAtMost(_history.size)
-        return if (historyIndex < _history.size) _history[historyIndex] else ""
-    }
-
-    // -- Cleanup -----------------------------------------------------
 
     override fun onCleared() {
         session?.destroy()

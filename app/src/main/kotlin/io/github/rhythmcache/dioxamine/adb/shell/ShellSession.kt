@@ -1,15 +1,15 @@
 package io.github.rhythmcache.dioxamine.adb.shell
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import com.termux.terminal.TerminalSession
+import com.termux.terminal.TerminalSessionClient
 import io.github.rhythmcache.adb.AdbClient
-import io.github.rhythmcache.adb.AdbStream
+import io.github.rhythmcache.adb.AdbInteractiveSession
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import java.nio.ByteBuffer
-import java.nio.CharBuffer
-import java.nio.charset.CodingErrorAction
 
 /**
  * Lifecycle states for a shell session.
@@ -19,71 +19,28 @@ enum class ShellSessionState {
 }
 
 /**
- * Manages an interactive ADB shell session over a single persistent [AdbStream].
- *
- * Opening `"shell:"` (with no command) starts an interactive `/system/bin/sh`
- * on the device.  Working-directory changes, environment variables, and all
- * other shell state persist for the lifetime of the stream.
- *
- * Output arrives chunk-by-chunk via [output] (a [SharedFlow]).  The caller is
- * responsible for collecting and rendering it.
+ * Manages an interactive ADB shell session backed by Termux's pure-Java [TerminalSession]
+ * and adb-kt's [AdbInteractiveSession].
  */
-class ShellSession {
+class ShellSession(
+    private val context: Context,
+) {
+    private var adbSession: AdbInteractiveSession? = null
+    private var readJob: Job? = null
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
-    private var stream: AdbStream? = null
-    private var readerJob: Job? = null
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-
-    private val utf8Decoder = Charsets.UTF_8.newDecoder().apply {
-        onMalformedInput(CodingErrorAction.REPLACE)
-        onUnmappableCharacter(CodingErrorAction.REPLACE)
-    }
-    private var leftoverBytes: ByteArray = ByteArray(0)
-
-    private val _output = MutableSharedFlow<String>(extraBufferCapacity = 128)
-    /** Raw text chunks as they arrive from the device. */
-    val output: SharedFlow<String> = _output
+    private val _terminalSession = MutableStateFlow<TerminalSession?>(null)
+    val terminalSession: StateFlow<TerminalSession?> = _terminalSession
 
     private val _state = MutableStateFlow(ShellSessionState.IDLE)
-    /** Current session lifecycle state. */
     val state: StateFlow<ShellSessionState> = _state
 
     private val _errorMessage = MutableStateFlow<String?>(null)
-    /** Human-readable error detail when [state] is [ShellSessionState.ERROR]. */
     val errorMessage: StateFlow<String?> = _errorMessage
 
-    private fun decodeChunk(chunk: ByteArray): String {
-        val combined = if (leftoverBytes.isEmpty()) chunk else leftoverBytes + chunk
-        val input = ByteBuffer.wrap(combined)
-        val output = CharBuffer.allocate(combined.size)
+    private val _title = MutableStateFlow<String?>(null)
+    val title: StateFlow<String?> = _title
 
-        utf8Decoder.decode(input, output, false)
-
-        leftoverBytes = if (input.hasRemaining()) {
-            ByteArray(input.remaining()).also { input.get(it) }
-        } else {
-            ByteArray(0)
-        }
-
-        output.flip()
-        return output.toString()
-    }
-
-    private fun flushLeftoverBytes(): String {
-        if (leftoverBytes.isEmpty()) return ""
-        val input = ByteBuffer.wrap(leftoverBytes)
-        val output = CharBuffer.allocate(leftoverBytes.size)
-        utf8Decoder.decode(input, output, true)
-        utf8Decoder.flush(output)
-        leftoverBytes = ByteArray(0)
-        output.flip()
-        return output.toString()
-    }
-
-    /**
-     * Open an interactive shell on [client].
-     * If a session is already active this is a no-op.
-     */
     fun start(client: AdbClient) {
         if (_state.value == ShellSessionState.ACTIVE ||
             _state.value == ShellSessionState.STARTING
@@ -92,100 +49,116 @@ class ShellSession {
         _state.value = ShellSessionState.STARTING
         _errorMessage.value = null
 
-        readerJob = scope.launch {
+        scope.launch {
             try {
-                utf8Decoder.reset()
-                leftoverBytes = ByteArray(0)
+                val adb = withContext(Dispatchers.IO) {
+                    client.openInteractiveShell(terminalType = "xterm-256color")
+                }
+                adbSession = adb
 
-                val s = client.open("shell:")
-                stream = s
-                _state.value = ShellSessionState.ACTIVE
+                val termClient = object : TerminalSessionClient {
+                    override fun onTitleChanged(changedSession: TerminalSession) {
+                        _title.value = changedSession.title
+                    }
 
-                // Continuous reader - emits chunks the instant they arrive
-                while (isActive) {
-                    val chunk = s.recv() ?: break          // null = EOF
-                    val text = decodeChunk(chunk)
-                    if (text.isNotEmpty()) {
-                        _output.emit(text)
+                    override fun onSessionFinished(finishedSession: TerminalSession) {
+                        _state.value = ShellSessionState.CLOSED
+                    }
+
+                    override fun onCopyTextToClipboard(session: TerminalSession, text: String) {
+                        val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+                        cm?.setPrimaryClip(ClipData.newPlainText("Terminal", text))
+                    }
+
+                    override fun onPasteTextFromClipboard(session: TerminalSession?) {
+                        val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+                        val clip = cm?.primaryClip?.getItemAt(0)?.text?.toString()
+                        if (!clip.isNullOrEmpty()) {
+                            session?.write(clip)
+                        }
                     }
                 }
 
-                val finalRemaining = flushLeftoverBytes()
-                if (finalRemaining.isNotEmpty()) {
-                    _output.emit(finalRemaining)
-                }
+                val term = TerminalSession(
+                    /* transcriptRows = */ 2000,
+                    /* client = */ termClient
+                )
+                _terminalSession.value = term
 
-                // Stream ended normally (device closed the shell)
-                _state.value = ShellSessionState.CLOSED
+                term.setSessionOutputListener(object : TerminalSession.SessionOutputListener {
+                    override fun onSessionWrite(session: TerminalSession, data: ByteArray, offset: Int, count: Int) {
+                        val chunk = data.copyOfRange(offset, offset + count)
+                        scope.launch(Dispatchers.IO) {
+                            try {
+                                adb.write(chunk)
+                            } catch (_: Exception) {
+                            }
+                        }
+                    }
+
+                    override fun onSessionResize(session: TerminalSession, columns: Int, rows: Int) {
+                        scope.launch(Dispatchers.IO) {
+                            try {
+                                adb.resize(cols = columns, rows = rows)
+                            } catch (_: Exception) {
+                            }
+                        }
+                    }
+                })
+
+                _state.value = ShellSessionState.ACTIVE
+
+                readJob = scope.launch(Dispatchers.IO) {
+                    try {
+                        adb.outputFlow.collect { bytes ->
+                            term.append(bytes)
+                        }
+                        withContext(Dispatchers.Main) {
+                            term.finish(0)
+                            _state.value = ShellSessionState.CLOSED
+                        }
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        withContext(Dispatchers.Main) {
+                            _errorMessage.value = e.message ?: "Shell disconnected"
+                            _state.value = ShellSessionState.ERROR
+                            term.finish(1)
+                        }
+                    }
+                }
             } catch (e: CancellationException) {
-                // Coroutine was cancelled (close() was called) - not an error
                 throw e
             } catch (e: Exception) {
-                if (isActive) {
-                    _errorMessage.value = e.message ?: "Unknown error"
-                    _state.value = ShellSessionState.ERROR
-                }
-            }
-        }
-    }
-
-    // - Writing to the shell --------------------------------------------
-
-    /**
-     * Send a command string followed by a newline.
-     * The device shell will echo it back (normal TTY behaviour).
-     */
-    fun sendCommand(command: String) {
-        val s = stream ?: return
-        scope.launch {
-            try {
-                s.writeLine(command)
-            } catch (e: Exception) {
-                _errorMessage.value = e.message
+                _errorMessage.value = e.message ?: "Failed to open interactive shell"
                 _state.value = ShellSessionState.ERROR
             }
         }
     }
 
-    /** Send raw bytes (for control characters). */
-    fun sendRaw(bytes: ByteArray) {
-        val s = stream ?: return
-        scope.launch {
-            try {
-                s.write(bytes)
-            } catch (e: Exception) {
-                _errorMessage.value = e.message
-                _state.value = ShellSessionState.ERROR
-            }
-        }
+    fun write(bytes: ByteArray) {
+        _terminalSession.value?.write(bytes, 0, bytes.size)
     }
 
-    /** Ctrl+C - SIGINT the foreground process. */
-    fun sendInterrupt() = sendRaw(byteArrayOf(0x03))
+    fun write(text: String) {
+        _terminalSession.value?.write(text)
+    }
 
-    /** Ctrl+D - send EOF. */
-    fun sendEof() = sendRaw(byteArrayOf(0x04))
+    fun reset() {
+        _terminalSession.value?.reset()
+    }
 
-    /** Ctrl+Z - SIGTSTP (suspend foreground process). */
-    fun sendSuspend() = sendRaw(byteArrayOf(0x1A))
-
-    /** Tab - trigger shell autocompletion. */
-    fun sendTab() = sendRaw(byteArrayOf(0x09))
-
-    // -- Lifecycle -------------------------------------------------------
-
-    /** Close the stream and cancel the reader. */
     fun close() {
-        readerJob?.cancel()
-        readerJob = null
-        runCatching { stream?.close() }
-        stream = null
+        readJob?.cancel()
+        readJob = null
+        _terminalSession.value?.finishIfRunning()
+        runCatching { adbSession?.close() }
+        adbSession = null
         if (_state.value != ShellSessionState.ERROR) {
             _state.value = ShellSessionState.CLOSED
         }
     }
 
-    /** Tear down completely (cancel coroutine scope). Call in ViewModel.onCleared(). */
     fun destroy() {
         close()
         scope.cancel()

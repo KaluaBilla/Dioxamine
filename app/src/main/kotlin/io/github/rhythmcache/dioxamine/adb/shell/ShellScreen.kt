@@ -1,6 +1,10 @@
 package io.github.rhythmcache.dioxamine.adb.shell
 
 import android.content.Context
+import android.graphics.Typeface
+import android.view.MotionEvent
+import android.view.inputmethod.InputMethodManager
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Terminal
@@ -9,18 +13,23 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.termux.terminal.TerminalSession
+import com.termux.view.TerminalView
+import com.termux.view.TerminalViewClient
 import io.github.rhythmcache.dioxamine.R
 import io.github.rhythmcache.dioxamine.adb.AdbViewModel
 
 /**
- * Main ADB Shell screen composable.
+ * Main ADB Shell screen composable powered by Termux's pure-Java terminal emulator and view.
  *
  * Wires [ShellViewModel] to the currently-active device from [AdbViewModel].
- * Automatically starts a new shell session when a device connects and
+ * Automatically starts a new interactive shell session when a device connects and
  * tears it down on disconnect or device change.
  */
 @Composable
@@ -49,11 +58,41 @@ fun ShellScreen(adbViewModel: AdbViewModel) {
     val activeDeviceId = adbViewModel.activeDeviceId
 
     val sessionState by shellVm.sessionState.collectAsState()
-    val outputLines = shellVm.outputLines
-    val currentLine = shellVm.currentLine
+    val terminalSession by shellVm.terminalSession.collectAsState()
     val errorMessage by shellVm.errorMessage.collectAsState()
 
     var ctrlActive by remember { mutableStateOf(false) }
+    var altActive by remember { mutableStateOf(false) }
+    var terminalViewRef by remember { mutableStateOf<TerminalView?>(null) }
+
+    val typeface = remember {
+        try {
+            Typeface.createFromAsset(context.assets, "fonts/JetBrainsMono-Regular.ttf")
+        } catch (_: Exception) {
+            Typeface.MONOSPACE
+        }
+    }
+
+    val viewClient = remember {
+        object : TerminalViewClient {
+            override fun readControlKey(): Boolean = ctrlActive
+            override fun readAltKey(): Boolean = altActive
+
+            override fun onCodePoint(codePoint: Int, ctrlDown: Boolean, session: TerminalSession): Boolean {
+                if (ctrlActive) ctrlActive = false
+                if (altActive) altActive = false
+                return false
+            }
+
+            override fun onSingleTapUp(e: MotionEvent) {
+                val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                terminalViewRef?.let { tv ->
+                    tv.requestFocus()
+                    imm?.showSoftInput(tv, InputMethodManager.SHOW_IMPLICIT)
+                }
+            }
+        }
+    }
 
     // Start / restart shell when the active device changes
     LaunchedEffect(activeDeviceId) {
@@ -74,13 +113,40 @@ fun ShellScreen(adbViewModel: AdbViewModel) {
         return
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        // -- Terminal output (fills available space) ----------------
-        ShellOutputView(
-            completedLines = outputLines,
-            currentLine = currentLine,
-            modifier = Modifier.weight(1f),
-        )
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black)
+    ) {
+        // -- Terminal View (fills available space) -----------------
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+        ) {
+            AndroidView(
+                modifier = Modifier.fillMaxSize(),
+                factory = { ctx ->
+                    TerminalView(ctx).apply {
+                        terminalViewRef = this
+                        setTypeface(typeface)
+                        setTextSize(13)
+                        setTerminalViewClient(viewClient)
+                        terminalSession?.let { attachSession(it) }
+                        isFocusable = true
+                        isFocusableInTouchMode = true
+                        requestFocus()
+                    }
+                },
+                update = { view ->
+                    terminalViewRef = view
+                    view.setTerminalViewClient(viewClient)
+                    if (terminalSession != null && view.currentSession != terminalSession) {
+                        view.attachSession(terminalSession)
+                    }
+                }
+            )
+        }
 
         // -- Error banner ------------------------------------------
         if (sessionState == ShellSessionState.ERROR && errorMessage != null) {
@@ -97,30 +163,33 @@ fun ShellScreen(adbViewModel: AdbViewModel) {
             }
         }
 
-        // -- Toolbar (Ctrl toggle, Tab, etc.) -----------------------
+        // -- Toolbar (Esc, Tab, Ctrl, Alt, Arrows, Keyboard, Clear, Restart)
         ShellToolbar(
-            sessionState = sessionState,
-            ctrlActive   = ctrlActive,
-            onToggleCtrl = { ctrlActive = !ctrlActive },
-            onTab        = { shellVm.sendTab() },
-            onClear      = { shellVm.clearBuffer() },
-            onRestart    = {
+            sessionState     = sessionState,
+            ctrlActive       = ctrlActive,
+            altActive        = altActive,
+            onToggleCtrl     = { ctrlActive = !ctrlActive },
+            onToggleAlt      = { altActive = !altActive },
+            onEsc            = { shellVm.sendEscape() },
+            onTab            = { shellVm.sendTab() },
+            onArrowUp        = { shellVm.sendArrowUp() },
+            onArrowDown      = { shellVm.sendArrowDown() },
+            onArrowLeft      = { shellVm.sendArrowLeft() },
+            onArrowRight     = { shellVm.sendArrowRight() },
+            onToggleKeyboard = {
+                val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                terminalViewRef?.let { tv ->
+                    tv.requestFocus()
+                    imm?.showSoftInput(tv, InputMethodManager.SHOW_IMPLICIT)
+                }
+            },
+            onClear          = { shellVm.clearTerminal() },
+            onRestart        = {
                 val client = adbViewModel.activeClient()
                 if (client != null && !client.isClosed) {
                     shellVm.startSession(activeDeviceId, client)
                 }
             },
-        )
-
-        // -- Input bar ---------------------------------------------
-        ShellInputBar(
-            onSend         = { shellVm.sendCommand(it) },
-            onHistoryUp    = { shellVm.historyUp() },
-            onHistoryDown  = { shellVm.historyDown() },
-            onRawKey       = { shellVm.sendRaw(it) },
-            ctrlActive     = ctrlActive,
-            onCtrlConsumed = { ctrlActive = false },
-            enabled        = sessionState == ShellSessionState.ACTIVE,
         )
     }
 }

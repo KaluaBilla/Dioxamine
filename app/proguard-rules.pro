@@ -7,3 +7,8 @@
 -keep class org.bouncycastle.jcajce.provider.** { *; }
 -keep class org.bouncycastle.jce.provider.** { *; }
 -dontwarn org.bouncycastle.**
+
+# Termux terminal emulator and view
+-keep class com.termux.terminal.** { *; }
+-keep class com.termux.view.** { *; }
+
