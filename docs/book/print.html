@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "coal";
             const default_dark_theme = "coal";
-            window.path_to_searchindex_js = "searchindex-894b5955.js";
+            window.path_to_searchindex_js = "searchindex-0d878080.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-78a1705c.js"></script>
+        <script src="toc-82e0c0b4.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -2203,6 +2203,7 @@ if (window.dioxamine &amp;&amp; window.__dioxamine_bridge_ready) {
 <li><strong><a href="#ui-controls-dialogs-and-fullscreen">UI Controls, Dialogs and Fullscreen</a></strong>: Show native Material toasts, blocking dialogs, toggle edge-to-edge full-screen mode, and open external links in the host device browser.</li>
 <li><strong><a href="#native-logging-and-debugging">Native Logging and Debugging</a></strong>: Forward logs and console output directly to Android Logcat.</li>
 <li><strong><a href="#dynamic-theming-and-material-3">Dynamic Theming and Material 3</a></strong>: Integrate with Dioxamine’s dynamic color schemes and listen for theme changes.</li>
+<li><strong><a href="#app-language-and-localization">App Language and Localization</a></strong>: Detect Dioxamine’s active app language, text direction (RTL/LTR), and build multi-language plugins.</li>
 <li><strong><a href="#network-http-client-httpfetch">Network HTTP Client (http.fetch)</a></strong>: Perform asynchronous HTTP/HTTPS network requests with native CORS-free execution and permission gating.</li>
 <li><strong><a href="#fastboot-protocol-api">Fastboot Protocol Operations</a></strong>: Inspect bootloader variables, execute raw commands, flash partitions, live boot images, switch slots, and reboot devices via <code>dioxamine.fastboot.*</code>.</li>
 </ol>
@@ -2769,6 +2770,156 @@ console.log("Is dark theme active?", theme.isDark);
 });
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div>
+<h1 id="app-language-and-localization"><a class="header" href="#app-language-and-localization">App Language and Localization</a></h1>
+<p>Dioxamine allows plugins to integrate seamlessly with the host app’s active language and locale settings. Whether the user selects a custom language in <strong>Settings → Language</strong> (English, Russian, Simplified Chinese, Hindi, German) or uses the system default, Dioxamine communicates the language configuration to the plugin via HTML attributes, DOM events, and JavaScript bridge APIs.</p>
+<p><strong>Required Permissions</strong>: None (Safe host environment information).</p>
+<hr>
+<h2 id="injected-html-attributes"><a class="header" href="#injected-html-attributes">Injected HTML Attributes</a></h2>
+<p>When a plugin loads or when the app’s language/locale changes, Dioxamine updates the root <code>&lt;html&gt;</code> element with standard internationalization attributes:</p>
+<pre><code class="language-html">&lt;html lang="zh-CN" dir="ltr" data-dioxamine-lang="zh-CN" data-dioxamine-theme="dark"&gt;
+</code></pre>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th style="text-align: left">Attribute</th><th style="text-align: left">Example Values</th><th style="text-align: left">Description</th></tr>
+</thead>
+<tbody>
+<tr><td style="text-align: left"><code>lang</code></td><td style="text-align: left"><code>"en"</code>, <code>"zh-CN"</code>, <code>"ru"</code>, <code>"hi"</code>, <code>"de"</code></td><td style="text-align: left">The BCP-47 language tag of the active locale.</td></tr>
+<tr><td style="text-align: left"><code>dir</code></td><td style="text-align: left"><code>"ltr"</code>, <code>"rtl"</code></td><td style="text-align: left">Text direction. Automatically set to <code>"rtl"</code> for Right-to-Left scripts (Arabic, Hebrew, Urdu, etc.) and <code>"ltr"</code> otherwise.</td></tr>
+<tr><td style="text-align: left"><code>data-dioxamine-lang</code></td><td style="text-align: left"><code>"en"</code>, <code>"zh-CN"</code>, <code>"ru"</code></td><td style="text-align: left">Dioxamine custom data attribute for CSS attribute selectors.</td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="language-styling-in-css"><a class="header" href="#language-styling-in-css">Language Styling in CSS</a></h2>
+<p>Because standard <code>lang</code> and <code>dir</code> attributes are maintained on <code>&lt;html&gt;</code>, you can use native CSS pseudo-classes:</p>
+<pre><code class="language-css">/* Language-specific typography adjustments */
+:lang(zh) {
+    font-family: 'Noto Sans SC', sans-serif;
+}
+
+:lang(ru) {
+    font-family: 'Roboto', sans-serif;
+}
+
+/* RTL layout handling */
+[dir="rtl"] {
+    text-align: right;
+}
+
+[dir="rtl"] .sidebar {
+    left: auto;
+    right: 0;
+}
+</code></pre>
+<hr>
+<h2 id="javascript-localization-apis"><a class="header" href="#javascript-localization-apis">JavaScript Localization APIs</a></h2>
+<h3 id="dioxaminegetlanguage--dioxaminegetlocale"><a class="header" href="#dioxaminegetlanguage--dioxaminegetlocale"><code>dioxamine.getLanguage()</code> / <code>dioxamine.getLocale()</code></a></h3>
+<p>Returns the current language and locale metadata synchronously.</p>
+<pre><code class="language-javascript">dioxamine.getLanguage(): {
+    language: string;    // 2-letter ISO 639-1 code (e.g., "en", "zh", "ru", "hi", "de")
+    languageTag: string; // Full BCP-47 language tag (e.g., "en", "zh-CN", "ru", "hi", "de")
+    isRtl: boolean;      // true if RTL script, false if LTR
+    displayName: string; // Canonical display name (e.g., "English", "简体中文", "Русский")
+}
+</code></pre>
+<h4 id="example-6"><a class="header" href="#example-6">Example</a></h4>
+<pre><code class="language-javascript">const lang = dioxamine.getLanguage();
+console.log("Active language:", lang.language);       // "zh"
+console.log("Language tag:", lang.languageTag);       // "zh-CN"
+console.log("Is RTL?", lang.isRtl);                   // false
+console.log("Display name:", lang.displayName);       // "简体中文"
+</code></pre>
+<blockquote>
+<p><strong>Note</strong>: <code>dioxamine.getLocale()</code> is supported as an alias for <code>dioxamine.getLanguage()</code>.</p>
+</blockquote>
+<hr>
+<h3 id="dioxaminegetlanguageasync--dioxaminegetlocaleasync"><a class="header" href="#dioxaminegetlanguageasync--dioxaminegetlocaleasync"><code>dioxamine.getLanguageAsync()</code> / <code>dioxamine.getLocaleAsync()</code></a></h3>
+<p>Asynchronous Promise-based alternative:</p>
+<pre><code class="language-javascript">const lang = await dioxamine.getLanguageAsync();
+console.log("Async language tag:", lang.languageTag);
+</code></pre>
+<hr>
+<h3 id="dioxamineonlanguagechange"><a class="header" href="#dioxamineonlanguagechange"><code>dioxamine.onLanguageChange()</code></a></h3>
+<p>Registers a listener called whenever the user or system updates the application locale while the plugin is running.</p>
+<pre><code class="language-javascript">dioxamine.onLanguageChange(callback: (langInfo: {
+    language: string;
+    languageTag: string;
+    isRtl: boolean;
+    displayName: string;
+}) =&gt; void): void
+</code></pre>
+<h4 id="example-1-3"><a class="header" href="#example-1-3">Example</a></h4>
+<pre><code class="language-javascript">dioxamine.onLanguageChange((langInfo) =&gt; {
+    console.log("App language switched to:", langInfo.languageTag);
+    applyTranslations(langInfo.language);
+});
+</code></pre>
+<hr>
+<h3 id="dom-event-dioxamine-language-change"><a class="header" href="#dom-event-dioxamine-language-change">DOM Event: <code>dioxamine-language-change</code></a></h3>
+<p>In addition to <code>dioxamine.onLanguageChange()</code>, a standard DOM CustomEvent is dispatched on <code>window</code>:</p>
+<pre><code class="language-javascript">window.addEventListener('dioxamine-language-change', (event) =&gt; {
+    const langInfo = event.detail;
+    console.log("Received language change event:", langInfo.languageTag);
+});
+</code></pre>
+<hr>
+<h2 id="multi-language-plugin-example"><a class="header" href="#multi-language-plugin-example">Multi-Language Plugin Example</a></h2>
+<p>Below is a complete pattern for implementing multi-language plugins with a string dictionary:</p>
+<pre><code class="language-javascript">const translations = {
+    en: {
+        title: "Device Diagnostics",
+        runTest: "Run Benchmark",
+        batteryLevel: "Battery Level"
+    },
+    ru: {
+        title: "Диагностика устройства",
+        runTest: "Запустить тест",
+        batteryLevel: "Уровень батареи"
+    },
+    zh: {
+        title: "设备诊断",
+        runTest: "运行基准测试",
+        batteryLevel: "电池电量"
+    },
+    de: {
+        title: "Gerätediagnose",
+        runTest: "Benchmark starten",
+        batteryLevel: "Akkustand"
+    },
+    hi: {
+        title: "डिवाइस डायग्नोस्टिक्स",
+        runTest: "बेंचमार्क चलाएं",
+        batteryLevel: "बैटरी स्तर"
+    }
+};
+
+function applyTranslations(langCode) {
+    const strings = translations[langCode] || translations.en;
+    document.getElementById("app-title").textContent = strings.title;
+    document.getElementById("btn-run").textContent = strings.runTest;
+    document.getElementById("battery-label").textContent = strings.batteryLevel;
+}
+
+function initI18n() {
+    // 1. Get initial language
+    const currentLang = dioxamine.getLanguage();
+    applyTranslations(currentLang.language);
+
+    // 2. React to dynamic language changes
+    dioxamine.onLanguageChange((newLang) =&gt; {
+        applyTranslations(newLang.language);
+    });
+}
+
+// Wait for bridge readiness
+if (window.dioxamine &amp;&amp; window.__dioxamine_bridge_ready) {
+    initI18n();
+} else {
+    window.addEventListener('dioxamine-bridge-ready', initI18n, { once: true });
+}
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
 <h1 id="network-http-client-httpfetch"><a class="header" href="#network-http-client-httpfetch">Network HTTP Client (http.fetch)</a></h1>
 <p>The Network API provides native, CORS-free asynchronous HTTP and HTTPS client requests from within the plugin sandbox.</p>
 <p><strong>Required Permission</strong>: <code>"network"</code> (or <code>"internet"</code>).</p>
@@ -2904,7 +3055,7 @@ console.log("Device service status:", res.data);
     deviceName?: string; // USB sysfs path (e.g. "/dev/bus/usb/001/002")
 }
 </code></pre>
-<h4 id="example-6"><a class="header" href="#example-6">Example</a></h4>
+<h4 id="example-7"><a class="header" href="#example-7">Example</a></h4>
 <pre><code class="language-javascript">const device = await dioxamine.fastboot.getActiveDevice();
 if (!device || !device.connected) {
     console.error("No Fastboot device connected. Connect device via USB OTG in bootloader mode.");
@@ -2919,7 +3070,7 @@ console.log(`Connected to ${device.label} (${device.id})`);
 <h4 id="signature-1-1"><a class="header" href="#signature-1-1">Signature</a></h4>
 <pre><code class="language-typescript">dioxamine.fastboot.getVariable(name: string): Promise&lt;string&gt;
 </code></pre>
-<h4 id="example-1-3"><a class="header" href="#example-1-3">Example</a></h4>
+<h4 id="example-1-4"><a class="header" href="#example-1-4">Example</a></h4>
 <pre><code class="language-javascript">const product = await dioxamine.fastboot.getVariable("product");
 const currentSlot = await dioxamine.fastboot.getVariable("current-slot");
 const unlocked = await dioxamine.fastboot.getVariable("unlocked");
@@ -3020,7 +3171,7 @@ console.log("Flashing complete!");
     bytesTransferred: number;
 }&gt;
 </code></pre>
-<h4 id="example-7"><a class="header" href="#example-7">Example</a></h4>
+<h4 id="example-7-1"><a class="header" href="#example-7-1">Example</a></h4>
 <pre><code class="language-javascript">const file = await dioxamine.requestFilePicker("open");
 
 await dioxamine.fastboot.boot(file.requestId, (p) =&gt; {
