@@ -263,6 +263,8 @@ public final class TerminalView extends View {
         mScroller = new Scroller(context);
         AccessibilityManager am = (AccessibilityManager) context.getSystemService(Context.ACCESSIBILITY_SERVICE);
         mAccessibilityEnabled = am.isEnabled();
+        int defaultTextSize = (int) Math.max(12, 12 * context.getResources().getDisplayMetrics().scaledDensity);
+        mRenderer = new TerminalRenderer(defaultTextSize, Typeface.MONOSPACE);
     }
 
 
@@ -517,12 +519,15 @@ public final class TerminalView extends View {
      * @param textSize the new font size, in density-independent pixels.
      */
     public void setTextSize(int textSize) {
-        mRenderer = new TerminalRenderer(textSize, mRenderer == null ? Typeface.MONOSPACE : mRenderer.mTypeface);
+        Typeface typeface = (mRenderer == null || mRenderer.mTypeface == null) ? Typeface.MONOSPACE : mRenderer.mTypeface;
+        mRenderer = new TerminalRenderer(textSize, typeface);
         updateSize();
     }
 
     public void setTypeface(Typeface newTypeface) {
-        mRenderer = new TerminalRenderer(mRenderer.mTextSize, newTypeface);
+        int defaultTextSize = (int) Math.max(12, 12 * getContext().getResources().getDisplayMetrics().scaledDensity);
+        int textSize = (mRenderer == null) ? defaultTextSize : mRenderer.mTextSize;
+        mRenderer = new TerminalRenderer(textSize, newTypeface != null ? newTypeface : Typeface.MONOSPACE);
         updateSize();
         invalidate();
     }

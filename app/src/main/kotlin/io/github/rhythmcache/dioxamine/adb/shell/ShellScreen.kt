@@ -129,8 +129,9 @@ fun ShellScreen(adbViewModel: AdbViewModel) {
                 factory = { ctx ->
                     TerminalView(ctx).apply {
                         terminalViewRef = this
+                        val fontPx = (13 * ctx.resources.displayMetrics.scaledDensity).toInt()
+                        setTextSize(fontPx)
                         setTypeface(typeface)
-                        setTextSize(13)
                         setTerminalViewClient(viewClient)
                         terminalSession?.let { attachSession(it) }
                         isFocusable = true
