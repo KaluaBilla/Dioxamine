@@ -3,18 +3,18 @@
 <text x="12" y="20" fill="#c9d1d9" font-size="13" font-weight="bold">Translation Coverage</text>
 <text x="12" y="46" fill="#c9d1d9" font-size="12">de</text>
 <rect x="102" y="36" width="200" height="10" rx="5" fill="#30363d"/>
-<rect x="102" y="36" width="200" height="10" rx="5" fill="#4c1"/>
+<rect x="102" y="36" width="199" height="10" rx="5" fill="#4c1"/>
 <text x="312" y="46" fill="#8b949e" font-size="12">100%</text>
 <text x="12" y="70" fill="#c9d1d9" font-size="12">hi</text>
 <rect x="102" y="60" width="200" height="10" rx="5" fill="#30363d"/>
-<rect x="102" y="60" width="199" height="10" rx="5" fill="#4c1"/>
-<text x="312" y="70" fill="#8b949e" font-size="12">100%</text>
+<rect x="102" y="60" width="198" height="10" rx="5" fill="#4c1"/>
+<text x="312" y="70" fill="#8b949e" font-size="12">99%</text>
 <text x="12" y="94" fill="#c9d1d9" font-size="12">ru</text>
 <rect x="102" y="84" width="200" height="10" rx="5" fill="#30363d"/>
-<rect x="102" y="84" width="199" height="10" rx="5" fill="#4c1"/>
-<text x="312" y="94" fill="#8b949e" font-size="12">100%</text>
+<rect x="102" y="84" width="198" height="10" rx="5" fill="#4c1"/>
+<text x="312" y="94" fill="#8b949e" font-size="12">99%</text>
 <text x="12" y="118" fill="#c9d1d9" font-size="12">zh-CN</text>
 <rect x="102" y="108" width="200" height="10" rx="5" fill="#30363d"/>
-<rect x="102" y="108" width="199" height="10" rx="5" fill="#4c1"/>
-<text x="312" y="118" fill="#8b949e" font-size="12">100%</text>
+<rect x="102" y="108" width="198" height="10" rx="5" fill="#4c1"/>
+<text x="312" y="118" fill="#8b949e" font-size="12">99%</text>
 </svg>
