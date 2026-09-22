@@ -489,7 +489,8 @@ public final class TerminalView extends View {
 
     public void onScreenUpdated(boolean skipScrolling) {
         if (Looper.getMainLooper().getThread() != Thread.currentThread()) {
-            post(() -> onScreenUpdated(skipScrolling));
+            final boolean skip = skipScrolling;
+            post(() -> onScreenUpdated(skip));
             return;
         }
 
