@@ -44,6 +44,7 @@
     };
 
     window.__dioxamine_theme_listener = null;
+    window.__dioxamine_language_listener = null;
 
     var adb = {
         getActiveDevice: function() { return callNative('getActiveDevice'); },
@@ -170,6 +171,33 @@
             return {
                 isDark: document.documentElement.getAttribute('data-dioxamine-theme') === 'dark'
             };
+        },
+        onLanguageChange: function(fn) { window.__dioxamine_language_listener = fn; },
+        getLanguage: function() {
+            if (window.DioxamineNative && typeof window.DioxamineNative.getLanguage === 'function') {
+                try {
+                    return JSON.parse(window.DioxamineNative.getLanguage());
+                } catch (e) {}
+            }
+            if (window.__dioxamine_locale_info) {
+                return window.__dioxamine_locale_info;
+            }
+            var tag = (document.documentElement && (document.documentElement.getAttribute('data-dioxamine-lang') || document.documentElement.getAttribute('lang'))) || 'en';
+            return {
+                language: tag.split('-')[0].toLowerCase(),
+                languageTag: tag,
+                isRtl: document.documentElement ? document.documentElement.getAttribute('dir') === 'rtl' : false,
+                displayName: tag
+            };
+        },
+        getLocale: function() {
+            return this.getLanguage();
+        },
+        getLanguageAsync: function() {
+            return callNative('getLanguageAsync');
+        },
+        getLocaleAsync: function() {
+            return this.getLanguageAsync();
         },
         showToast: function(message, duration) {
             if (window.DioxamineNative && typeof window.DioxamineNative.showToast === 'function') {

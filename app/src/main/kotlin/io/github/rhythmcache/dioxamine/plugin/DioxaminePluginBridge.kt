@@ -25,6 +25,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
@@ -732,6 +733,50 @@ class DioxaminePluginBridge(
     @JavascriptInterface
     fun closePlugin() {
         exitPlugin()
+    }
+
+    @JavascriptInterface
+    fun getLocaleInfo(): String {
+        val info = getPluginLocaleInfo(context)
+        return Json.encodeToString(info)
+    }
+
+    @JavascriptInterface
+    fun getLanguage(): String {
+        return getLocaleInfo()
+    }
+
+    @JavascriptInterface
+    fun getLocale(): String {
+        return getLocaleInfo()
+    }
+
+    @JavascriptInterface
+    fun getLocaleInfoAsync(callbackId: String) {
+        try {
+            val info = getPluginLocaleInfo(context)
+            resolve(
+                callbackId,
+                buildJsonObject {
+                    put("language", info.language)
+                    put("languageTag", info.languageTag)
+                    put("isRtl", info.isRtl)
+                    put("displayName", info.displayName)
+                },
+            )
+        } catch (e: Exception) {
+            reject(callbackId, e.message ?: e.toString())
+        }
+    }
+
+    @JavascriptInterface
+    fun getLanguageAsync(callbackId: String) {
+        getLocaleInfoAsync(callbackId)
+    }
+
+    @JavascriptInterface
+    fun getLocaleAsync(callbackId: String) {
+        getLocaleInfoAsync(callbackId)
     }
 
     @JavascriptInterface

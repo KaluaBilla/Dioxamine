@@ -33,5 +33,6 @@ The API is organized into the following specialized modules:
 6. **[UI Controls, Dialogs and Fullscreen](api/ui.md)**: Show native Material toasts, blocking dialogs, toggle edge-to-edge full-screen mode, and open external links in the host device browser.
 7. **[Native Logging and Debugging](api/logging.md)**: Forward logs and console output directly to Android Logcat.
 8. **[Dynamic Theming and Material 3](api/theming.md)**: Integrate with Dioxamine's dynamic color schemes and listen for theme changes.
-9. **[Network HTTP Client (http.fetch)](api/network.md)**: Perform asynchronous HTTP/HTTPS network requests with native CORS-free execution and permission gating.
-10. **[Fastboot Protocol Operations](api/fastboot.md)**: Inspect bootloader variables, execute raw commands, flash partitions, live boot images, switch slots, and reboot devices via `dioxamine.fastboot.*`.
+9. **[App Language and Localization](api/localization.md)**: Detect Dioxamine's active app language, text direction (RTL/LTR), and build multi-language plugins.
+10. **[Network HTTP Client (http.fetch)](api/network.md)**: Perform asynchronous HTTP/HTTPS network requests with native CORS-free execution and permission gating.
+11. **[Fastboot Protocol Operations](api/fastboot.md)**: Inspect bootloader variables, execute raw commands, flash partitions, live boot images, switch slots, and reboot devices via `dioxamine.fastboot.*`.

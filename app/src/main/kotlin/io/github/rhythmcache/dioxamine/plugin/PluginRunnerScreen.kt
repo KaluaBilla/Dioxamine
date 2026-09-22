@@ -17,7 +17,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.os.ConfigurationCompat
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -47,11 +49,14 @@ fun PluginRunnerScreen(
     onBack: () -> Unit,
 ) {
     val context = LocalContext.current
+    val configuration = LocalConfiguration.current
     val installedPlugins by repo.installedPlugins.collectAsState()
     val manifest = remember(installedPlugins, pluginId) { installedPlugins.find { it.id == pluginId } }
 
     val colorScheme = MaterialTheme.colorScheme
     val isDark = LocalDarkTheme.current
+    val locales = ConfigurationCompat.getLocales(configuration)
+    val localeInfo = remember(locales) { getPluginLocaleInfo(context) }
 
     if (manifest == null) {
         Column(
@@ -74,9 +79,15 @@ fun PluginRunnerScreen(
     val bridgeScope = remember { CoroutineScope(SupervisorJob() + Dispatchers.Main) }
     var webViewRef by remember { mutableStateOf<WebView?>(null) }
 
-    LaunchedEffect(colorScheme, isDark) {
+    LaunchedEffect(colorScheme, isDark, webViewRef) {
         webViewRef?.post {
             webViewRef?.evaluateJavascript(buildThemeInjectionScript(colorScheme, isDark), null)
+        }
+    }
+
+    LaunchedEffect(localeInfo, webViewRef) {
+        webViewRef?.post {
+            webViewRef?.evaluateJavascript(buildLocaleInjectionScript(localeInfo), null)
         }
     }
 
@@ -278,6 +289,8 @@ fun PluginRunnerScreen(
                                     }
                                     val themeScript = buildThemeInjectionScript(colorScheme, isDark)
                                     view?.evaluateJavascript(themeScript, null)
+                                    val localeScript = buildLocaleInjectionScript(localeInfo)
+                                    view?.evaluateJavascript(localeScript, null)
                                 }
 
                                 override fun onReceivedError(
