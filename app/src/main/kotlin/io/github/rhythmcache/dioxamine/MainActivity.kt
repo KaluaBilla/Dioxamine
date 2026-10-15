@@ -19,7 +19,10 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -178,7 +181,13 @@ fun DioxamineApp(keyDir: File) {
         }
     }
 
-    val hideBottomBar = isScrcpyFullScreen || isPluginActive
+    val imeInsets = WindowInsets.ime
+    val density = LocalDensity.current
+    val isImeVisible by remember(imeInsets, density) {
+        derivedStateOf { imeInsets.getBottom(density) > 0 }
+    }
+    val isFullScreen = isScrcpyFullScreen || isPluginActive
+    val hideBottomBar = isFullScreen || isImeVisible
 
     // Navigate back to ADB home tab before exiting app
     BackHandler(enabled = selectedTab != Tab.ADB && !hideBottomBar) {
@@ -206,9 +215,28 @@ fun DioxamineApp(keyDir: File) {
             }
         }
     ) { padding ->
+        val layoutDirection = LocalLayoutDirection.current
+        val contentPadding = remember(padding, isImeVisible, layoutDirection) {
+            if (isImeVisible) {
+                PaddingValues(
+                    start = padding.calculateStartPadding(layoutDirection),
+                    top = padding.calculateTopPadding(),
+                    end = padding.calculateEndPadding(layoutDirection),
+                    bottom = 0.dp
+                )
+            } else {
+                padding
+            }
+        }
         Box(
-            modifier = if (hideBottomBar) Modifier.fillMaxSize()
-                       else Modifier.padding(padding).fillMaxSize()
+            modifier = if (isFullScreen) {
+                Modifier.fillMaxSize()
+            } else {
+                Modifier
+                    .padding(contentPadding)
+                    .consumeWindowInsets(contentPadding)
+                    .fillMaxSize()
+            }
         ) {
             when (selectedTab) {
                 Tab.ADB -> AdbScreen(vm)
