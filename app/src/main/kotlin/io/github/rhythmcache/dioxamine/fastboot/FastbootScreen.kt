@@ -288,7 +288,11 @@ fun FastbootShellTab(vm: FastbootViewModel) {
         if (vm.logs.isNotEmpty()) listState.animateScrollToItem(vm.logs.size - 1)
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .imePadding(),
+    ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,

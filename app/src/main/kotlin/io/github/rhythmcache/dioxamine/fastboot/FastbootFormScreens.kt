@@ -20,6 +20,7 @@ fun VariablesScreen(vm: FastbootViewModel, onBack: () -> Unit) {
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp)
+            .imePadding()
             .verticalScroll(rememberScrollState())
     ) {
         FastbootDetailHeader(title = stringResource(R.string.fastboot_vars_title), onBack = onBack)
