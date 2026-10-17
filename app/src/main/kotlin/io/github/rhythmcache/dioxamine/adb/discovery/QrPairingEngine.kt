@@ -110,7 +110,7 @@ class QrPairingEngine(
                 val foundName = serviceInfo.serviceName
                 AppLogger.i("QrPairingEngine", "Discovered potential pairing service: $foundName")
 
-                if (foundName == targetServiceName || foundName.contains(targetServiceName) || foundName.startsWith("studio-")) {
+                if (foundName == targetServiceName) {
                     if (pairingAttempted.get()) return
 
                     NsdResolver.resolve(
