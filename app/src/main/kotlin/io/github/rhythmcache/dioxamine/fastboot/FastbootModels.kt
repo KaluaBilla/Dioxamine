@@ -8,6 +8,7 @@ data class FastbootDevice(
     val id: String,
     val label: String,
     val deviceName: String,
+    val maxDownloadSize: Long? = null,
 )
 
 enum class LogLevel { COMMAND, INFO, RESULT, ERROR, SYSTEM }

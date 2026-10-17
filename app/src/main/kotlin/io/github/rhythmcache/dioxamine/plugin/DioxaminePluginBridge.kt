@@ -1340,6 +1340,7 @@ class DioxaminePluginBridge(
                     val infoList = mutableListOf<String>()
                     var lastInfo = ""
                     val encodedOpId = Json.encodeToString(String.serializer(), opId)
+                    val maxChunkSize = getActiveFastbootDevice()?.maxDownloadSize ?: FastbootClient.DEFAULT_CHUNK_SIZE
                     client.flash(
                         partition = partition,
                         fd = pfd.fileDescriptor,
@@ -1356,6 +1357,7 @@ class DioxaminePluginBridge(
                             val encodedInfo = Json.encodeToString(String.serializer(), lastInfo)
                             evaluateJs("window.__dioxamine_on_fastboot_progress($encodedOpId, ${progress.current}, ${progress.total}, $percentage, $encodedInfo)")
                         },
+                        maxChunkSize = maxChunkSize,
                     )
                     resolve(
                         callbackId,

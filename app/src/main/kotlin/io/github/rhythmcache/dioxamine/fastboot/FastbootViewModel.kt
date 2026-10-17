@@ -38,6 +38,9 @@ class FastbootViewModel : ViewModel() {
     val connectedDeviceId: String? get() = session?.deviceId
     val isConnected: Boolean get() = session != null
 
+    var maxDownloadSize by mutableStateOf<Long?>(null)
+        private set
+
     fun activeClient(): FastbootClient? = session?.client
 
     val logs = mutableStateListOf<LogEntry>()
@@ -109,8 +112,26 @@ class FastbootViewModel : ViewModel() {
 
             val transport = AndroidUsbFastbootTransport(usbConnection, iface, inEp, outEp)
             val client = FastbootClient(FastbootConnection(transport))
-            session = FastbootSession(deviceId, client)
+            val newSession = FastbootSession(deviceId, client)
+            session = newSession
             log(LogLevel.SYSTEM, "Connected to $deviceId")
+
+            viewModelScope.launch {
+                val reported = runCatching { client.getMaxDownloadSize() }.getOrNull()
+                val limit = reported ?: FastbootClient.DEFAULT_CHUNK_SIZE
+                if (session === newSession) {
+                    maxDownloadSize = limit
+                    devices[deviceId]?.let { dev ->
+                        devices[deviceId] = dev.copy(maxDownloadSize = limit)
+                    }
+                    val limitMb = limit / (1024 * 1024)
+                    if (reported != null) {
+                        log(LogLevel.INFO, "Max download size: ${limitMb} MB ($limit bytes)")
+                    } else {
+                        log(LogLevel.INFO, "Device did not report max download size; using fallback ${limitMb} MB")
+                    }
+                }
+            }
         }.onFailure { e ->
             log(LogLevel.ERROR, "Connect failed: ${e.message}")
         }
@@ -119,6 +140,7 @@ class FastbootViewModel : ViewModel() {
     fun closeSession() {
         session?.client?.let { runCatching { it.close() } }
         session = null
+        maxDownloadSize = null
     }
 
     override fun onCleared() {
@@ -216,7 +238,15 @@ class FastbootViewModel : ViewModel() {
         commandLabel = "flash $partition ($displayName, $size bytes)",
         opLabel = "Flashing $partition",
     ) { client, onInfo, onProgress ->
-        client.flash(partition, fd, size, onInfo = onInfo, onProgress = onProgress); null
+        val limit = maxDownloadSize ?: FastbootClient.DEFAULT_CHUNK_SIZE
+        client.flash(
+            partition = partition,
+            fd = fd,
+            size = size,
+            onInfo = onInfo,
+            onProgress = onProgress,
+            maxChunkSize = limit,
+        ); null
     }
 
     fun bootImage(fd: FileDescriptor, size: Long, displayName: String) = run(
