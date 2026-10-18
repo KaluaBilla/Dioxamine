@@ -1327,7 +1327,7 @@ private fun VirtualScreenSettings(
     val displayAppName = when {
         config.newDisplayApp == null -> stringResource(R.string.virtual_screen_default_launcher)
         selectedApp != null -> selectedApp.name
-        else -> config.newDisplayApp ?: stringResource(R.string.virtual_screen_default_launcher)
+        else -> config.newDisplayApp
     }
 
     Surface(
@@ -1363,7 +1363,7 @@ private fun VirtualScreenSettings(
                     )
                     if (config.newDisplayApp != null) {
                         Text(
-                            text = config.newDisplayApp!!,
+                            text = config.newDisplayApp,
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 1,
