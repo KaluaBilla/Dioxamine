@@ -26,6 +26,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -104,7 +105,7 @@ class FastbootViewModel : ViewModel() {
         val reported = withContext(Dispatchers.IO) {
             runCatching { client.getMaxDownloadSize() }.getOrNull()
         }
-        ensureActive()
+        currentCoroutineContext().ensureActive()
         val limit = reported ?: FastbootClient.DEFAULT_CHUNK_SIZE
         val newSession = FastbootSession(deviceId, client)
         session = newSession
