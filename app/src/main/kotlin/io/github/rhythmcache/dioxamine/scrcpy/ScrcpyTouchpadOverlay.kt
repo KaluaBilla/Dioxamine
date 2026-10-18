@@ -2,6 +2,7 @@ package io.github.rhythmcache.dioxamine.scrcpy
 
 import android.os.SystemClock
 import androidx.compose.animation.*
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -9,11 +10,13 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,6 +54,7 @@ fun ScrcpyTouchpadOverlay(
 
     var sensitivity by remember { mutableFloatStateOf(1.2f) }
     var showSensitivitySlider by remember { mutableStateOf(false) }
+    var showBottomButtons by rememberSaveable { mutableStateOf(false) }
 
     var isLeftButtonHeld by remember { mutableStateOf(false) }
     var isRightButtonHeld by remember { mutableStateOf(false) }
@@ -81,8 +85,8 @@ fun ScrcpyTouchpadOverlay(
                         down.consume()
                     }
                 },
-            shape = RoundedCornerShape(16.dp),
-            color = Color(0xC81E1E1E), // sleek translucent dark surface
+            shape = RoundedCornerShape(18.dp),
+            color = Color(0xD81A1A1A), // sleek translucent dark surface
             tonalElevation = 8.dp,
             shadowElevation = 12.dp,
             border = androidx.compose.foundation.BorderStroke(
@@ -93,14 +97,14 @@ fun ScrcpyTouchpadOverlay(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 10.dp, vertical = 6.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
+                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                // Header: Title & Actions (drag handle on header row)
+                // Slim Drag Header (No title text - maximizes touch space)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(min = 40.dp)
+                        .height(30.dp)
                         .pointerInput(Unit) {
                             detectDragGestures { change, drag ->
                                 change.consume()
@@ -110,59 +114,72 @@ fun ScrcpyTouchpadOverlay(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            Icons.Filled.DragHandle,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.85f),
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Text(
-                            text = stringResource(R.string.tab_touchpad),
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                    }
+                    // Left: Subtle horizontal drag pill
+                    Box(
+                        modifier = Modifier
+                            .padding(start = 6.dp)
+                            .width(36.dp)
+                            .height(4.dp)
+                            .clip(CircleShape)
+                            .background(Color.White.copy(alpha = 0.35f))
+                    )
 
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(2.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                    // Top-Right: Control buttons cluster pill (Tune, Expand Buttons, Close)
+                    Surface(
+                        shape = CircleShape,
+                        color = Color.White.copy(alpha = 0.08f),
+                        border = androidx.compose.foundation.BorderStroke(
+                            0.5.dp,
+                            Color.White.copy(alpha = 0.14f)
+                        )
                     ) {
-                        if (showExpandedRows) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(1.dp),
+                            modifier = Modifier.padding(horizontal = 2.dp, vertical = 1.dp)
+                        ) {
                             IconButton(
                                 onClick = { showSensitivitySlider = !showSensitivitySlider },
-                                modifier = Modifier.size(28.dp)
+                                modifier = Modifier.size(26.dp)
                             ) {
                                 Icon(
                                     Icons.Filled.Tune,
                                     contentDescription = stringResource(R.string.cd_sensitivity_settings),
                                     tint = if (showSensitivitySlider) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.7f),
-                                    modifier = Modifier.size(17.dp)
+                                    modifier = Modifier.size(15.dp)
                                 )
                             }
-                        }
 
-                        IconButton(
-                            onClick = onClose,
-                            modifier = Modifier.size(28.dp)
-                        ) {
-                            Icon(
-                                Icons.Filled.Close,
-                                contentDescription = stringResource(R.string.cd_close),
-                                tint = Color.White.copy(alpha = 0.7f),
-                                modifier = Modifier.size(17.dp)
-                            )
+                            IconButton(
+                                onClick = { showBottomButtons = !showBottomButtons },
+                                modifier = Modifier.size(26.dp)
+                            ) {
+                                Icon(
+                                    Icons.Filled.Mouse,
+                                    contentDescription = "Toggle mouse buttons",
+                                    tint = if (showBottomButtons) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.7f),
+                                    modifier = Modifier.size(15.dp)
+                                )
+                            }
+
+                            IconButton(
+                                onClick = onClose,
+                                modifier = Modifier.size(26.dp)
+                            ) {
+                                Icon(
+                                    Icons.Filled.Close,
+                                    contentDescription = stringResource(R.string.cd_close),
+                                    tint = Color.White.copy(alpha = 0.7f),
+                                    modifier = Modifier.size(15.dp)
+                                )
+                            }
                         }
                     }
                 }
 
-                // Sensitivity slider (hidden when window height is compact)
+                // Sensitivity slider (toggled via Tune icon)
                 AnimatedVisibility(
-                    visible = showExpandedRows && showSensitivitySlider,
+                    visible = showSensitivitySlider,
                     enter = fadeIn() + expandVertically(),
                     exit = fadeOut() + shrinkVertically()
                 ) {
@@ -259,74 +276,86 @@ fun ScrcpyTouchpadOverlay(
                     }
                 }
 
-                // Left / Middle / Right Mouse Buttons
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(36.dp),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                // Collapsible Bottom Controls (Mouse Buttons & Quick Actions)
+                AnimatedVisibility(
+                    visible = showBottomButtons,
+                    enter = fadeIn() + expandVertically(),
+                    exit = fadeOut() + shrinkVertically()
                 ) {
-                    HoldableMouseButton(
-                        label = stringResource(R.string.touchpad_btn_left),
-                        isHeld = isLeftButtonHeld,
-                        modifier = Modifier.weight(1f),
-                        onPressDown = {
-                            isLeftButtonHeld = true
-                            updateButtonMask(left = true, right = isRightButtonHeld)
-                        },
-                        onPressUp = {
-                            isLeftButtonHeld = false
-                            updateButtonMask(left = false, right = isRightButtonHeld)
-                        }
-                    )
-
-                    Surface(
-                        onClick = {
-                            haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                            session?.clickMouseButton(HidKeyCodes.MOUSE_BTN_MIDDLE)
-                        },
-                        shape = RoundedCornerShape(8.dp),
-                        color = Color.White.copy(alpha = 0.12f),
-                        modifier = Modifier
-                            .weight(0.7f)
-                            .fillMaxHeight()
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Text(
-                                stringResource(R.string.touchpad_btn_middle),
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.SemiBold,
-                                color = Color.White.copy(alpha = 0.9f)
+                        // Left / Middle / Right Mouse Buttons
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(36.dp),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            HoldableMouseButton(
+                                label = stringResource(R.string.touchpad_btn_left),
+                                isHeld = isLeftButtonHeld,
+                                modifier = Modifier.weight(1f),
+                                onPressDown = {
+                                    isLeftButtonHeld = true
+                                    updateButtonMask(left = true, right = isRightButtonHeld)
+                                },
+                                onPressUp = {
+                                    isLeftButtonHeld = false
+                                    updateButtonMask(left = false, right = isRightButtonHeld)
+                                }
+                            )
+
+                            Surface(
+                                onClick = {
+                                    haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                    session?.clickMouseButton(HidKeyCodes.MOUSE_BTN_MIDDLE)
+                                },
+                                shape = RoundedCornerShape(8.dp),
+                                color = Color.White.copy(alpha = 0.12f),
+                                modifier = Modifier
+                                    .weight(0.7f)
+                                    .fillMaxHeight()
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Text(
+                                        stringResource(R.string.touchpad_btn_middle),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color.White.copy(alpha = 0.9f)
+                                    )
+                                }
+                            }
+
+                            HoldableMouseButton(
+                                label = stringResource(R.string.touchpad_btn_right),
+                                isHeld = isRightButtonHeld,
+                                modifier = Modifier.weight(1f),
+                                onPressDown = {
+                                    isRightButtonHeld = true
+                                    updateButtonMask(left = isLeftButtonHeld, right = true)
+                                },
+                                onPressUp = {
+                                    isRightButtonHeld = false
+                                    updateButtonMask(left = isLeftButtonHeld, right = false)
+                                }
                             )
                         }
-                    }
 
-                    HoldableMouseButton(
-                        label = stringResource(R.string.touchpad_btn_right),
-                        isHeld = isRightButtonHeld,
-                        modifier = Modifier.weight(1f),
-                        onPressDown = {
-                            isRightButtonHeld = true
-                            updateButtonMask(left = isLeftButtonHeld, right = true)
-                        },
-                        onPressUp = {
-                            isRightButtonHeld = false
-                            updateButtonMask(left = isLeftButtonHeld, right = false)
+                        // Quick Action Bar (shown when window height > 200.dp)
+                        if (showExpandedRows) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                KeyButton("Esc", Modifier.weight(1f)) { session?.sendKeyStroke(HidKeyCodes.KEY_ESC) }
+                                KeyButton("Tab", Modifier.weight(1f)) { session?.sendKeyStroke(HidKeyCodes.KEY_TAB) }
+                                KeyButton("Enter", Modifier.weight(1.1f)) { session?.sendKeyStroke(HidKeyCodes.KEY_ENTER) }
+                                KeyButton("⌫ Del", Modifier.weight(1.1f)) { session?.sendKeyStroke(HidKeyCodes.KEY_BACKSPACE) }
+                            }
                         }
-                    )
-                }
-
-                // Quick Action Bar (shown when window height > 200.dp)
-                if (showExpandedRows) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        KeyButton("Esc", Modifier.weight(1f)) { session?.sendKeyStroke(HidKeyCodes.KEY_ESC) }
-                        KeyButton("Tab", Modifier.weight(1f)) { session?.sendKeyStroke(HidKeyCodes.KEY_TAB) }
-                        KeyButton("Enter", Modifier.weight(1.1f)) { session?.sendKeyStroke(HidKeyCodes.KEY_ENTER) }
-                        KeyButton("⌫ Del", Modifier.weight(1.1f)) { session?.sendKeyStroke(HidKeyCodes.KEY_BACKSPACE) }
                     }
                 }
             }
