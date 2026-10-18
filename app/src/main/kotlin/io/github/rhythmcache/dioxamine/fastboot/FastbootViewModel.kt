@@ -27,9 +27,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import java.io.FileDescriptor
 import java.io.FileOutputStream
 
@@ -70,6 +75,51 @@ class FastbootViewModel : ViewModel() {
     private var connections = mutableMapOf<String, Pair<UsbManager, UsbDevice>>()
     private var connectJob: Job? = null
     private var pendingConnectDeviceId: String? = null
+    private val commandMutex = Mutex()
+
+    init {
+        viewModelScope.launch {
+            while (isActive) {
+                delay(5000)
+                val currentSession = session
+                if (currentSession != null && currentSession.deviceId.startsWith("tcp:") && !isBusy) {
+                    if (!commandMutex.tryLock()) {
+                        continue
+                    }
+                    try {
+                        val isAlive = withTimeoutOrNull(10_000) {
+                            withContext(Dispatchers.IO) {
+                                try {
+                                    currentSession.client.getVar("version")
+                                    true
+                                } catch (e: CancellationException) {
+                                    throw e
+                                } catch (e: FastbootException.Io) {
+                                    false
+                                } catch (_: Exception) {
+                                    // Device replied (even with FAIL): socket is alive
+                                    true
+                                }
+                            }
+                        }
+                        if (session === currentSession) {
+                            if (isAlive == null) {
+                                log(LogLevel.SYSTEM, "TCP connection lost (timeout): ${currentSession.deviceId}")
+                                closeSession()
+                            } else if (!isAlive) {
+                                log(LogLevel.SYSTEM, "TCP connection lost: ${currentSession.deviceId}")
+                                closeSession()
+                            }
+                        }
+                    } catch (e: CancellationException) {
+                        throw e
+                    } finally {
+                        commandMutex.unlock()
+                    }
+                }
+            }
+        }
+    }
 
     // -----------------------------------------------------------------
     // USB device presence
@@ -284,18 +334,26 @@ class FastbootViewModel : ViewModel() {
         lastOperationStatus = OperationStatus.Running(opLabel)
         return viewModelScope.launch {
             try {
-                val result = block(
-                    client,
-                    { info -> log(LogLevel.INFO, info) },
-                    { progress -> currentProgress = progress },
-                )
-                if (result != null) log(LogLevel.RESULT, result)
-                log(LogLevel.RESULT, "OKAY")
-                lastOperationStatus = OperationStatus.Success(opLabel, result)
+                commandMutex.withLock {
+                    if (session?.client !== client) {
+                        throw FastbootException.Io("Connection closed")
+                    }
+                    val result = block(
+                        client,
+                        { info -> log(LogLevel.INFO, info) },
+                        { progress -> currentProgress = progress },
+                    )
+                    if (result != null) log(LogLevel.RESULT, result)
+                    log(LogLevel.RESULT, "OKAY")
+                    lastOperationStatus = OperationStatus.Success(opLabel, result)
+                }
             } catch (e: FastbootException) {
                 val msg = e.message ?: e.toString()
                 log(LogLevel.ERROR, msg)
                 lastOperationStatus = OperationStatus.Failed(opLabel, msg)
+                if (e is FastbootException.Io && session?.deviceId?.startsWith("tcp:") == true) {
+                    closeSession()
+                }
             } catch (e: Exception) {
                 val msg = e.message ?: "Unexpected error"
                 log(LogLevel.ERROR, "Unexpected error: $msg")
