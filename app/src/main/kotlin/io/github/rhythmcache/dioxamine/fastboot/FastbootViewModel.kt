@@ -13,14 +13,22 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.rhythmcache.dioxamine.core.AndroidUsbFastbootTransport
+import io.github.rhythmcache.dioxamine.core.DeviceTransport
 import io.github.rhythmcache.dioxamine.core.UsbFastbootTransport
 import io.github.rhythmcache.dioxamine.core.UsbHelper
 import io.github.rhythmcache.fastboot.FastbootClient
 import io.github.rhythmcache.fastboot.FastbootConnection
 import io.github.rhythmcache.fastboot.FastbootException
 import io.github.rhythmcache.fastboot.Progress
+import io.github.rhythmcache.fastboot.TcpFastbootTransport
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.FileDescriptor
 import java.io.FileOutputStream
 
@@ -59,6 +67,8 @@ class FastbootViewModel : ViewModel() {
     }
 
     private var connections = mutableMapOf<String, Pair<UsbManager, UsbDevice>>()
+    private var connectJob: Job? = null
+    private var pendingConnectDeviceId: String? = null
 
     // -----------------------------------------------------------------
     // USB device presence
@@ -80,7 +90,7 @@ class FastbootViewModel : ViewModel() {
     fun onDeviceDisconnected(id: String) {
         devices.remove(id)
         connections.remove(id)
-        if (session?.deviceId == id) {
+        if (session?.deviceId == id || pendingConnectDeviceId == id) {
             log(LogLevel.SYSTEM, "Device disconnected: $id")
             closeSession()
         }
@@ -90,57 +100,146 @@ class FastbootViewModel : ViewModel() {
     // Session lifecycle
     // -----------------------------------------------------------------
 
-    fun connect(deviceId: String) {
-        if (session?.deviceId == deviceId) return
-        closeSession()
-        val (usbManager, usbDevice) = connections[deviceId] ?: run {
-            log(LogLevel.ERROR, "Cannot connect: device $deviceId no longer present")
-            return
+    private suspend fun onConnected(deviceId: String, client: FastbootClient, connectionLabel: String) {
+        val reported = withContext(Dispatchers.IO) {
+            runCatching { client.getMaxDownloadSize() }.getOrNull()
         }
-        runCatching {
-            val iface = UsbFastbootTransport.findFastbootInterface(usbDevice)
-                ?: throw FastbootException.Io("No fastboot interface found on device")
-            val (inEp, outEp) = UsbFastbootTransport.findFastbootEndpoints(iface)
-                ?: throw FastbootException.Io("No fastboot endpoints found on interface")
-
-            val usbConnection: UsbDeviceConnection = usbManager.openDevice(usbDevice)
-                ?: throw FastbootException.Io("Failed to open USB device")
-            if (!usbConnection.claimInterface(iface, true)) {
-                usbConnection.close()
-                throw FastbootException.Io("Failed to claim USB interface")
-            }
-
-            val transport = AndroidUsbFastbootTransport(usbConnection, iface, inEp, outEp)
-            val client = FastbootClient(FastbootConnection(transport))
-            val newSession = FastbootSession(deviceId, client)
-            session = newSession
-            log(LogLevel.SYSTEM, "Connected to $deviceId")
-
-            viewModelScope.launch {
-                val reported = runCatching { client.getMaxDownloadSize() }.getOrNull()
-                val limit = reported ?: FastbootClient.DEFAULT_CHUNK_SIZE
-                if (session === newSession) {
-                    maxDownloadSize = limit
-                    devices[deviceId]?.let { dev ->
-                        devices[deviceId] = dev.copy(maxDownloadSize = limit)
-                    }
-                    val limitMb = limit / (1024 * 1024)
-                    if (reported != null) {
-                        log(LogLevel.INFO, "Max download size: ${limitMb} MB ($limit bytes)")
-                    } else {
-                        log(LogLevel.INFO, "Device did not report max download size; using fallback ${limitMb} MB")
-                    }
-                }
-            }
-        }.onFailure { e ->
-            log(LogLevel.ERROR, "Connect failed: ${e.message}")
+        ensureActive()
+        val limit = reported ?: FastbootClient.DEFAULT_CHUNK_SIZE
+        val newSession = FastbootSession(deviceId, client)
+        session = newSession
+        if (pendingConnectDeviceId == deviceId) {
+            pendingConnectDeviceId = null
+        }
+        maxDownloadSize = limit
+        devices[deviceId]?.let { dev ->
+            devices[deviceId] = dev.copy(maxDownloadSize = limit)
+        }
+        log(LogLevel.SYSTEM, "Connected to $connectionLabel")
+        val limitMb = limit / (1024 * 1024)
+        if (reported != null) {
+            log(LogLevel.INFO, "Max download size: ${limitMb} MB ($limit bytes)")
+        } else {
+            log(LogLevel.INFO, "Device did not report max download size; using fallback ${limitMb} MB")
         }
     }
 
+    fun connect(deviceId: String) {
+        if (session?.deviceId == deviceId) return
+        closeSession()
+        pendingConnectDeviceId = deviceId
+
+        if (deviceId.startsWith("tcp:")) {
+            val endpoint = deviceId.removePrefix("tcp:")
+            val host = endpoint.substringBeforeLast(":")
+            val port = endpoint.substringAfterLast(":").toIntOrNull() ?: TcpFastbootTransport.DEFAULT_PORT
+            log(LogLevel.SYSTEM, "Connecting to Fastboot over TCP $host:$port...")
+            connectJob = viewModelScope.launch {
+                var clientToClose: FastbootClient? = null
+                try {
+                    val client = withContext(Dispatchers.IO) {
+                        val c = FastbootClient.connectTcp(host, port)
+                        clientToClose = c
+                        c
+                    }
+                    onConnected(deviceId, client, "$host:$port")
+                    clientToClose = null
+                } catch (e: CancellationException) {
+                    withContext(NonCancellable + Dispatchers.IO) {
+                        runCatching { clientToClose?.close() }
+                    }
+                    throw e
+                } catch (e: Exception) {
+                    withContext(NonCancellable + Dispatchers.IO) {
+                        runCatching { clientToClose?.close() }
+                    }
+                    if (pendingConnectDeviceId == deviceId) {
+                        pendingConnectDeviceId = null
+                        log(LogLevel.ERROR, "Connect to $host:$port failed: ${e.message}")
+                    }
+                }
+            }
+            return
+        }
+
+        val (usbManager, usbDevice) = connections[deviceId] ?: run {
+            log(LogLevel.ERROR, "Cannot connect: device $deviceId no longer present")
+            pendingConnectDeviceId = null
+            return
+        }
+        connectJob = viewModelScope.launch {
+            var clientToClose: FastbootClient? = null
+            try {
+                val client = withContext(Dispatchers.IO) {
+                    val iface = UsbFastbootTransport.findFastbootInterface(usbDevice)
+                        ?: throw FastbootException.Io("No fastboot interface found on device")
+                    val (inEp, outEp) = UsbFastbootTransport.findFastbootEndpoints(iface)
+                        ?: throw FastbootException.Io("No fastboot endpoints found on interface")
+
+                    val usbConnection: UsbDeviceConnection = usbManager.openDevice(usbDevice)
+                        ?: throw FastbootException.Io("Failed to open USB device")
+                    if (!usbConnection.claimInterface(iface, true)) {
+                        usbConnection.close()
+                        throw FastbootException.Io("Failed to claim USB interface")
+                    }
+
+                    val transport = AndroidUsbFastbootTransport(usbConnection, iface, inEp, outEp)
+                    val c = FastbootClient(FastbootConnection(transport))
+                    clientToClose = c
+                    c
+                }
+                onConnected(deviceId, client, deviceId)
+                clientToClose = null
+            } catch (e: CancellationException) {
+                withContext(NonCancellable + Dispatchers.IO) {
+                    runCatching { clientToClose?.close() }
+                }
+                throw e
+            } catch (e: Exception) {
+                withContext(NonCancellable + Dispatchers.IO) {
+                    runCatching { clientToClose?.close() }
+                }
+                if (pendingConnectDeviceId == deviceId) {
+                    pendingConnectDeviceId = null
+                    log(LogLevel.ERROR, "Connect failed: ${e.message}")
+                }
+            }
+        }
+    }
+
+    fun connectTcp(host: String, port: Int = TcpFastbootTransport.DEFAULT_PORT) {
+        val id = "tcp:$host:$port"
+        val label = "$host:$port"
+        devices.getOrPut(id) {
+            FastbootDevice(
+                id = id,
+                label = label,
+                deviceName = label,
+                transport = DeviceTransport.TCP,
+            )
+        }
+        connect(id)
+    }
+
+    fun forgetTcpDevice(id: String) {
+        if (session?.deviceId == id || pendingConnectDeviceId == id) {
+            closeSession()
+        }
+        devices.remove(id)
+    }
+
     fun closeSession() {
-        session?.client?.let { runCatching { it.close() } }
+        connectJob?.cancel()
+        connectJob = null
+        pendingConnectDeviceId = null
+        val currentClient = session?.client
         session = null
         maxDownloadSize = null
+        if (currentClient != null) {
+            CoroutineScope(Dispatchers.IO).launch {
+                runCatching { currentClient.close() }
+            }
+        }
     }
 
     override fun onCleared() {

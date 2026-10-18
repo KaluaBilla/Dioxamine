@@ -1,5 +1,6 @@
 package io.github.rhythmcache.dioxamine.fastboot
 
+import io.github.rhythmcache.dioxamine.core.DeviceTransport
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -9,6 +10,7 @@ data class FastbootDevice(
     val label: String,
     val deviceName: String,
     val maxDownloadSize: Long? = null,
+    val transport: DeviceTransport = DeviceTransport.USB,
 )
 
 enum class LogLevel { COMMAND, INFO, RESULT, ERROR, SYSTEM }

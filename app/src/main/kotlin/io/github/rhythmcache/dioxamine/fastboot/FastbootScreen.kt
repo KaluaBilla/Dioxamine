@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Terminal
@@ -21,8 +22,13 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import io.github.rhythmcache.dioxamine.R
+import io.github.rhythmcache.dioxamine.adb.isValidIp
+import io.github.rhythmcache.dioxamine.adb.isValidPort
+import io.github.rhythmcache.dioxamine.adb.parseIpAndPort
+import io.github.rhythmcache.dioxamine.core.DeviceTransport
 
 private enum class FastbootTopTab(val labelRes: Int) {
     ACTIONS(R.string.fastboot_tab_actions),
@@ -59,6 +65,7 @@ fun FastbootScreen(vm: FastbootViewModel) {
 @Composable
 private fun FastbootDeviceConnectorCard(vm: FastbootViewModel) {
     var expanded by remember { mutableStateOf(false) }
+    var showAddTcpDialog by remember { mutableStateOf(false) }
 
     Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)) {
         Column(modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)) {
@@ -112,7 +119,7 @@ private fun FastbootDeviceConnectorCard(vm: FastbootViewModel) {
                                 },
                                 leadingIcon = {
                                     Icon(
-                                        Icons.Filled.Usb,
+                                        if (device.transport == DeviceTransport.USB) Icons.Filled.Usb else Icons.Filled.Wifi,
                                         contentDescription = null,
                                         modifier = Modifier.size(14.dp)
                                     )
@@ -123,6 +130,12 @@ private fun FastbootDeviceConnectorCard(vm: FastbootViewModel) {
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = { showAddTcpDialog = true }) {
+                        Icon(
+                            Icons.Filled.Add,
+                            contentDescription = stringResource(R.string.cd_add_device)
+                        )
+                    }
                     IconButton(onClick = { expanded = !expanded }) {
                         Icon(
                             if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
@@ -154,6 +167,80 @@ private fun FastbootDeviceConnectorCard(vm: FastbootViewModel) {
             }
         }
     }
+
+    if (showAddTcpDialog) {
+        var ip by remember { mutableStateOf("") }
+        var port by remember { mutableStateOf("") }
+
+        val isIpValid = ip.isEmpty() || isValidIp(ip)
+        val isPortValid = port.isEmpty() || isValidPort(port)
+        val isFormValid = isValidIp(ip) && isPortValid
+
+        AlertDialog(
+            onDismissRequest = { showAddTcpDialog = false },
+            title = { Text(stringResource(R.string.dialog_add_tcp_title)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(
+                        value = ip,
+                        onValueChange = { input ->
+                            val (parsedIp, parsedPort) = parseIpAndPort(input)
+                            ip = parsedIp
+                            if (parsedPort != null) {
+                                port = parsedPort
+                            }
+                        },
+                        label = { Text(stringResource(R.string.label_ip_address)) },
+                        placeholder = {
+                            Text(
+                                "192.168.1.100",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+                            )
+                        },
+                        singleLine = true,
+                        isError = !isIpValid,
+                        supportingText = if (!isIpValid) {
+                            { Text(stringResource(R.string.err_invalid_ip_format), color = MaterialTheme.colorScheme.error) }
+                        } else null,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = port,
+                        onValueChange = { input ->
+                            port = input.filter { it.isDigit() }
+                        },
+                        label = { Text(stringResource(R.string.label_port)) },
+                        placeholder = { Text("5554") },
+                        singleLine = true,
+                        isError = !isPortValid,
+                        supportingText = if (!isPortValid) {
+                            { Text(stringResource(R.string.err_invalid_port_range), color = MaterialTheme.colorScheme.error) }
+                        } else null,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val p = port.toIntOrNull() ?: 5554
+                        vm.connectTcp(ip.trim(), p)
+                        showAddTcpDialog = false
+                    },
+                    enabled = isFormValid
+                ) {
+                    Text(stringResource(R.string.btn_connect))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAddTcpDialog = false }) {
+                    Text(stringResource(R.string.btn_cancel))
+                }
+            }
+        )
+    }
 }
 
 @Composable
@@ -168,7 +255,7 @@ private fun FastbootDeviceRow(device: FastbootDevice, vm: FastbootViewModel) {
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
             Icon(
-                Icons.Filled.Usb,
+                if (device.transport == DeviceTransport.USB) Icons.Filled.Usb else Icons.Filled.Wifi,
                 contentDescription = null,
                 modifier = Modifier.size(16.dp),
                 tint = if (isConnected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
@@ -204,6 +291,16 @@ private fun FastbootDeviceRow(device: FastbootDevice, vm: FastbootViewModel) {
             } else {
                 TextButton(onClick = { vm.connect(device.id) }) {
                     Text(stringResource(R.string.btn_connect))
+                }
+            }
+            if (device.transport == DeviceTransport.TCP) {
+                IconButton(onClick = { vm.forgetTcpDevice(device.id) }) {
+                    Icon(
+                        Icons.Filled.Close,
+                        contentDescription = stringResource(R.string.cd_remove),
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }
