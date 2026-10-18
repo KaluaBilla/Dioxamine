@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
+import io.github.rhythmcache.dioxamine.core.DeviceTransport
 import io.github.rhythmcache.dioxamine.core.UsbFastbootTransport
 import io.github.rhythmcache.dioxamine.core.UsbHelper
 import io.github.rhythmcache.dioxamine.core.UsbPacketTransport
@@ -91,9 +92,11 @@ fun ListenForFastbootDevices(vm: FastbootViewModel) {
             val activeUsbNames = usbManager.deviceList.values.map { it.deviceName }.toSet()
             val toRemove = mutableListOf<String>()
             for (device in vm.devices.values) {
-                val isStillAttached = UsbHelper.isFastbootDeviceNamePresent(device.id, activeUsbNames)
-                if (!isStillAttached) {
-                    toRemove.add(device.id)
+                if (device.transport == DeviceTransport.USB) {
+                    val isStillAttached = UsbHelper.isFastbootDeviceNamePresent(device.id, activeUsbNames)
+                    if (!isStillAttached) {
+                        toRemove.add(device.id)
+                    }
                 }
             }
             for (id in toRemove) {
