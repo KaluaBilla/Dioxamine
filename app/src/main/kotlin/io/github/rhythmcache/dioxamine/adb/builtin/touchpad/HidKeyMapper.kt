@@ -1,6 +1,4 @@
-package io.github.rhythmcache.dioxamine.scrcpy
-
-import io.github.rhythmcache.dioxamine.adb.builtin.touchpad.HidKeyCodes
+package io.github.rhythmcache.dioxamine.adb.builtin.touchpad
 
 data class HidKeyMapping(val hidKeyCode: Int, val shift: Boolean)
 

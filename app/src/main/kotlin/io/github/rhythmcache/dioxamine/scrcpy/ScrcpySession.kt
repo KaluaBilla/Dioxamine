@@ -5,6 +5,7 @@ import android.view.SurfaceHolder
 import io.github.rhythmcache.adb.AdbClient
 import io.github.rhythmcache.adb.AdbEndpoint
 import io.github.rhythmcache.adb.AdbStream
+import io.github.rhythmcache.dioxamine.adb.builtin.touchpad.VirtualKeyboardController
 import io.github.rhythmcache.dioxamine.core.AppLogger
 import io.github.rhythmcache.dioxamine.core.Constants
 import kotlinx.coroutines.*
@@ -18,7 +19,7 @@ class ScrcpySession(
     private val onError: (String) -> Unit,
     private val onRecordingStateChanged: (Boolean) -> Unit = {},
     private val awaitPreviousTeardown: suspend () -> Unit = {}
-) {
+) : VirtualKeyboardController {
     private val sessionScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     @Volatile private var sessionJob: Job? = null
     @Volatile private var stoppedByUser = false
@@ -338,8 +339,22 @@ class ScrcpySession(
         control?.sendMouseScroll(wheel, hPan)
     }
 
-    fun sendKeyStroke(hidKeyCode: Int, modifiers: Int = 0) {
-        control?.sendKeyStroke(hidKeyCode, modifiers)
+    override fun sendKeyStroke(hidKeyCode: Int, modifiers: Int) {
+        val ctrl = control
+        if (ctrl == null) {
+            AppLogger.d(TAG_CLIENT, "Dropping key stroke (control channel not connected)")
+            return
+        }
+        ctrl.sendKeyStroke(hidKeyCode, modifiers)
+    }
+
+    override fun sendInjectText(text: String) {
+        val ctrl = control
+        if (ctrl == null) {
+            AppLogger.d(TAG_CLIENT, "Dropping inject text (control channel not connected)")
+            return
+        }
+        ctrl.sendInjectText(text)
     }
 
     fun startRecording() {

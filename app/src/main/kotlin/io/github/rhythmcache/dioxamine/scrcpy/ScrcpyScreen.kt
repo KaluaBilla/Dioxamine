@@ -33,6 +33,7 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import io.github.rhythmcache.dioxamine.adb.builtin.touchpad.HidKeyCodes
+import io.github.rhythmcache.dioxamine.adb.builtin.touchpad.VirtualKeyboardHelper
 import io.github.rhythmcache.dioxamine.core.AppLogger
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -2323,26 +2324,9 @@ private fun ScrcpyVideoPlayer(
         BasicTextField(
             value = imeBuffer,
             onValueChange = { newBuffer ->
-                val oldLen = imeBuffer.text.length
-                val newLen = newBuffer.text.length
-                if (newLen < oldLen) {
-                    val deleteCount = oldLen - newLen
-                    repeat(deleteCount) {
-                        session?.sendKeyStroke(HidKeyCodes.KEY_BACKSPACE)
-                    }
-                } else if (newLen > oldLen) {
-                    val inserted = newBuffer.text.substring(oldLen)
-                    for (ch in inserted) {
-                        val mapping = HidKeyMapper.charToHid(ch)
-                        if (mapping != null) {
-                            val mods = if (mapping.shift) HidKeyCodes.MOD_LEFT_SHIFT else HidKeyCodes.MOD_NONE
-                            session?.sendKeyStroke(mapping.hidKeyCode, mods)
-                        } else {
-                            AppLogger.d("SCRCPY_IME", "Dropped unmapped character: $ch (U+${ch.code.toString(16)})")
-                        }
-                    }
-                }
-                imeBuffer = TextFieldValue("  ", selection = TextRange(2))
+                imeBuffer = session?.let {
+                    VirtualKeyboardHelper.handleImeValueChange(newBuffer, "  ", it)
+                } ?: TextFieldValue("  ", selection = TextRange(2))
             },
             modifier = Modifier
                 .size(1.dp)

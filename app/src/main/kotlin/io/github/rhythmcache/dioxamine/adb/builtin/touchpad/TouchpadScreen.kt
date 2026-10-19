@@ -125,7 +125,9 @@ fun TouchpadScreen(
 
     DisposableEffect(manager) {
         onDispose {
-            manager?.close()
+            CoroutineScope(Dispatchers.IO).launch {
+                manager?.close()
+            }
         }
     }
 
@@ -789,22 +791,9 @@ private fun RealTimeImeInterceptor(
                 BasicTextField(
                     value = bufferState,
                     onValueChange = { newBuffer ->
-                        val oldLen = bufferState.text.length
-                        val newLen = newBuffer.text.length
-
-                        if (newLen > oldLen) {
-                            val inserted = newBuffer.text.substring(oldLen)
-                            manager?.sendInjectText(inserted)
-                        } else if (newLen < oldLen) {
-                            val deletedCount = oldLen - newLen
-                            repeat(deletedCount) {
-                                manager?.sendKeyStroke(HidKeyCodes.KEY_BACKSPACE)
-                            }
-                        } else if (newBuffer.text != anchorText) {
-                            manager?.sendInjectText(newBuffer.text.trim())
-                        }
-
-                        bufferState = TextFieldValue(anchorText, selection = TextRange(2))
+                        bufferState = manager?.let {
+                            VirtualKeyboardHelper.handleImeValueChange(newBuffer, anchorText, it)
+                        } ?: TextFieldValue(anchorText, selection = TextRange(2))
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -823,6 +812,26 @@ private fun RealTimeImeInterceptor(
                                     }
                                     Key.Escape -> {
                                         manager?.sendKeyStroke(HidKeyCodes.KEY_ESC)
+                                        true
+                                    }
+                                    Key.DirectionLeft -> {
+                                        manager?.sendKeyStroke(HidKeyCodes.KEY_LEFT)
+                                        true
+                                    }
+                                    Key.DirectionRight -> {
+                                        manager?.sendKeyStroke(HidKeyCodes.KEY_RIGHT)
+                                        true
+                                    }
+                                    Key.DirectionUp -> {
+                                        manager?.sendKeyStroke(HidKeyCodes.KEY_UP)
+                                        true
+                                    }
+                                    Key.DirectionDown -> {
+                                        manager?.sendKeyStroke(HidKeyCodes.KEY_DOWN)
+                                        true
+                                    }
+                                    Key.Delete -> {
+                                        manager?.sendKeyStroke(HidKeyCodes.KEY_DELETE)
                                         true
                                     }
                                     else -> false

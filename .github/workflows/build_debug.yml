@@ -51,6 +51,13 @@ jobs:
         id: sha
         run: echo "short_sha=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
 
+      - name: Run unit tests
+        run: |
+          set -euo pipefail
+          VARIANT="${{ matrix.variant }}"
+          TASK="test${VARIANT^}UnitTest"
+          ./gradlew "$TASK" --no-daemon
+
       - name: Build ${{ matrix.variant }} APK
         env:
           RELEASE_STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}

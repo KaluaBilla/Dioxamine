@@ -1,7 +1,10 @@
 package io.github.rhythmcache.dioxamine.scrcpy
 
 import io.github.rhythmcache.adb.AdbStream
+import io.github.rhythmcache.dioxamine.adb.builtin.touchpad.KeyboardAction
 import io.github.rhythmcache.dioxamine.adb.builtin.touchpad.UhidControlManager
+import io.github.rhythmcache.dioxamine.adb.builtin.touchpad.VirtualKeyboardController
+import io.github.rhythmcache.dioxamine.adb.builtin.touchpad.VirtualKeyboardHelper
 import io.github.rhythmcache.dioxamine.core.AppLogger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,6 +20,8 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.runBlocking
 import java.nio.ByteBuffer
@@ -27,8 +32,9 @@ import java.util.concurrent.atomic.AtomicInteger
 /**
  * Builds and sends scrcpy control-socket messages.
  * Wire formats verified against com.genymobile.scrcpy.control.ControlMessageReader.
- * Uses a single reader/writer unbounded channel queue to eliminate lock contention
- * and avoid the writer coroutine ever blocking or dropping guaranteed events.
+ * Keyboard strokes, text injection, and mouse reports are written directly to the wire under [wireMutex],
+ * so a key's press is on the socket before its release delay starts. Touch events and other
+ * control messages still go through the guaranteed/droppable queue.
  * Runs on its own dedicated scope so it is never starved by contention with the
  * video decode pipeline, and never dies if the parent session scope is cancelled.
  */
@@ -37,7 +43,7 @@ class ScrcpyControl(
     private val stream: AdbStream,
     private val videoWidth: () -> Int,
     private val videoHeight: () -> Int
-) {
+) : VirtualKeyboardController {
     companion object {
         private const val TAG = "SCRCPY_CLIENT"
         const val TYPE_INJECT_KEYCODE = 0
@@ -81,14 +87,38 @@ class ScrcpyControl(
     // Unbounded queue: guaranteed events (DOWN/UP) must never block waiting for space,
     // and under normal load this queue drains far faster than it fills.
     private val queue = Channel<ByteArray>(Channel.UNLIMITED)
+    private val wireMutex = Mutex()
     private val writerJob = writerScope.launch {
         try {
             for (packet in queue) {
                 if (stream.isClosed) break
-                stream.write(packet)
+                wireMutex.withLock {
+                    if (!stream.isClosed) {
+                        stream.write(packet)
+                    }
+                }
             }
         } catch (e: Exception) {
             AppLogger.e(TAG, "ScrcpyControl writer channel crashed: ${e.message}", e)
+        }
+    }
+
+    private suspend fun writeNow(packet: ByteArray): Boolean {
+        if (stream.isClosed) return false
+        return wireMutex.withLock {
+            runCatching {
+                if (!stream.isClosed) {
+                    stream.write(packet)
+                    true
+                } else {
+                    false
+                }
+            }.getOrElse { e ->
+                if (e !is CancellationException) {
+                    AppLogger.w(TAG, "ScrcpyControl failed to write packet direct: ${e.message}")
+                }
+                false
+            }
         }
     }
 
@@ -108,18 +138,25 @@ class ScrcpyControl(
     private val clickMutex = Mutex()
     private var mouseLoopJob: Job? = null
 
-    private class HidKeyStroke(val keyCode: Int, val modifiers: Int)
-    private val keyStrokeChannel = Channel<HidKeyStroke>(Channel.UNLIMITED)
+    private val keyboardActionChannel = Channel<KeyboardAction>(Channel.UNLIMITED)
     private val keyStrokeJob = writerScope.launch {
-        for (stroke in keyStrokeChannel) {
+        for (action in keyboardActionChannel) {
             if (stream.isClosed) break
-            try {
-                sendKeyboardReport(stroke.modifiers, listOf(stroke.keyCode))
-                delay(12)
-            } finally {
-                withContext(NonCancellable) {
-                    sendKeyboardReport(0, emptyList())
-                    delay(4)
+            when (action) {
+                is KeyboardAction.Stroke -> {
+                    try {
+                        writeNow(buildKeyboardReportPacket(action.modifiers, listOf(action.keyCode)))
+                        delay(12)
+                    } finally {
+                        withContext(NonCancellable) {
+                            runCatching { writeNow(buildKeyboardReportPacket(0, emptyList())) }
+                            delay(4)
+                        }
+                    }
+                }
+                is KeyboardAction.Text -> {
+                    sendInjectTextInternal(action.text)
+                    delay(8)
                 }
             }
         }
@@ -145,16 +182,20 @@ class ScrcpyControl(
      */
     suspend fun close(drainTimeoutMs: Long = 300) {
         mouseLoopJob?.cancel()
-        keyStrokeChannel.close()
-        runCatching { keyStrokeJob.cancel() }
+        keyboardActionChannel.close()
+        // Cancel and wait: the stroke's finally{} writes the key release, then exits.
+        runCatching { keyStrokeJob.cancelAndJoin() }
+
         if (uhidDevicesRegistered) {
-            runCatching {
-                if (releaseAllMouseButtons()) {
-                    sendGuaranteed(buildMouseReportPacket(0, 0, 0, 0, 0))
+            withTimeoutOrNull(drainTimeoutMs) {
+                runCatching {
+                    if (releaseAllMouseButtons()) {
+                        writeNow(buildMouseReportPacket(0, 0, 0, 0, 0))
+                    }
+                    writeNow(buildKeyboardReportPacket(0, emptyList()))
+                    writeNow(buildDestroyPacket(UhidControlManager.ID_MOUSE))
+                    writeNow(buildDestroyPacket(UhidControlManager.ID_KEYBOARD))
                 }
-                sendGuaranteed(buildKeyboardReportPacket(0, emptyList()))
-                sendUhidDestroy(UhidControlManager.ID_MOUSE)
-                sendUhidDestroy(UhidControlManager.ID_KEYBOARD)
             }
             uhidDevicesRegistered = false
         }
@@ -169,23 +210,34 @@ class ScrcpyControl(
 
     fun closeImmediately() {
         mouseLoopJob?.cancel()
-        keyStrokeChannel.close()
+        keyboardActionChannel.close()
         runCatching { keyStrokeJob.cancel() }
         queue.close()
         writerJob.cancel()
+        runCatching {
+            runBlocking(Dispatchers.IO) {
+                withTimeoutOrNull(50) {
+                    writerJob.join()
+                }
+            }
+        }
         if (uhidDevicesRegistered && !stream.isClosed) {
             runCatching {
                 runBlocking(Dispatchers.IO) {
                     withTimeoutOrNull(200) {
-                        if (releaseAllMouseButtons()) {
-                            stream.write(buildMouseReportPacket(0, 0, 0, 0, 0))
+                        wireMutex.withLock {
+                            if (!stream.isClosed) {
+                                if (releaseAllMouseButtons()) {
+                                    stream.write(buildMouseReportPacket(0, 0, 0, 0, 0))
+                                }
+                                stream.write(buildKeyboardReportPacket(0, emptyList()))
+                                stream.write(buildDestroyPacket(UhidControlManager.ID_MOUSE))
+                                stream.write(buildDestroyPacket(UhidControlManager.ID_KEYBOARD))
+                            }
                         }
-                        stream.write(buildKeyboardReportPacket(0, emptyList()))
-                        stream.write(buildDestroyPacket(UhidControlManager.ID_MOUSE))
-                        stream.write(buildDestroyPacket(UhidControlManager.ID_KEYBOARD))
                     }
                 }
-            }
+            }.onFailure { AppLogger.w(TAG, "Failed to send immediate teardown packets: ${it.message}") }
             uhidDevicesRegistered = false
         }
         writerScope.cancel()
@@ -433,19 +485,24 @@ class ScrcpyControl(
         if (mouseLoopJob?.isActive == true) return
         mouseLoopJob = writerScope.launch {
             while (isActive && !stream.isClosed) {
-                val dx = consumeDelta(pendingDx)
-                val dy = consumeDelta(pendingDy)
-                val wheel = consumeDelta(pendingWheel)
-                val hPan = consumeDelta(pendingHPan)
                 val hadStateChange = mouseStateChanged.getAndSet(false)
-                val buttons = currentMouseButtons.get()
+                if (hadStateChange || !wireMutex.isLocked) {
+                    val dx = consumeDelta(pendingDx)
+                    val dy = consumeDelta(pendingDy)
+                    val wheel = consumeDelta(pendingWheel)
+                    val hPan = consumeDelta(pendingHPan)
+                    val buttons = currentMouseButtons.get()
 
-                if (dx != 0 || dy != 0 || wheel != 0 || hPan != 0 || hadStateChange) {
-                    val packet = buildMouseReportPacket(buttons, dx, dy, wheel, hPan)
-                    if (hadStateChange) {
-                        sendGuaranteed(packet)
-                    } else {
-                        sendDroppable(packet)
+                    if (dx != 0 || dy != 0 || wheel != 0 || hPan != 0 || hadStateChange) {
+                        val packet = buildMouseReportPacket(buttons, dx, dy, wheel, hPan)
+                        val ok = writeNow(packet)
+                        if (!ok) {
+                            if (hadStateChange) mouseStateChanged.set(true)
+                            if (dx != 0) pendingDx.addAndGet(dx)
+                            if (dy != 0) pendingDy.addAndGet(dy)
+                            if (wheel != 0) pendingWheel.addAndGet(wheel)
+                            if (hPan != 0) pendingHPan.addAndGet(hPan)
+                        }
                     }
                 }
                 delay(8)
@@ -493,14 +550,43 @@ class ScrcpyControl(
         pendingHPan.addAndGet(hPan)
     }
 
-    fun sendKeyboardReport(modifiers: Int, keys: List<Int>) {
-        ensureUhidDevices()
-        sendGuaranteed(buildKeyboardReportPacket(modifiers, keys))
+    private suspend fun sendKeyboardReport(modifiers: Int, keys: List<Int>) {
+        writeNow(buildKeyboardReportPacket(modifiers, keys))
     }
 
-    fun sendKeyStroke(hidKeyCode: Int, modifiers: Int = 0) {
+    override fun sendKeyStroke(hidKeyCode: Int, modifiers: Int) {
         ensureUhidDevices()
-        keyStrokeChannel.trySend(HidKeyStroke(hidKeyCode, modifiers))
+        keyboardActionChannel.trySend(KeyboardAction.Stroke(hidKeyCode, modifiers)).onFailure {
+            AppLogger.w(TAG, "Failed to enqueue key stroke (channel closed)")
+        }
+    }
+
+    override fun sendInjectText(text: String) {
+        if (text.isEmpty()) return
+        ensureUhidDevices()
+        keyboardActionChannel.trySend(KeyboardAction.Text(text)).onFailure {
+            AppLogger.w(TAG, "Failed to enqueue inject text (channel closed)")
+        }
+    }
+
+    private suspend fun sendInjectTextInternal(text: String) {
+        val textBytes = text.toByteArray(Charsets.UTF_8)
+        var offset = 0
+        while (offset < textBytes.size && !stream.isClosed) {
+            val chunkLen = VirtualKeyboardHelper.safeUtf8ChunkLength(textBytes, offset, 300)
+            if (chunkLen <= 0) break
+
+            val packet = ByteArray(5 + chunkLen)
+            packet[0] = TYPE_INJECT_TEXT.toByte()
+            packet[1] = (chunkLen ushr 24).toByte()
+            packet[2] = (chunkLen ushr 16).toByte()
+            packet[3] = (chunkLen ushr 8).toByte()
+            packet[4] = chunkLen.toByte()
+            System.arraycopy(textBytes, offset, packet, 5, chunkLen)
+            writeNow(packet)
+
+            offset += chunkLen
+        }
     }
 
     fun sendScanFile(path: String) {
