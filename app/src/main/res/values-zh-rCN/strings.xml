@@ -289,7 +289,14 @@
     <string name="display_floating_nav_subtitle">在屏幕上显示垂直排列的返回、主页和最近任务按钮</string>
     <string name="display_bind_volume_title">转发音量键</string>
     <string name="display_bind_volume_subtitle">将本机实体音量键映射到被镜像设备</string>
+    <string name="display_clipboard_sync_title">剪贴板双向同步</string>
+    <string name="display_clipboard_sync_subtitle">在主机与目标设备之间同步复制的文本</string>
+    <string name="display_touchpad_title">虚拟触控板</string>
+    <string name="display_touchpad_subtitle">显示悬浮触控板浮层以控制光标</string>
+    <string name="display_keyboard_title">虚拟键盘</string>
+    <string name="display_keyboard_subtitle">打开软键盘向设备发送按键输入</string>
 
+    <string name="cd_paste_clipboard">将剪贴板内容粘贴到设备</string>
     <string name="cd_toggle_torch">开关闪光灯</string>
     <string name="cd_rotate_device">旋转设备</string>
     <string name="cd_toggle_fullscreen">切换全屏</string>
@@ -299,6 +306,7 @@
     <string name="cd_nav_back">返回</string>
     <string name="cd_nav_home">主页</string>
     <string name="cd_nav_recents">最近任务</string>
+    <string name="cd_take_screenshot">截取屏幕</string>
 
     <!-- 设置标签页 -->
     <string name="settings_title">设置</string>
@@ -946,6 +954,8 @@
     <string name="scrcpy_recording_deleted">录制内容已删除</string>
     <string name="scrcpy_recording_codec_warning">此编解码器不支持录制</string>
     <string name="scrcpy_recording_elapsed">录制 %1$s</string>
+    <string name="scrcpy_screenshot_saved">截图已保存</string>
+    <string name="scrcpy_screenshot_failed">截取屏幕失败</string>
     <string name="btn_delete">删除</string>
     <string name="btn_export">导出</string>
     <string name="settings_scrcpy_auto_record_title">自动录制会话</string>

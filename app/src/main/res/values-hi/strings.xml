@@ -115,6 +115,8 @@
     <string name="plugin_open_browser_title">बाहरी लिंक खोलें</string>
     <string name="plugin_open_browser_msg">यह प्लगइन एक बाहरी लिंक खोलना चाहता है:\n\n%1$s\n\nक्या आप जारी रखना चाहते हैं?</string>
     <string name="plugin_open_browser_btn_open">खोलें</string>
+    <string name="plugin_temp_file_title">अस्थायी भंडारण अनुरोध</string>
+    <string name="plugin_temp_file_msg">यह प्लगइन इस सत्र के दौरान डेटा स्ट्रीम करने के लिए एक अस्थायी फ़ाइल बनाना चाहता है।\n\nक्या आप जारी रखना चाहते हैं?</string>
     <string name="plugin_runner_not_found">प्लगइन नहीं मिला</string>
     <string name="plugin_menu_info">जानकारी</string>
     <string name="plugin_menu_permissions">अनुमतियाँ</string>
@@ -188,6 +190,26 @@
     <string name="video_source_screen">स्क्रीन</string>
     <string name="video_source_camera">कैमरा</string>
     <string name="camera_source_subtitle_req">Android 12+ (API 31) की आवश्यकता है। डिवाइस API %1$d पर है।</string>
+    <string name="video_source_virtual">वर्चुअल स्क्रीन</string>
+    <string name="virtual_source_subtitle_req">Android 10+ (API 29) आवश्यक है। डिवाइस API %1$d है।</string>
+    <string name="section_virtual_screen">वर्चुअल स्क्रीन</string>
+    <string name="virtual_screen_discovering">ऐप्स की खोज की जा रही है…</string>
+    <string name="virtual_screen_dpi">डिस्प्ले घनत्व (DPI)</string>
+    <string name="virtual_screen_dpi_format">%1$d DPI</string>
+    <string name="virtual_screen_dpi_auto">ऑटो</string>
+    <string name="virtual_screen_app">लॉन्च करने के लिए ऐप</string>
+    <string name="virtual_screen_default_launcher">डिफ़ॉल्ट लॉन्चर (कोई नहीं)</string>
+    <string name="virtual_screen_select_app">लॉन्च करने के लिए ऐप चुनें</string>
+    <string name="virtual_screen_search_apps">खोजें या पैकेज नाम दर्ज करें…</string>
+    <string name="virtual_screen_user_apps">उपयोगकर्ता ऐप्स</string>
+    <string name="virtual_screen_system_apps">सिस्टम ऐप्स</string>
+    <string name="virtual_screen_no_apps_found">कोई ऐप नहीं मिला</string>
+    <string name="virtual_screen_discovery_timed_out">खोज का समय समाप्त हो गया। पुनः प्रयास करने के लिए रिफ्रेश करें।</string>
+    <string name="virtual_screen_discovery_failed">ऐप्स लोड नहीं किए जा सके। पुनः प्रयास करने के लिए रिफ्रेश करें।</string>
+    <string name="virtual_screen_use_custom_package">कस्टम पैकेज लॉन्च करें</string>
+    <string name="virtual_screen_empty_entry_hint">मैन्युअल रूप से लॉन्च करने के लिए ऊपर पैकेज नाम दर्ज करें, या पुनः प्रयास के लिए रिफ्रेश करें।</string>
+    <string name="dialog_add_dpi_title">कस्टम DPI जोड़ें</string>
+    <string name="dialog_add_dpi_msg">DPI में डिस्प्ले घनत्व दर्ज करें (उदा. 280, 360, 560):</string>
 
     <string name="section_camera">कैमरा</string>
     <string name="camera_facing_back">पिछला</string>
@@ -223,6 +245,9 @@
     <string name="settings_scrcpy_allow_custom_title">कॉन्फ़िगरेशन में कस्टम मानों की अनुमति दें</string>
     <string name="settings_scrcpy_allow_custom_subtitle">कस्टम अधिकतम आकार, फ्रेम रेट और बिटरेट विकल्प जोड़ने की सुविधा सक्षम करें</string>
     <string name="camera_discovering">कैमरा क्षमताओं की खोज की जा रही है…</string>
+    <string name="camera_discovery_timed_out">खोज का समय समाप्त हो गया। पुनः प्रयास करने के लिए रिफ्रेश करें।</string>
+    <string name="camera_discovery_failed">कैमरे लोड नहीं किए जा सके। पुनः प्रयास करने के लिए रिफ्रेश करें।</string>
+    <string name="camera_no_cameras_found">कोई कैमरा नहीं मिला।</string>
     <string name="label_frame_rate">फ्रेम रेट</string>
     <string name="label_bitrate">बिटरेट</string>
     <string name="label_mbps_format">%1$d Mbps</string>
@@ -264,13 +289,24 @@
     <string name="display_floating_nav_subtitle">स्क्रीन पर बैक, होम और रीसेंट्स बटन दिखाएं</string>
     <string name="display_bind_volume_title">वॉल्यूम बटन अग्रेषित करें</string>
     <string name="display_bind_volume_subtitle">हार्डवेयर वॉल्यूम बटन को कनेक्टेड डिवाइस से जोड़ें</string>
+    <string name="display_clipboard_sync_title">क्लिपबोर्ड द्विदिश सिंक</string>
+    <string name="display_clipboard_sync_subtitle">होस्ट और लक्षित डिवाइस के बीच कॉपी किए गए टेक्स्ट को सिंक करें</string>
+    <string name="display_touchpad_title">वर्चुअल टचपैड</string>
+    <string name="display_touchpad_subtitle">कर्सर नियंत्रित करने के लिए फ्लोटिंग टचपैड ओवरले दिखाएं</string>
+    <string name="display_keyboard_title">वर्चुअल कीबोर्ड</string>
+    <string name="display_keyboard_subtitle">डिवाइस पर कीस्ट्रोक्स भेजने के लिए सॉफ्ट कीबोर्ड खोलें</string>
 
+    <string name="cd_paste_clipboard">डिवाइस पर क्लिपबोर्ड पेस्ट करें</string>
     <string name="cd_toggle_torch">टॉर्च टॉगल करें</string>
+    <string name="cd_rotate_device">डिवाइस घुमाएं</string>
     <string name="cd_toggle_fullscreen">फुलस्क्रीन टॉगल करें</string>
     <string name="cd_stop_mirroring">मिररिंग रोकें</string>
+    <string name="cd_expand_controls">नियंत्रण दिखाएं</string>
+    <string name="cd_collapse_controls">नियंत्रण छुपाएं</string>
     <string name="cd_nav_back">पीछे</string>
     <string name="cd_nav_home">होम</string>
     <string name="cd_nav_recents">हालिया ऐप्स</string>
+    <string name="cd_take_screenshot">स्क्रीनशॉट लें</string>
 
     <!-- Settings Tab -->
     <string name="settings_title">सेटिंग्स</string>
@@ -911,6 +947,8 @@
     <string name="scrcpy_recording_deleted">रिकॉर्डिंग हटाई गई</string>
     <string name="scrcpy_recording_codec_warning">इस कोडेक के साथ रिकॉर्डिंग समर्थित नहीं है</string>
     <string name="scrcpy_recording_elapsed">REC %1$s</string>
+    <string name="scrcpy_screenshot_saved">स्क्रीनशॉट सहेजा गया</string>
+    <string name="scrcpy_screenshot_failed">स्क्रीनशॉट कैप्चर विफल रहा</string>
     <string name="btn_delete">हटाएं</string>
     <string name="btn_export">निर्यात करें</string>
     <string name="settings_scrcpy_auto_record_title">सत्र स्वतः रिकॉर्ड करें</string>
@@ -937,4 +975,6 @@
     <string name="notification_keep_alive_stop_action">रोकें</string>
     <string name="settings_battery_opt_denied_warning">बैटरी ऑप्टिमाइज़ेशन अक्षम नहीं किया गया। Doze मोड के दौरान बैकग्राउंड कनेक्शन निलंबित हो सकते हैं।</string>
     <string name="settings_notif_perm_denied_warning">सूचना अनुमति अस्वीकृत। बैकग्राउंड स्थिति सूचना दिखाई नहीं देगी।</string>
+    <string name="plugin_force_exit_prompt">प्लगइन से जबरन बाहर निकलने के लिए एक बार फिर बैक दबाएं</string>
+    <string name="plugin_force_exit_done">प्लगइन से बाहर निकल गए</string>
 </resources>

@@ -115,6 +115,8 @@
     <string name="plugin_open_browser_title">Externen Link öffnen</string>
     <string name="plugin_open_browser_msg">Dieses Plugin möchte einen externen Link öffnen:\n\n%1$s\n\nMöchtest du fortfahren?</string>
     <string name="plugin_open_browser_btn_open">Öffnen</string>
+    <string name="plugin_temp_file_title">Anfrage für temporären Speicher</string>
+    <string name="plugin_temp_file_msg">Dieses Plugin möchte eine temporäre Datei zum Streamen von Daten während dieser Sitzung erstellen.\n\nMöchtest du fortfahren?</string>
     <string name="plugin_runner_not_found">Plugin nicht gefunden</string>
     <string name="plugin_menu_info">Info</string>
     <string name="plugin_menu_permissions">Berechtigungen</string>
@@ -188,6 +190,26 @@
     <string name="video_source_screen">Bildschirm</string>
     <string name="video_source_camera">Kamera</string>
     <string name="camera_source_subtitle_req">Erfordert Android 12+ (API 31). Gerät verwendet API %1$d.</string>
+    <string name="video_source_virtual">Virtueller Bildschirm</string>
+    <string name="virtual_source_subtitle_req">Erfordert Android 10+ (API 29). Gerät verwendet API %1$d.</string>
+    <string name="section_virtual_screen">Virtueller Bildschirm</string>
+    <string name="virtual_screen_discovering">Apps werden ermittelt...</string>
+    <string name="virtual_screen_dpi">Displaydichte (DPI)</string>
+    <string name="virtual_screen_dpi_format">%1$d DPI</string>
+    <string name="virtual_screen_dpi_auto">Automatisch</string>
+    <string name="virtual_screen_app">Zu startende App</string>
+    <string name="virtual_screen_default_launcher">Standard-Launcher (Keine)</string>
+    <string name="virtual_screen_select_app">App zum Starten auswählen</string>
+    <string name="virtual_screen_search_apps">Suchen oder Paketnamen eingeben…</string>
+    <string name="virtual_screen_user_apps">Benutzer-Apps</string>
+    <string name="virtual_screen_system_apps">System-Apps</string>
+    <string name="virtual_screen_no_apps_found">Keine Apps gefunden</string>
+    <string name="virtual_screen_discovery_timed_out">Zeitüberschreitung bei der Erkennung. Zum Wiederholen auf Aktualisieren tippen.</string>
+    <string name="virtual_screen_discovery_failed">Apps konnten nicht geladen werden. Zum Wiederholen auf Aktualisieren tippen.</string>
+    <string name="virtual_screen_use_custom_package">Benutzerdefiniertes Paket starten</string>
+    <string name="virtual_screen_empty_entry_hint">Paketnamen oben eingeben, um ihn manuell zu starten, oder auf Aktualisieren tippen.</string>
+    <string name="dialog_add_dpi_title">Benutzerdefinierte DPI hinzufügen</string>
+    <string name="dialog_add_dpi_msg">Displaydichte in DPI eingeben (z. B. 280, 360, 560):</string>
 
     <string name="section_camera">Kamera</string>
     <string name="camera_facing_back">Hinten</string>
@@ -223,6 +245,9 @@
     <string name="settings_scrcpy_allow_custom_title">Benutzerdefinierte Werte in Konfigurationen zulassen</string>
     <string name="settings_scrcpy_allow_custom_subtitle">Eigene Werte für maximale Größe, Bildrate und Bitrate hinzufügen</string>
     <string name="camera_discovering">Kamerafunktionen werden ermittelt...</string>
+    <string name="camera_discovery_timed_out">Zeitüberschreitung bei der Erkennung. Zum Wiederholen auf Aktualisieren tippen.</string>
+    <string name="camera_discovery_failed">Kameras konnten nicht geladen werden. Zum Wiederholen auf Aktualisieren tippen.</string>
+    <string name="camera_no_cameras_found">Keine Kameras gefunden.</string>
     <string name="label_frame_rate">Bildrate</string>
     <string name="label_bitrate">Bitrate</string>
     <string name="label_mbps_format">%1$d Mbps</string>
@@ -264,7 +289,14 @@
     <string name="display_floating_nav_subtitle">Vertikale Tasten für Zurück, Home und letzte Apps über dem Bildschirm anzeigen</string>
     <string name="display_bind_volume_title">Lautstärketasten weiterleiten</string>
     <string name="display_bind_volume_subtitle">Hardware-Lautstärketasten an das gespiegelte Gerät weiterleiten</string>
+    <string name="display_clipboard_sync_title">Bidirektionale Zwischenablagen-Synchronisierung</string>
+    <string name="display_clipboard_sync_subtitle">Kopierten Text zwischen Host und Zielgerät synchronisieren</string>
+    <string name="display_touchpad_title">Virtuelles Touchpad</string>
+    <string name="display_touchpad_subtitle">Schwebendes Touchpad-Overlay anzeigen, um den Cursor zu steuern</string>
+    <string name="display_keyboard_title">Virtuelle Tastatur</string>
+    <string name="display_keyboard_subtitle">Bildschirmtastatur öffnen, um Tastatureingaben an das Gerät zu senden</string>
 
+    <string name="cd_paste_clipboard">Zwischenablage auf Gerät einfügen</string>
     <string name="cd_toggle_torch">Taschenlampe umschalten</string>
     <string name="cd_rotate_device">Gerät drehen</string>
     <string name="cd_toggle_fullscreen">Vollbild umschalten</string>
@@ -274,6 +306,7 @@
     <string name="cd_nav_back">Zurück</string>
     <string name="cd_nav_home">Home</string>
     <string name="cd_nav_recents">Letzte Apps</string>
+    <string name="cd_take_screenshot">Screenshot erstellen</string>
 
     <!-- Settings Tab -->
     <string name="settings_title">Einstellungen</string>
@@ -915,6 +948,8 @@
     <string name="scrcpy_recording_deleted">Aufnahme gelöscht</string>
     <string name="scrcpy_recording_codec_warning">Aufnahme wird mit diesem Codec nicht unterstützt</string>
     <string name="scrcpy_recording_elapsed">REC %1$s</string>
+    <string name="scrcpy_screenshot_saved">Screenshot gespeichert</string>
+    <string name="scrcpy_screenshot_failed">Screenshot konnte nicht erstellt werden</string>
     <string name="btn_delete">Löschen</string>
     <string name="btn_export">Exportieren</string>
     <string name="settings_scrcpy_auto_record_title">Sitzungen automatisch aufzeichnen</string>
@@ -941,4 +976,6 @@
     <string name="notification_keep_alive_stop_action">Stoppen</string>
     <string name="settings_battery_opt_denied_warning">Akkuoptimierung wurde nicht deaktiviert. Hintergrundverbindungen können im Doze-Modus unterbrochen werden.</string>
     <string name="settings_notif_perm_denied_warning">Benachrichtigungsberechtigung verweigert. Die Hintergrundstatus-Benachrichtigung ist nicht sichtbar.</string>
+    <string name="plugin_force_exit_prompt">Erneut Zurück drücken, um das Beenden des Plugins zu erzwingen</string>
+    <string name="plugin_force_exit_done">Plugin beendet</string>
 </resources>

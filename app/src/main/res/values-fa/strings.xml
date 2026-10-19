@@ -115,6 +115,8 @@
     <string name="plugin_open_browser_title">باز کردن پیوند خارجی</string>
     <string name="plugin_open_browser_msg">این پلاگین می‌خواهد پیوند خارجی زیر را باز کند:\n\n%1$s\n\nآیا می‌خواهید ادامه دهید؟</string>
     <string name="plugin_open_browser_btn_open">باز کردن</string>
+    <string name="plugin_temp_file_title">درخواست حافظه موقت</string>
+    <string name="plugin_temp_file_msg">این افزونه می‌خواهد یک پرونده موقت برای پخش داده‌ها در طول این جلسه ایجاد کند.\n\nآیا مایل به ادامه هستید؟</string>
     <string name="plugin_runner_not_found">پلاگین پیدا نشد</string>
     <string name="plugin_menu_info">اطلاعات</string>
     <string name="plugin_menu_permissions">مجوزها</string>
@@ -188,6 +190,26 @@
     <string name="video_source_screen">صفحه‌نمایش</string>
     <string name="video_source_camera">دوربین</string>
     <string name="camera_source_subtitle_req">نیازمند اندروید 12+ (API 31). دستگاه دارای API %1$d است.</string>
+    <string name="video_source_virtual">صفحه‌نمایش مجازی</string>
+    <string name="virtual_source_subtitle_req">به اندروید ۱۰ یا بالاتر (API 29) نیاز دارد. دستگاه دارای API %1$d است.</string>
+    <string name="section_virtual_screen">صفحه‌نمایش مجازی</string>
+    <string name="virtual_screen_discovering">در حال بررسی برنامه‌ها...</string>
+    <string name="virtual_screen_dpi">تراکم صفحه‌نمایش (DPI)</string>
+    <string name="virtual_screen_dpi_format">%1$d DPI</string>
+    <string name="virtual_screen_dpi_auto">خودکار</string>
+    <string name="virtual_screen_app">برنامه برای اجرا</string>
+    <string name="virtual_screen_default_launcher">راه‌انداز پیش‌فرض (هیچ‌کدام)</string>
+    <string name="virtual_screen_select_app">انتخاب برنامه برای اجرا</string>
+    <string name="virtual_screen_search_apps">جستجو یا ورود نام بسته…</string>
+    <string name="virtual_screen_user_apps">برنامه‌های کاربر</string>
+    <string name="virtual_screen_system_apps">برنامه‌های سیستم</string>
+    <string name="virtual_screen_no_apps_found">هیچ برنامه‌ای یافت نشد</string>
+    <string name="virtual_screen_discovery_timed_out">زمان شناسایی به پایان رسید. برای تلاش مجدد روی تازه‌سازی بزنید.</string>
+    <string name="virtual_screen_discovery_failed">بارگیری برنامه‌ها ممکن نشد. برای تلاش مجدد روی تازه‌سازی بزنید.</string>
+    <string name="virtual_screen_use_custom_package">اجرای بسته سفارشی</string>
+    <string name="virtual_screen_empty_entry_hint">نام بسته را در بالا وارد کنید تا به صورت دستی اجرا شود، یا برای تلاش مجدد روی تازه‌سازی بزنید.</string>
+    <string name="dialog_add_dpi_title">افزودن DPI سفارشی</string>
+    <string name="dialog_add_dpi_msg">تراکم صفحه‌نمایش را بر حسب DPI وارد کنید (مانند ۲۸۰، ۳۶۰، ۵۶۰):</string>
 
     <string name="section_camera">دوربین</string>
     <string name="camera_facing_back">پشت</string>
@@ -223,6 +245,9 @@
     <string name="settings_scrcpy_allow_custom_title">اجازه مقادیر سفارشی در پیکربندی</string>
     <string name="settings_scrcpy_allow_custom_subtitle">امکان افزودن گزینه‌های سفارشی برای حداکثر اندازه، نرخ فریم و نرخ بیت</string>
     <string name="camera_discovering">در حال بررسی قابلیت‌های دوربین...</string>
+    <string name="camera_discovery_timed_out">زمان شناسایی به پایان رسید. برای تلاش مجدد روی تازه‌سازی بزنید.</string>
+    <string name="camera_discovery_failed">بارگیری دوربین‌ها ممکن نشد. برای تلاش مجدد روی تازه‌سازی بزنید.</string>
+    <string name="camera_no_cameras_found">هیچ دوربینی یافت نشد.</string>
     <string name="label_frame_rate">نرخ فریم</string>
     <string name="label_bitrate">نرخ بیت (Bitrate)</string>
     <string name="label_mbps_format">%1$d مگابیت بر ثانیه</string>
@@ -264,7 +289,14 @@
     <string name="display_floating_nav_subtitle">نمایش دکمه‌های عمودی بازگشت، خانه و برنامه‌های اخیر روی صفحه</string>
     <string name="display_bind_volume_title">هدایت کلیدهای صدا</string>
     <string name="display_bind_volume_subtitle">ارسال کلیدهای فیزیکی صدا به دستگاه متصل</string>
+    <string name="display_clipboard_sync_title">همگام‌سازی دوطرفه کلیپ‌بورد</string>
+    <string name="display_clipboard_sync_subtitle">همگام‌سازی متن کپی‌شده میان هاست و دستگاه مقصد</string>
+    <string name="display_touchpad_title">تاچ‌پد مجازی</string>
+    <string name="display_touchpad_subtitle">نمایش لایه تاچ‌پد شناور برای کنترل نشانگر</string>
+    <string name="display_keyboard_title">صفحه‌کلید مجازی</string>
+    <string name="display_keyboard_subtitle">باز کردن صفحه‌کلید نرم‌افزاری برای ارسال کلیدها به دستگاه</string>
 
+    <string name="cd_paste_clipboard">جای‌گذاری کلیپ‌بورد در دستگاه</string>
     <string name="cd_toggle_torch">تغییر وضعیت چراغ‌قوه</string>
     <string name="cd_rotate_device">چرخش دستگاه</string>
     <string name="cd_toggle_fullscreen">حالت تمام‌صفحه</string>
@@ -274,6 +306,7 @@
     <string name="cd_nav_back">بازگشت</string>
     <string name="cd_nav_home">خانه</string>
     <string name="cd_nav_recents">برنامه‌های اخیر</string>
+    <string name="cd_take_screenshot">گرفتن اسکرین‌شات</string>
 
     <!-- Settings Tab -->
     <string name="settings_title">تنظیمات</string>
@@ -915,6 +948,8 @@
     <string name="scrcpy_recording_deleted">ویدیو ضبط‌شده حذف شد</string>
     <string name="scrcpy_recording_codec_warning">ضبط ویدیو با این کدک پشتیبانی نمی‌شود</string>
     <string name="scrcpy_recording_elapsed">در حال ضبط %1$s</string>
+    <string name="scrcpy_screenshot_saved">اسکرین‌شات ذخیره شد</string>
+    <string name="scrcpy_screenshot_failed">گرفتن اسکرین‌شات ناموفق بود</string>
     <string name="btn_delete">حذف</string>
     <string name="btn_export">خروجی</string>
     <string name="settings_scrcpy_auto_record_title">ضبط خودکار نشست‌ها</string>
@@ -941,4 +976,6 @@
     <string name="notification_keep_alive_stop_action">توقف</string>
     <string name="settings_battery_opt_denied_warning">بهینه‌سازی باتری غیرفعال نشده است. اتصالات پس‌زمینه ممکن است در حالت Doze تعلیق شوند.</string>
     <string name="settings_notif_perm_denied_warning">مجوز ارسال اعلان رد شد. وضعیت اعلان پس‌زمینه نمایش داده نخواهد شد.</string>
+    <string name="plugin_force_exit_prompt">برای خروج اجباری از افزونه، یک‌بار دیگر دکمه بازگشت را بزنید</string>
+    <string name="plugin_force_exit_done">از افزونه خارج شدید</string>
 </resources>

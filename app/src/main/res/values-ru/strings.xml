@@ -117,6 +117,8 @@
     <string name="plugin_open_browser_title">Открыть внешнюю ссылку</string>
     <string name="plugin_open_browser_msg">Этот плагин хочет открыть внешнюю ссылку:\n\n%1$s\n\nПродолжить?</string>
     <string name="plugin_open_browser_btn_open">Открыть</string>
+    <string name="plugin_temp_file_title">Запрос на временное хранилище</string>
+    <string name="plugin_temp_file_msg">Этот плагин запрашивает создание временного файла для потоковой передачи данных во время этого сеанса.\n\nПродолжить?</string>
     <string name="plugin_runner_not_found">Плагин не найден</string>
     <string name="plugin_menu_info">Инфо</string>
     <string name="plugin_menu_permissions">Разрешения</string>
@@ -190,6 +192,26 @@
     <string name="video_source_screen">Экран</string>
     <string name="video_source_camera">Камера</string>
     <string name="camera_source_subtitle_req">Требуется Android 12+ (API 31). Устройство использует API %1$d.</string>
+    <string name="video_source_virtual">Виртуальный экран</string>
+    <string name="virtual_source_subtitle_req">Требуется Android 10+ (API 29). На устройстве API %1$d.</string>
+    <string name="section_virtual_screen">Виртуальный экран</string>
+    <string name="virtual_screen_discovering">Поиск приложений...</string>
+    <string name="virtual_screen_dpi">Плотность экрана (DPI)</string>
+    <string name="virtual_screen_dpi_format">%1$d DPI</string>
+    <string name="virtual_screen_dpi_auto">Авто</string>
+    <string name="virtual_screen_app">Приложение для запуска</string>
+    <string name="virtual_screen_default_launcher">Лаунчер по умолчанию (нет)</string>
+    <string name="virtual_screen_select_app">Выберите приложение для запуска</string>
+    <string name="virtual_screen_search_apps">Поиск или ввод имени пакета…</string>
+    <string name="virtual_screen_user_apps">Пользовательские приложения</string>
+    <string name="virtual_screen_system_apps">Системные приложения</string>
+    <string name="virtual_screen_no_apps_found">Приложения не найдены</string>
+    <string name="virtual_screen_discovery_timed_out">Время ожидания поиска истекло. Нажмите «Обновить» для повтора.</string>
+    <string name="virtual_screen_discovery_failed">Не удалось загрузить приложения. Нажмите «Обновить» для повтора.</string>
+    <string name="virtual_screen_use_custom_package">Запустить собственный пакет</string>
+    <string name="virtual_screen_empty_entry_hint">Введите имя пакета выше для ручного запуска или нажмите «Обновить» для повтора.</string>
+    <string name="dialog_add_dpi_title">Добавить собственный DPI</string>
+    <string name="dialog_add_dpi_msg">Введите плотность экрана в DPI (например: 280, 360, 560):</string>
 
     <string name="section_camera">Камера</string>
     <string name="camera_facing_back">Основная</string>
@@ -225,6 +247,9 @@
     <string name="settings_scrcpy_allow_custom_title">Свои значения в конфигурации</string>
     <string name="settings_scrcpy_allow_custom_subtitle">Разрешить добавление пользовательских вариантов размера, FPS и битрейта</string>
     <string name="camera_discovering">Определение возможностей камеры...</string>
+    <string name="camera_discovery_timed_out">Время ожидания поиска истекло. Нажмите «Обновить» для повтора.</string>
+    <string name="camera_discovery_failed">Не удалось загрузить камеры. Нажмите «Обновить» для повтора.</string>
+    <string name="camera_no_cameras_found">Камеры не найдены.</string>
     <string name="label_frame_rate">Частота кадров</string>
     <string name="label_bitrate">Битрейт</string>
     <string name="label_mbps_format">%1$d Мбит/с</string>
@@ -266,13 +291,24 @@
     <string name="display_floating_nav_subtitle">Отображать вертикальные кнопки «Назад», «Домой» и «Недавние» поверх экрана</string>
     <string name="display_bind_volume_title">Пробрасывать кнопки громкости</string>
     <string name="display_bind_volume_subtitle">Привязать физические кнопки громкости к транслируемому устройству</string>
+    <string name="display_clipboard_sync_title">Двунаправленная синхронизация буфера обмена</string>
+    <string name="display_clipboard_sync_subtitle">Синхронизация скопированного текста между хостом и целевым устройством</string>
+    <string name="display_touchpad_title">Виртуальный тачпад</string>
+    <string name="display_touchpad_subtitle">Показывать плавающий тачпад поверх экрана для управления курсором</string>
+    <string name="display_keyboard_title">Виртуальная клавиатура</string>
+    <string name="display_keyboard_subtitle">Открыть экранную клавиатуру для ввода текста на устройстве</string>
 
+    <string name="cd_paste_clipboard">Вставить буфер обмена на устройство</string>
     <string name="cd_toggle_torch">Переключить фонарик</string>
+    <string name="cd_rotate_device">Повернуть устройство</string>
     <string name="cd_toggle_fullscreen">Полноэкранный режим</string>
     <string name="cd_stop_mirroring">Остановить трансляцию</string>
+    <string name="cd_expand_controls">Показать элементы управления</string>
+    <string name="cd_collapse_controls">Скрыть элементы управления</string>
     <string name="cd_nav_back">Назад</string>
     <string name="cd_nav_home">Домой</string>
     <string name="cd_nav_recents">Недавние</string>
+    <string name="cd_take_screenshot">Сделать скриншот</string>
 
     <!-- Settings Tab -->
     <string name="settings_title">Настройки</string>
@@ -917,6 +953,8 @@
     <string name="scrcpy_recording_deleted">Запись удалена</string>
     <string name="scrcpy_recording_codec_warning">Запись не поддерживается с этим кодеком</string>
     <string name="scrcpy_recording_elapsed">ЗАПИСЬ %1$s</string>
+    <string name="scrcpy_screenshot_saved">Скриншот сохранен</string>
+    <string name="scrcpy_screenshot_failed">Не удалось сделать скриншот</string>
     <string name="btn_delete">Удалить</string>
     <string name="btn_export">Экспорт</string>
     <string name="settings_scrcpy_auto_record_title">Автозапись сессий</string>
@@ -947,4 +985,6 @@
     <string name="notification_keep_alive_stop_action">Остановить</string>
     <string name="settings_battery_opt_denied_warning">Оптимизация батареи не отключена. Фоновые соединения могут прерываться в режиме Doze.</string>
     <string name="settings_notif_perm_denied_warning">Разрешение на отправку уведомлений отклонено. Фоновый статус не будет отображаться.</string>
+    <string name="plugin_force_exit_prompt">Нажмите «Назад» еще раз для принудительного выхода из плагина</string>
+    <string name="plugin_force_exit_done">Плагин закрыт</string>
 </resources>
