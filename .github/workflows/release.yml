@@ -75,7 +75,7 @@ jobs:
       - name: Run unit tests
         run: |
           set -euo pipefail
-          ./gradlew testReleaseUnitTest --no-daemon
+          ./gradlew testDebugUnitTest --no-daemon
 
       - name: Build release APK
         env:
