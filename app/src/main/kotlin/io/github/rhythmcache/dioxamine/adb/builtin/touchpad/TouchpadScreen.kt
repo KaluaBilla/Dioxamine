@@ -48,6 +48,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.rhythmcache.dioxamine.R
 import io.github.rhythmcache.dioxamine.adb.AdbViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 // Static immutable list of function keys (hoisted outside composables)
