@@ -306,6 +306,7 @@
     <string name="cd_nav_back">Back</string>
     <string name="cd_nav_home">Home</string>
     <string name="cd_nav_recents">Recents</string>
+    <string name="cd_take_screenshot">Take Screenshot</string>
 
     <!-- Settings Tab -->
     <string name="settings_title">Settings</string>
@@ -953,6 +954,8 @@
     <string name="scrcpy_recording_deleted">Recording deleted</string>
     <string name="scrcpy_recording_codec_warning">Recording not supported with this codec</string>
     <string name="scrcpy_recording_elapsed">REC %1$s</string>
+    <string name="scrcpy_screenshot_saved">Screenshot saved</string>
+    <string name="scrcpy_screenshot_failed">Failed to capture screenshot</string>
     <string name="btn_delete">Delete</string>
     <string name="btn_export">Export</string>
     <string name="settings_scrcpy_auto_record_title">Auto-record sessions</string>

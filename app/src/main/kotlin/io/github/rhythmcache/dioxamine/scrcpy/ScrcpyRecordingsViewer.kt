@@ -1,9 +1,13 @@
 package io.github.rhythmcache.dioxamine.scrcpy
 
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -33,6 +37,20 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+private class CreateDocumentWithMimeTypeContract : ActivityResultContract<Pair<String, String>, Uri?>() {
+    override fun createIntent(context: Context, input: Pair<String, String>): Intent {
+        val (fileName, mimeType) = input
+        return Intent(Intent.ACTION_CREATE_DOCUMENT)
+            .addCategory(Intent.CATEGORY_OPENABLE)
+            .setType(mimeType)
+            .putExtra(Intent.EXTRA_TITLE, fileName)
+    }
+
+    override fun parseResult(resultCode: Int, intent: Intent?): Uri? {
+        return if (resultCode != Activity.RESULT_OK || intent == null) null else intent.data
+    }
+}
+
 @Composable
 fun ScrcpyRecordingsViewer(
     modifier: Modifier = Modifier,
@@ -53,7 +71,7 @@ fun ScrcpyRecordingsViewer(
     }
 
     val exportLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.CreateDocument("video/mp4")
+        contract = remember { CreateDocumentWithMimeTypeContract() }
     ) { uri: Uri? ->
         if (uri != null && fileToExport != null) {
             val success = RecordingsManager.exportRecording(context, fileToExport!!, uri)
@@ -134,7 +152,9 @@ fun ScrcpyRecordingsViewer(
                     onOpen = { RecordingsManager.openRecording(context, it.file) },
                     onExport = {
                         fileToExport = it.file
-                        exportLauncher.launch(it.name)
+                        val isImage = it.file.extension.equals("png", ignoreCase = true)
+                        val mimeType = if (isImage) "image/png" else "video/mp4"
+                        exportLauncher.launch(it.name to mimeType)
                     },
                     onDelete = { fileToDelete = it.file }
                 )
@@ -189,8 +209,9 @@ private fun RecordingCard(
                         if (!thumbnailLoaded) {
                             CircularProgressIndicator(modifier = Modifier.size(32.dp))
                         } else {
+                            val isImage = recording.file.extension.equals("png", ignoreCase = true)
                             Icon(
-                                imageVector = Icons.Filled.VideoFile,
+                                imageVector = if (isImage) Icons.Filled.Image else Icons.Filled.VideoFile,
                                 contentDescription = null,
                                 modifier = Modifier.size(48.dp),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
@@ -225,7 +246,7 @@ private fun RecordingCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = recording.name.removeSuffix(".mp4"),
+                        text = recording.file.nameWithoutExtension,
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,

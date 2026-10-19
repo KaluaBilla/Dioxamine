@@ -11,7 +11,12 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.focusTarget
 import androidx.compose.ui.input.key.onPreviewKeyEvent
+import android.graphics.Bitmap
+import android.os.Handler
+import android.os.Looper
+import android.view.PixelCopy
 import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
 import androidx.compose.foundation.background
@@ -77,7 +82,10 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.zIndex
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.CancellationException
 import kotlin.math.roundToInt
 
@@ -889,6 +897,7 @@ fun ScrcpyScreen(
                                                     }
                                                 },
                                                 enabled = isDeviceConnected && isModeSupported,
+                                                shape = RoundedCornerShape(12.dp),
                                                 modifier = Modifier.fillMaxWidth()
                                             ) {
                                                 Icon(if (isMirroring) Icons.Filled.Stop else Icons.AutoMirrored.Filled.ScreenShare, contentDescription = null)
@@ -2417,6 +2426,72 @@ private fun ScrcpyVideoPlayer(
     onSurfaceCreated: (SurfaceHolder) -> Unit,
     onSurfaceDestroyed: () -> Unit = {}
 ) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    var surfaceViewRef by remember { mutableStateOf<SurfaceView?>(null) }
+    val flashAlpha = remember { Animatable(0f) }
+
+    fun captureScreenshot() {
+        val sv = surfaceViewRef ?: return
+        if (!sv.holder.surface.isValid || sv.width <= 0 || sv.height <= 0) {
+            Toast.makeText(context, R.string.scrcpy_screenshot_failed, Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        coroutineScope.launch {
+            flashAlpha.snapTo(0.7f)
+            flashAlpha.animateTo(0f, animationSpec = tween(durationMillis = 250))
+        }
+
+        val width = sv.width
+        val height = sv.height
+        val bitmap = runCatching {
+            Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        }.getOrNull()
+
+        if (bitmap == null) {
+            Toast.makeText(context, R.string.scrcpy_screenshot_failed, Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val handler = Handler(Looper.getMainLooper())
+        try {
+            PixelCopy.request(sv, bitmap, { copyResult ->
+                if (copyResult == PixelCopy.SUCCESS) {
+                    RecordingsManager.ioScope.launch {
+                        try {
+                            val savedFile = RecordingsManager.saveScreenshot(context, bitmap)
+                            withContext(Dispatchers.Main) {
+                                if (savedFile != null) {
+                                    Toast.makeText(context, R.string.scrcpy_screenshot_saved, Toast.LENGTH_SHORT).show()
+                                } else {
+                                    Toast.makeText(context, R.string.scrcpy_screenshot_failed, Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        } catch (e: CancellationException) {
+                            AppLogger.i("SCRCPY_CLIENT", "Screenshot capture coroutine cancelled")
+                            throw e
+                        } catch (e: Exception) {
+                            AppLogger.e("SCRCPY_CLIENT", "Failed to save screenshot: ${e.message}", e)
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(context, R.string.scrcpy_screenshot_failed, Toast.LENGTH_SHORT).show()
+                            }
+                        } finally {
+                            bitmap.recycle()
+                        }
+                    }
+                } else {
+                    bitmap.recycle()
+                    Toast.makeText(context, R.string.scrcpy_screenshot_failed, Toast.LENGTH_SHORT).show()
+                }
+            }, handler)
+        } catch (e: Exception) {
+            bitmap.recycle()
+            AppLogger.e("SCRCPY_CLIENT", "PixelCopy failed: ${e.message}", e)
+            Toast.makeText(context, R.string.scrcpy_screenshot_failed, Toast.LENGTH_SHORT).show()
+        }
+    }
+
     val focusRequester = remember { FocusRequester() }
     val keyboardFocusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -2563,6 +2638,7 @@ private fun ScrcpyVideoPlayer(
         AndroidView(
             factory = { ctx ->
                 SurfaceView(ctx).apply {
+                    surfaceViewRef = this
                     keepScreenOn = true
                     isFocusable = true
                     isFocusableInTouchMode = true
@@ -2588,10 +2664,12 @@ private fun ScrcpyVideoPlayer(
                     }
                     holder.addCallback(object : SurfaceHolder.Callback {
                         override fun surfaceCreated(holder: SurfaceHolder) {
+                            surfaceViewRef = this@apply
                             onSurfaceCreated(holder)
                         }
                         override fun surfaceChanged(h: SurfaceHolder, f: Int, w: Int, height: Int) {}
                         override fun surfaceDestroyed(h: SurfaceHolder) {
+                            surfaceViewRef = null
                             onSurfaceDestroyed()
                         }
                     })
@@ -2600,6 +2678,13 @@ private fun ScrcpyVideoPlayer(
             update = { /* view identity persists across recompositions */ },
             modifier = playerModifier
         )
+
+        if (flashAlpha.value > 0f) {
+            Box(
+                modifier = playerModifier
+                    .background(Color.White.copy(alpha = flashAlpha.value))
+            )
+        }
 
         if (!hasDimensions) {
             CircularProgressIndicator(
@@ -2670,7 +2755,6 @@ private fun ScrcpyVideoPlayer(
 
         val animNormX = remember { Animatable(normX) }
         val animNormY = remember { Animatable(normY) }
-        val coroutineScope = rememberCoroutineScope()
 
         LaunchedEffect(normX, normY) {
             if (!animNormX.isRunning && animNormX.targetValue != normX) {
@@ -2707,7 +2791,7 @@ private fun ScrcpyVideoPlayer(
             ControlSide.RIGHT -> if (controlsExpanded) Icons.AutoMirrored.Filled.KeyboardArrowRight else Icons.AutoMirrored.Filled.KeyboardArrowLeft
         }
 
-        val maxItems = if (maxWidth >= 540.dp) 8 else 4
+        val maxItems = if (maxWidth >= 580.dp) 9 else 5
         val isAlignedEnd = side == ControlSide.RIGHT || (animNormX.value > 0.5f && (side == ControlSide.TOP || side == ControlSide.BOTTOM))
         val flowArrangement = Arrangement.spacedBy(8.dp, if (isAlignedEnd) Alignment.End else Alignment.Start)
 
@@ -2731,6 +2815,16 @@ private fun ScrcpyVideoPlayer(
                             tint = if (isRecording) Color.White else Color.Red
                         )
                     }
+                }
+                IconButton(
+                    onClick = { captureScreenshot() },
+                    colors = IconButtonDefaults.iconButtonColors(containerColor = Color.Black.copy(alpha = 0.6f))
+                ) {
+                    Icon(
+                        Icons.Filled.PhotoCamera,
+                        contentDescription = stringResource(R.string.cd_take_screenshot),
+                        tint = Color.White
+                    )
                 }
                 if (videoSourceIsCamera) {
                     IconButton(
