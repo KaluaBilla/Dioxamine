@@ -167,7 +167,7 @@ class UhidControlManager(
                 }
 
                 // Step 3: Launch server in control-only mode
-                val serverCmd = "CLASSPATH=${Constants.DEVICE_TMP_DIR}/scrcpy-server.jar app_process / com.genymobile.scrcpy.Server 4.1 video=false audio=false control=true tunnel_forward=true cleanup=true send_dummy_byte=true"
+                val serverCmd = "CLASSPATH=${Constants.DEVICE_TMP_DIR}/scrcpy-server.jar app_process / com.genymobile.scrcpy.Server ${Constants.SCRCPY_SERVER_VERSION} video=false audio=false control=true tunnel_forward=true cleanup=true send_dummy_byte=true"
                 AppLogger.i(TAG, "Starting server: $serverCmd")
 
                 launch {

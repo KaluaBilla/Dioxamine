@@ -16,7 +16,7 @@ import java.nio.ByteBuffer
 import java.util.concurrent.CancellationException
 
 /**
- * Handles video decoding from scrcpy 4.1 framed stream using Android MediaCodec.
+ * Handles video decoding from scrcpy 5.x framed stream using Android MediaCodec.
  * Supported video codecs: H.264 (AVC), H.265 (HEVC), AV1, VP8, and VP9.
  * Uses reusable buffers to eliminate allocations on every frame.
  */

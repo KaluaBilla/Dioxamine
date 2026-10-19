@@ -90,7 +90,7 @@ class ScrcpySession(
                 }
                 AppLogger.i(TAG_CLIENT, "Step 1 Complete: Asset pushed successfully")
 
-                val serverCmd = "CLASSPATH=${Constants.DEVICE_TMP_DIR}/scrcpy-server.jar app_process / com.genymobile.scrcpy.Server 4.1 ${config.toServerArgs()}"
+                val serverCmd = "CLASSPATH=${Constants.DEVICE_TMP_DIR}/scrcpy-server.jar app_process / com.genymobile.scrcpy.Server ${Constants.SCRCPY_SERVER_VERSION} ${config.toServerArgs()}"
                 AppLogger.i(TAG_CLIENT, "Step 2: Executing server command: $serverCmd")
 
                 launch {
