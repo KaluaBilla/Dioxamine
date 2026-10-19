@@ -1,0 +1,25 @@
+- Scrcpy: added screenshot capture with shutter animation, thumbnail preview, and export support
+- Scrcpy: movable and resizable floating translucent touchpad overlay with cursor tracking ([#53](https://github.com/rhythmcache/Dioxamine/pull/53))
+- Scrcpy: virtual keyboard with direct USB HID wire pipeline and real-time text input ([#53](https://github.com/rhythmcache/Dioxamine/pull/53), resolves [#23](https://github.com/rhythmcache/Dioxamine/issues/23))
+- Scrcpy: bidirectional clipboard synchronization with quick paste and echo protection ([#51](https://github.com/rhythmcache/Dioxamine/pull/51))
+- Scrcpy: persistent floating navigation bar (Back, Home, Recents) in streaming overlay ([#54](https://github.com/rhythmcache/Dioxamine/pull/54))
+- Scrcpy: restored video output and decoder surface when returning to screen, fixing black screen ([#52](https://github.com/rhythmcache/Dioxamine/pull/52))
+- Scrcpy: fixed touch coordinate mismatch and dropped touches during screen mirroring ([#48](https://github.com/rhythmcache/Dioxamine/pull/48), fixes [#31](https://github.com/rhythmcache/Dioxamine/issues/31))
+- Scrcpy: updated scrcpy server and submodule to v5.0.1
+- Scrcpy: styled start/stop mirroring button with rounded corners to match system aesthetics
+- Shell: integrated native Termux terminal emulator and view with adb-kt backend ([#49](https://github.com/rhythmcache/Dioxamine/pull/49))
+- Shell: added 2x7 Termux extra-keys panel with sticky CTRL/ALT modifiers and repeat-on-hold ([#49](https://github.com/rhythmcache/Dioxamine/pull/49))
+- Shell: direct terminal typing, tap-to-focus, and proper IME window insets handling ([#49](https://github.com/rhythmcache/Dioxamine/pull/49))
+- Shell: legacy raw shell fallback without PTY resize for Android < 7 devices ([#49](https://github.com/rhythmcache/Dioxamine/pull/49))
+- Fastboot: added Fastboot over TCP support with custom port connection dialog
+- Fastboot: serialized commands with mutex locking and added proactive TCP connection health monitor
+- Fastboot: prevented periodic USB detach scanner from pruning TCP Fastboot devices
+- Fastboot: bumped fastboot-kt to 1.0.2 with automatic chunking based on cached max-download-size, fixing failures when flashing large sparse images ([#45](https://github.com/rhythmcache/Dioxamine/issues/45))
+- Fastboot: handled keyboard insets with adjustResize and imePadding in Fastboot UI
+- ADB: improved NSD resolution and QR pairing multi-address candidate fallback ([#50](https://github.com/rhythmcache/Dioxamine/pull/50))
+- ADB: serialized NSD resolutions on API < 34 to avoid FAILURE_ALREADY_ACTIVE errors ([#50](https://github.com/rhythmcache/Dioxamine/pull/50))
+- ADB: enforced exact service name match in QR pairing discovery
+- Localization: reached 100% translation coverage across German, Persian, Hindi, Russian, and Simplified Chinese ([#47](https://github.com/rhythmcache/Dioxamine/pull/47))
+- CI: enabled unit test execution in CI build and release workflows
+- General bug fixes, stability improvements, and UI refinements
+- Note: This changelog was written using an LLM

@@ -2,6 +2,45 @@
 
 All notable changes to Dioxamine are documented in this file.
 
+## [0.0.6] (Version Code: 10006)
+
+### Scrcpy & Screen Mirroring
+- Added screenshot capture tool with shutter flash animation, saved directly to recordings with thumbnail preview and export support
+- Added movable and resizable floating translucent touchpad overlay with sensitivity controls and cursor tracking ([#53](https://github.com/rhythmcache/Dioxamine/pull/53))
+- Added virtual keyboard with real-time text input and soft keyboard integration via direct USB HID wire pipeline ([#53](https://github.com/rhythmcache/Dioxamine/pull/53), resolves [#23](https://github.com/rhythmcache/Dioxamine/issues/23))
+- Implemented bidirectional clipboard synchronization between host and mirrored device with quick-paste button and echo-loop protection ([#51](https://github.com/rhythmcache/Dioxamine/pull/51))
+- Added persistent floating navigation bar (Back, Home, Recents) in streaming overlay with responsive multi-row layout ([#54](https://github.com/rhythmcache/Dioxamine/pull/54))
+- Fixed video output loss and black screen by restoring decoder surface and requesting IDR keyframe when returning to screen ([#52](https://github.com/rhythmcache/Dioxamine/pull/52))
+- Fixed touch coordinate mismatch and dropped touches by preventing decoder stride padding from overwriting video dimensions ([#48](https://github.com/rhythmcache/Dioxamine/pull/48), fixes [#31](https://github.com/rhythmcache/Dioxamine/issues/31))
+- Updated scrcpy server and submodule to v5.0.1
+- Styled start and stop mirroring button with rounded corners to match system aesthetics
+
+### Terminal & Shell
+- Integrated native Termux terminal emulator and terminal view with `adb-kt` backend for a full PTY/terminal experience ([#49](https://github.com/rhythmcache/Dioxamine/pull/49))
+- Added Termux 2x7 extra-keys panel (ESC, /, -, HOME, UP, END, PGUP; TAB, CTRL, ALT, LEFT, DOWN, RIGHT, PGDN) with sticky modifiers and repeat-on-hold ([#49](https://github.com/rhythmcache/Dioxamine/pull/49))
+- Supported direct terminal typing, tap-to-focus, and proper IME window insets handling ([#49](https://github.com/rhythmcache/Dioxamine/pull/49))
+- Added fallback for legacy raw shell on Android versions below 7 ([#49](https://github.com/rhythmcache/Dioxamine/pull/49))
+
+### Fastboot & Connectivity
+- Added support for Fastboot over TCP with custom port connection dialog and session lifecycle management
+- Serialized Fastboot commands with mutex locking and added proactive TCP connection health monitoring
+- Prevented periodic USB detach scanner from disconnecting TCP Fastboot devices
+- Bumped `fastboot-kt` to 1.0.2 with automatic chunking based on cached `max-download-size`, fixing failures when flashing large sparse images ([#45](https://github.com/rhythmcache/Dioxamine/issues/45))
+- Handled keyboard insets with `adjustResize` and `imePadding` in Fastboot UI
+
+### ADB & Wireless Pairing
+- Improved NSD service resolution and multi-address candidate pairing fallback (IPv4 -> global IPv6 -> link-local IPv6) ([#50](https://github.com/rhythmcache/Dioxamine/pull/50))
+- Serialized NSD resolutions on API < 34 to avoid `FAILURE_ALREADY_ACTIVE` errors ([#50](https://github.com/rhythmcache/Dioxamine/pull/50))
+- Enforced exact service name matching in QR pairing discovery
+
+### Localization & Quality
+- Reached 100% translation coverage across all supported locales: German, Persian, Hindi, Russian, and Simplified Chinese ([#47](https://github.com/rhythmcache/Dioxamine/pull/47))
+- Enabled unit test execution in CI build and release workflows
+- General bug fixes, stability improvements, and UI refinements
+- Note: This changelog was written using an LLM
+
+---
+
 ## [0.0.5] (Version Code: 10005)
 
 ### Scrcpy & Display Mirroring
