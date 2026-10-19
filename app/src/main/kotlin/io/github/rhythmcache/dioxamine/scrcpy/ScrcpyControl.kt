@@ -1,11 +1,13 @@
 package io.github.rhythmcache.dioxamine.scrcpy
 
 import io.github.rhythmcache.adb.AdbStream
+import io.github.rhythmcache.dioxamine.adb.readExactly
 import io.github.rhythmcache.dioxamine.adb.builtin.touchpad.KeyboardAction
 import io.github.rhythmcache.dioxamine.adb.builtin.touchpad.UhidControlManager
 import io.github.rhythmcache.dioxamine.adb.builtin.touchpad.VirtualKeyboardController
 import io.github.rhythmcache.dioxamine.adb.builtin.touchpad.VirtualKeyboardHelper
 import io.github.rhythmcache.dioxamine.core.AppLogger
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -20,7 +22,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.runBlocking
@@ -30,7 +31,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
- * Builds and sends scrcpy control-socket messages.
+ * Builds and sends scrcpy control-socket messages and handles incoming device messages.
  * Wire formats verified against com.genymobile.scrcpy.control.ControlMessageReader.
  * Keyboard strokes, text injection, and mouse reports are written directly to the wire under [wireMutex],
  * so a key's press is on the socket before its release delay starts. Touch events and other
@@ -42,7 +43,8 @@ class ScrcpyControl(
     parentScope: CoroutineScope,
     private val stream: AdbStream,
     private val videoWidth: () -> Int,
-    private val videoHeight: () -> Int
+    private val videoHeight: () -> Int,
+    private val onClipboardReceived: ((String) -> Unit)? = null
 ) : VirtualKeyboardController {
     companion object {
         private const val TAG = "SCRCPY_CLIENT"
@@ -70,6 +72,12 @@ class ScrcpyControl(
         const val TYPE_RESIZE_DISPLAY = 21
         const val TYPE_SCAN_FILE = 22
 
+        const val DEVICE_MSG_TYPE_CLIPBOARD = 0
+        const val DEVICE_MSG_TYPE_ACK_CLIPBOARD = 1
+        const val DEVICE_MSG_TYPE_UHID_OUTPUT = 2
+
+        const val CLIPBOARD_TEXT_MAX_LENGTH = (1 shl 18) - 14
+
         const val ACTION_DOWN = 0
         const val ACTION_UP = 1
         const val ACTION_MOVE = 2
@@ -80,9 +88,10 @@ class ScrcpyControl(
         const val MAX_POINTERS = 10
     }
 
-    // Dedicated scope: not tied to sessionJob/video decode lifecycle, so it's never
-    // starved by decoder work on Dispatchers.IO and never dies if the parent is cancelled.
+    // Dedicated scopes: not tied to sessionJob/video decode lifecycle, so they are never
+    // starved by decoder work on Dispatchers.IO and never die if the parent is cancelled.
     private val writerScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private val readerScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     // Unbounded queue: guaranteed events (DOWN/UP) must never block waiting for space,
     // and under normal load this queue drains far faster than it fills.
@@ -118,6 +127,57 @@ class ScrcpyControl(
                     AppLogger.w(TAG, "ScrcpyControl failed to write packet direct: ${e.message}")
                 }
                 false
+            }
+        }
+    }
+
+    init {
+        if (onClipboardReceived != null) {
+            readerScope.launch {
+                try {
+                    readDeviceMessages(onClipboardReceived)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    AppLogger.w(TAG, "Device message reader stopped: ${e.message}")
+                }
+            }
+        }
+    }
+
+    private suspend fun readDeviceMessages(onClipboard: (String) -> Unit) {
+        val typeBuf = ByteArray(1)
+        val lenBuf = ByteArray(4)
+        while (!stream.isClosed) {
+            if (!stream.readExactly(typeBuf)) return
+            when (val type = typeBuf[0].toInt() and 0xFF) {
+                DEVICE_MSG_TYPE_CLIPBOARD -> {
+                    if (!stream.readExactly(lenBuf)) return
+                    val len = ((lenBuf[0].toInt() and 0xFF) shl 24) or
+                            ((lenBuf[1].toInt() and 0xFF) shl 16) or
+                            ((lenBuf[2].toInt() and 0xFF) shl 8) or
+                            (lenBuf[3].toInt() and 0xFF)
+                    if (len < 0 || len > CLIPBOARD_TEXT_MAX_LENGTH) {
+                        AppLogger.e(TAG, "Invalid clipboard length $len, stopping reader (stream cannot resync)")
+                        return
+                    }
+                    val data = ByteArray(len)
+                    if (len > 0 && !stream.readExactly(data)) return
+                    onClipboard(String(data, Charsets.UTF_8))
+                }
+                DEVICE_MSG_TYPE_ACK_CLIPBOARD -> {
+                    if (!stream.readExactly(ByteArray(8))) return
+                }
+                DEVICE_MSG_TYPE_UHID_OUTPUT -> {
+                    val hdr = ByteArray(4) // id(2) + size(2)
+                    if (!stream.readExactly(hdr)) return
+                    val size = ((hdr[2].toInt() and 0xFF) shl 8) or (hdr[3].toInt() and 0xFF)
+                    if (size > 0 && !stream.readExactly(ByteArray(size))) return
+                }
+                else -> {
+                    AppLogger.e(TAG, "Unknown device message type $type, stopping reader (stream cannot resync)")
+                    return
+                }
             }
         }
     }
@@ -178,7 +238,7 @@ class ScrcpyControl(
 
     /**
      * Closes the control message queue and waits for pending messages (e.g. power-on)
-     * to flush before cancelling the writer scope.
+     * to flush before cancelling the writer and reader scopes.
      */
     suspend fun close(drainTimeoutMs: Long = 300) {
         mouseLoopJob?.cancel()
@@ -206,6 +266,7 @@ class ScrcpyControl(
             }
         }
         writerScope.cancel()
+        readerScope.cancel()
     }
 
     fun closeImmediately() {
@@ -241,6 +302,7 @@ class ScrcpyControl(
             uhidDevicesRegistered = false
         }
         writerScope.cancel()
+        readerScope.cancel()
     }
 
     /**
@@ -373,7 +435,6 @@ class ScrcpyControl(
         buf.put(nameBytes)
         sendGuaranteed(buf.array())
     }
-
     fun ensureUhidDevices() {
         if (uhidDevicesRegistered) return
         synchronized(uhidInitLock) {
@@ -587,6 +648,35 @@ class ScrcpyControl(
 
             offset += chunkLen
         }
+    }
+
+    private fun truncateUtf8(bytes: ByteArray, max: Int): ByteArray {
+        if (bytes.size <= max) return bytes
+        var end = max
+        // Back up while the byte at `end` is a continuation byte (10xxxxxx),
+        // so we never cut in the middle of a multi-byte character.
+        while (end > 0 && (bytes[end].toInt() and 0xC0) == 0x80) end--
+        return bytes.copyOf(end)
+    }
+
+    fun sendSetClipboard(text: String, paste: Boolean = false, sequence: Long = 0L) {
+        val truncated = truncateUtf8(text.toByteArray(Charsets.UTF_8), CLIPBOARD_TEXT_MAX_LENGTH)
+        // type(1) + sequence(8) + paste(1) + len(4) + text(N) = 14 + N bytes
+        val buf = ByteBuffer.allocate(14 + truncated.size)
+        buf.put(TYPE_SET_CLIPBOARD.toByte())
+        buf.putLong(sequence)
+        buf.put(if (paste) 1.toByte() else 0.toByte())
+        buf.putInt(truncated.size)
+        buf.put(truncated)
+        sendGuaranteed(buf.array())
+    }
+
+    fun sendGetClipboard(copyKey: Boolean = false) {
+        // type(1) + copyKey(1) = 2 bytes
+        val buf = ByteBuffer.allocate(2)
+        buf.put(TYPE_GET_CLIPBOARD.toByte())
+        buf.put(if (copyKey) 1.toByte() else 0.toByte())
+        sendGuaranteed(buf.array())
     }
 
     fun sendScanFile(path: String) {
