@@ -155,6 +155,7 @@ class UhidControlManager(
 
     @Volatile private var isRunning = false
 
+    @OptIn(DelicateCoroutinesApi::class)
     fun start() {
         if (sessionJob?.isActive == true) return
         isRunning = true

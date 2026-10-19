@@ -562,7 +562,7 @@ fun ScrcpyScreen(
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            errorMessage!!,
+                            errorMessage,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onErrorContainer,
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center,
@@ -875,7 +875,7 @@ fun ScrcpyScreen(
                                             }
 
                                             if (errorMessage != null) {
-                                                Text(errorMessage!!, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                                                Text(errorMessage, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
                                                 Spacer(Modifier.height(8.dp))
                                             }
 
